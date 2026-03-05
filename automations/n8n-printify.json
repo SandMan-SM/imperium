@@ -1,0 +1,53 @@
+{
+  "name": "Imperium - Printify Sync",
+  "nodes": [
+    {
+      "parameters": {"rule": {"interval": [{"field": "hours", "hoursInterval": 1}]}},
+      "id": "schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.printify.com/v1/catalog/products.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "Authorization", "value": "Bearer PRINTIFY_API_KEY"}]}
+      },
+      "id": "printify",
+      "name": "Get Printify Products",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst products = items[0]?.json || [];\n\nconst transformed = products.map(p => ({\n  printify_id: p.id?.toString(),\n  name: p.title,\n  category: (p.title || '').toLowerCase().includes('shirt') ? 'shirts' : (p.title || '').toLowerCase().includes('hoodie') ? 'hoodies' : (p.title || '').toLowerCase().includes('sweat') ? 'sweats' : (p.title || '').toLowerCase().includes('beanie') ? 'beanies' : (p.title || '').toLowerCase().includes('hat') ? 'hats' : 'shirts',\n  description: p.description || '',\n  price: (p.variants?.[0]?.price || 0) / 100,\n  image_url: p.images?.[0]?.url || '',\n  brand: 'imperium',\n  in_stock: p.variants?.some(v => v.available > 0) || false\n}));\n\nreturn transformed;"
+      },
+      "id": "transform",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "tableId": "products"
+      },
+      "id": "supabase",
+      "name": "Save to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {"main": [[{"node": "Get Printify Products", "type": "main", "index": 0}]]},
+    "Get Printify Products": {"main": [[{"node": "Transform Data", "type": "main", "index": 0}]]},
+    "Transform Data": {"main": [[{"node": "Save to Supabase", "type": "main", "index": 0}]]}
+  },
+  "settings": {}
+}

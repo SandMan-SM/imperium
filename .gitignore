@@ -1,0 +1,10 @@
+# Environments
+venv/
+.env
+
+# Databases
+*.db
+telegram-bot/imperium.db
+
+# OS
+.DS_Store

@@ -1,0 +1,150 @@
+{
+  "name": "Imperium - Daily Newsletter (11 AM)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule Trigger (11 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "table": "products",
+        "filters": {
+          "where": [
+            {
+              "column": "in_stock",
+              "condition": "eq",
+              "value": true
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "id": "getProducts",
+      "name": "Get Available Products",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const products = $input.first().json || [];\n\nif (products.length === 0) {\n  return {\n    products: [{name: \"Imperium Classic Tee\", category: \"shirts\", description: \"Premium cotton t-shirt\", price: 29.99}],\n    peopleType: \"solo\",\n    isSingle: true,\n    isCuteCouple: false\n  };\n}\n\nconst isSingle = Math.random() < 0.7;\nconst peopleType = Math.random() < 0.5 ? 'solo' : (Math.random() < 0.625 ? 'couple' : 'group');\n\nconst byCategory = {};\nproducts.forEach(p => {\n  const cat = p.category || 'shirts';\n  if (!byCategory[cat]) byCategory[cat] = [];\n  byCategory[cat].push(p);\n});\n\nlet selectedProducts = [];\n\nif (isSingle) {\n  const cats = Object.keys(byCategory);\n  if (cats.length === 0) {\n    selectedProducts = [products[0]];\n  } else {\n    const randCat = cats[Math.floor(Math.random() * cats.length)];\n    const prods = byCategory[randCat];\n    selectedProducts = [prods[Math.floor(Math.random() * prods.length)]];\n  }\n} else {\n  const cats = Object.keys(byCategory);\n  if (cats.length === 0) {\n    selectedProducts = [products[0]];\n  } else {\n    const randCat = cats[Math.floor(Math.random() * cats.length)];\n    const prods = byCategory[randCat];\n    const numItems = Math.random() < 0.5 ? 2 : 3;\n    const shuffled = prods.sort(() => 0.5 - Math.random());\n    selectedProducts = shuffled.slice(0, Math.min(numItems, prods.length));\n  }\n}\n\nif (peopleType !== 'group') {\n  const categories = selectedProducts.map(p => p.category);\n  if (categories.includes('hats') && categories.includes('beanies')) {\n    const filtered = selectedProducts.filter(p => p.category !== 'hats');\n    if (filtered.length > 0) selectedProducts = filtered;\n  }\n}\n\nconst isCuteCouple = peopleType === 'couple' && !isSingle;\n\nreturn {\n  products: selectedProducts,\n  peopleType,\n  isSingle,\n  isCuteCouple\n};"
+      },
+      "id": "selectProducts",
+      "name": "Select Products (Logic)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:11434/api/generate",
+        "method": "POST",
+        "sendBody": true,
+        "body": "{\"model\": \"llama3.2\", \"prompt\": \"You are a marketing expert for Imperium apparel. Write 2-3 sentences about the product: {{$json.products[0].name}}. Product details: {{JSON.stringify($json.products[0])}}\", \"stream\": false}",
+        "options": {}
+      },
+      "id": "generateNewsletter",
+      "name": "AI Generate Newsletter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:11434/api/generate",
+        "method": "POST",
+        "sendBody": true,
+        "body": "{\"model\": \"llama3.2\", \"prompt\": \"Write a short motivational quote (max 20 words) about fashion/confidence/personal style. Related to this product: {{$json.products[0].name}}\", \"stream\": false}",
+        "options": {}
+      },
+      "id": "generateQuote",
+      "name": "AI Generate Quote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "newsletters",
+        "columns": ["title", "content", "image_url", "product_id", "published", "created_at"],
+        "schema": "public",
+        "returnAll": false
+      },
+      "id": "saveNewsletter",
+      "name": "Save Newsletter to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "daily_quotes",
+        "columns": ["quote", "newsletter_id", "created_at"],
+        "schema": "public",
+        "returnAll": false
+      },
+      "id": "saveQuote",
+      "name": "Save Quote to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1350, 300]
+    },
+    {
+      "parameters": {
+        "chat_id": "8459911167",
+        "text": "📸 *Imperium Daily Drop*\n\n{{$json.newsletterResponse}}\n\n\"{{$json.quoteResponse}}\"\n\n🧠 [28 Principles](https://mywebsite.com/28principles) • 📰 [Daily Post](https://mywebsite.com/newsletter)",
+        "reply_markup": {
+          "inline_keyboard": [
+            [{"text": "🧠 28 Principles", "url": "https://mywebsite.com/28principles"}, {"text": "📰 Daily Post", "url": "https://mywebsite.com/newsletter"}]
+          ]
+        }
+      },
+      "id": "telegramSend",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1500, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (11 AM)": {
+      "main": [[{"node": "Get Available Products", "type": "main", "index": 0}]]
+    },
+    "Get Available Products": {
+      "main": [[{"node": "Select Products (Logic)", "type": "main", "index": 0}]]
+    },
+    "Select Products (Logic)": {
+      "main": [[{"node": "AI Generate Newsletter", "type": "main", "index": 0}]]
+    },
+    "AI Generate Newsletter": {
+      "main": [[{"node": "AI Generate Quote", "type": "main", "index": 0}]]
+    },
+    "AI Generate Quote": {
+      "main": [[{"node": "Save Newsletter to Supabase", "type": "main", "index": 0}]]
+    },
+    "Save Newsletter to Supabase": {
+      "main": [[{"node": "Save Quote to Supabase", "type": "main", "index": 0}]]
+    },
+    "Save Quote to Supabase": {
+      "main": [[{"node": "Send to Telegram", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {}
+}

@@ -1,0 +1,61 @@
+{
+  "name": "Imperium - Daily Newsletter",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "table": "products",
+        "returnAll": true
+      },
+      "id": "getProducts",
+      "name": "Get Products",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:11434/api/generate",
+        "method": "POST",
+        "sendBody": true,
+        "body": "{\"model\": \"llama3.2\", \"prompt\": \"Write a 2 sentence marketing post about an Imperium apparel product. Pick any product name from: Classic Tee, Hoodie, Sweatpants, Beanie, Snapback.\", \"stream\": false}",
+        "options": {}
+      },
+      "id": "ollama",
+      "name": "Generate Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "chat_id": "8459911167",
+        "text": "📸 *Imperium Daily Drop*\n\n{{$json.response}}\n\n🧠 [28 Principles](https://mywebsite.com/28principles) • 📰 [Daily Post](https://mywebsite.com/newsletter)",
+        "reply_markup": {
+          "inline_keyboard": [
+            [{"text": "🧠 28 Principles", "url": "https://mywebsite.com/28principles"}, {"text": "📰 Daily Post", "url": "https://mywebsite.com/newsletter"}]
+          ]
+        }
+      },
+      "id": "telegram",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node": "Get Products", "type": "main", "index": 0}]]},
+    "Get Products": {"main": [[{"node": "Generate Content", "type": "main", "index": 0}]]},
+    "Generate Content": {"main": [[{"node": "Send Telegram", "type": "main", "index": 0}]]}
+  },
+  "settings": {}
+}

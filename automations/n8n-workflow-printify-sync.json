@@ -1,0 +1,79 @@
+{
+  "name": "Imperium - Printify Inventory Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.printify.com/v1/catalog/products.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PRINTIFY_API_KEY"
+            }
+          ]
+        }
+      },
+      "id": "printifyGetProducts",
+      "name": "Get Products from Printify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const products = $input.first().json;\n\nconst transformedProducts = products.map(product => {\n  const variant = product.variants?.[0] || {};\n  \n  return {\n    printify_id: product.id.toString(),\n    name: product.title,\n    category: mapCategory(product.title),\n    description: product.description || '',\n    price: variant.price ? variant.price / 100 : 0,\n    image_url: product.images?.[0]?.url || '',\n    brand: 'imperium',\n    in_stock: product.variants?.some(v => v.available > 0) || false,\n    printify_variant_id: variant.id?.toString() || ''\n  };\n});\n\nfunction mapCategory(title) {\n  const t = title.toLowerCase();\n  if (t.includes('shirt') || t.includes('tee') || t.includes('t-shirt')) return 'shirts';\n  if (t.includes('hoodie') || t.includes('sweatshirt')) return 'hoodies';\n  if (t.includes('sweat') || t.includes('pants') || t.includes('jogger')) return 'sweats';\n  if (t.includes('beanie')) return 'beanies';\n  if (t.includes('hat') || t.includes('cap') || t.includes('snapback')) return 'hats';\n  return 'shirts';\n}\n\nreturn transformedProducts;"
+      },
+      "id": "transformData",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "table": "products",
+        "columns": ["printify_id", "name", "category", "description", "price", "image_url", "brand", "in_stock", "printify_variant_id", "updated_at"],
+        "schema": "public",
+        "returnAll": false
+      },
+      "id": "supabaseUpsert",
+      "name": "Upsert to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{"node": "Get Products from Printify", "type": "main", "index": 0}]]
+    },
+    "Get Products from Printify": {
+      "main": [[{"node": "Transform Data", "type": "main", "index": 0}]]
+    },
+    "Transform Data": {
+      "main": [[{"node": "Upsert to Supabase", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {}
+}
