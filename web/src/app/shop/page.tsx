@@ -1,0 +1,60 @@
+import type { Metadata } from "next";
+import { ProductShowcase } from "@/components/ProductShowcase";
+
+export const metadata: Metadata = {
+    title: "The Arsenal — Imperium Elite",
+    description: "Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.",
+};
+
+export default function ShopPage() {
+    return (
+        <div className="min-h-screen bg-imperium-bg">
+            {/* Hero */}
+            <div className="relative border-b border-imperium-border pt-[72px] pb-14 text-center overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-imperium-gold/[0.04] rounded-full blur-[80px] pointer-events-none" />
+
+                {/* Background Logo Backdrop */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] select-none pointer-events-none overflow-hidden">
+                    <span className="text-[30rem] font-bold tracking-tighter text-white">I</span>
+                </div>
+
+                <div className="relative container mx-auto px-6">
+                    <div className="inline-flex items-center gap-2.5 mb-5 px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
+                        <span className="text-imperium-gold text-[10px] font-bold tracking-widest uppercase">Limited Production Run</span>
+                    </div>
+
+                    <h1 className="text-3xl md:text-6xl text-white mb-4 leading-tight">
+                        The <span className="font-display italic text-gold-gradient">Arsenal</span>
+                    </h1>
+                    <p className="text-white/40 font-light max-w-sm mx-auto text-xs md:text-sm leading-relaxed">
+                        Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.
+                    </p>
+                </div>
+            </div>
+
+            <ProductShowcase />
+
+            {/* Advanced Business Development */}
+            <div className="py-20">
+                <div className="container mx-auto px-6 max-w-2xl text-center">
+                    <span className="text-[11px] font-bold tracking-widest uppercase text-white/25 block mb-5">For serious operators</span>
+                    <h2 className="text-2xl md:text-3xl text-white mb-4">
+                        Advanced Business <span className="font-display italic text-gold-gradient">Development</span>
+                    </h2>
+                    <p className="text-white/40 font-light text-sm mb-8 leading-relaxed max-w-md mx-auto">
+                        Elite one-on-one strategic consulting for founders and executives ready to operate at the absolute highest level. Limited availability.
+                    </p>
+                    <a
+                        href="https://buy.stripe.com/5kA8wS59OfXGaiL002"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-ghost"
+                    >
+                        Apply — $15,000
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
+}
