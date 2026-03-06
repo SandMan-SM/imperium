@@ -1,0 +1,3 @@
+-- Running migration via psql is not available in this environment.
+-- Use the following command locally (requires psql):
+-- psql "" -f supabase/migrations/001_create_tracking_tables.sql
