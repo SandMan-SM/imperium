@@ -64,7 +64,7 @@ export function NewsletterOptin() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your transmission..."
+                                placeholder="Enter your email for Daily Intelligence..."
                                 className="w-full bg-black/50 border border-imperium-border text-white pl-10 sm:pl-12 pr-24 sm:pr-28 py-3 sm:py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm sm:text-base"
                                 required
                                 disabled={status === "loading" || status === "success"}
