@@ -1,10 +1,25 @@
 # Environments
 venv/
-.env
+env/
+*.env
 
 # Databases
 *.db
 telegram-bot/imperium.db
 
+# Python cache
+__pycache__/
+*.pyc
+telegram-bot/__pycache__/
+telegram-bot/content/__pycache__/
+telegram-bot/handlers/__pycache__/
+telegram-bot/utils/__pycache__/
+
+# Node
+web/node_modules/
+web/.next/
+web/.vercel/
+
 # OS
 .DS_Store
+.DS_Store?

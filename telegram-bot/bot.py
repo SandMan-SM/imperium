@@ -14,7 +14,8 @@ def main():
     validate_config()
     
     # Initialize DB
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.run_until_complete(database.init_db())
     
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
