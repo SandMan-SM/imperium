@@ -137,13 +137,13 @@ function MarqueeRow({ cards, reverse = false }: { cards: Testimonial[]; reverse?
 
 export function Testimonials() {
     return (
-        <section className="relative py-24 overflow-hidden border-t border-imperium-border">
+        <section className="relative py-16 sm:py-24 overflow-hidden border-t border-imperium-border">
             {/* Radial background glow */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-imperium-gold/[0.04] rounded-full blur-[120px]" />
             </div>
 
-            <div className="container mx-auto px-4 max-w-6xl mb-16">
+            <div className="container mx-auto px-4 max-w-6xl mb-12 sm:mb-16">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -151,15 +151,15 @@ export function Testimonials() {
                     transition={{ duration: 0.7 }}
                     className="text-center"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-1 mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5 backdrop-blur-sm">
+                    <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-1 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                        <span className="text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">Live Intelligence Network</span>
+                        <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">Live Intelligence Network</span>
                     </div>
 
-                    <h2 className="text-3xl md:text-5xl font-light tracking-[0.08em] text-white uppercase mb-4">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-[0.08em] text-white uppercase mb-3 sm:mb-4 px-2 sm:px-0">
                         Proof of <span className="text-imperium-gold font-bold">Concept</span>
                     </h2>
-                    <p className="text-gray-400 font-light max-w-lg mx-auto">
+                    <p className="text-gray-400 font-light max-w-lg mx-auto text-sm sm:text-base px-4 sm:px-0">
                         Results don't lie. These are the people who made the decision.
                     </p>
                 </motion.div>

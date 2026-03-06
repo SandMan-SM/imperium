@@ -26,23 +26,23 @@ const PILLARS = [
 
 export function WhyImperium() {
     return (
-        <section className="py-20 bg-imperium-bg relative overflow-hidden px-6">
+        <section className="py-16 sm:py-20 bg-imperium-bg relative overflow-hidden px-4 sm:px-6">
             <div className="container mx-auto max-w-6xl">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.7 }}
-                    className="text-center mb-16"
+                    className="text-center mb-12 sm:mb-16"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-1 mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
+                    <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
                         <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
                         <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">System Architecture</span>
                     </div>
-                    <h2 className="text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-4">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-3 sm:mb-4">
                         Why <span className="text-imperium-gold font-bold" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Imperium?</span>
                     </h2>
-                    <p className="text-white/40 max-w-xl mx-auto font-light text-sm md:text-base">
+                    <p className="text-white/40 max-w-xl mx-auto font-light text-sm sm:text-base px-2 sm:px-0">
                         A uncompromising approach to personal sovereignty and strategic intelligence.
                     </p>
                 </motion.div>

@@ -40,41 +40,41 @@ export function NewsletterOptin() {
     };
 
     return (
-        <section className="w-full py-24 bg-imperium-bg relative overflow-hidden">
+        <section className="w-full py-16 sm:py-24 bg-imperium-bg relative overflow-hidden">
             {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-imperium-gold/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-imperium-gold/5 rounded-full blur-[80px] sm:blur-[120px] pointer-events-none" />
 
             <div className="container mx-auto px-4 max-w-4xl">
-                <div className="bg-imperium-card border border-imperium-border rounded-3xl p-8 md:p-12 backdrop-blur-md relative overflow-hidden">
+                <div className="bg-imperium-card border border-imperium-border rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 backdrop-blur-md relative overflow-hidden">
                     {/* subtle gold accent line */}
 
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-4">
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-3 sm:mb-4">
                             Daily Intelligence
                         </h2>
-                        <p className="text-gray-400 font-light max-w-xl mx-auto">
+                        <p className="text-gray-400 font-light max-w-xl mx-auto text-sm sm:text-base px-2 sm:px-0">
                             Strategic analysis and the 28 Principles delivered directly to your inbox. No noise, just leverage.
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="max-w-md mx-auto relative">
+                    <form onSubmit={handleSubmit} className="max-w-md mx-auto relative px-2 sm:px-0">
                         <div className="relative flex items-center">
-                            <Mail className="absolute left-4 text-imperium-gold/50 w-5 h-5 pointer-events-none" />
+                            <Mail className="absolute left-3 sm:left-4 text-imperium-gold/50 w-4 sm:w-5 h-4 sm:h-5 pointer-events-none" />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your transmission address..."
-                                className="w-full bg-black/50 border border-imperium-border text-white px-12 py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors"
+                                placeholder="Enter your transmission..."
+                                className="w-full bg-black/50 border border-imperium-border text-white pl-10 sm:pl-12 pr-24 sm:pr-28 py-3 sm:py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm sm:text-base"
                                 required
                                 disabled={status === "loading" || status === "success"}
                             />
                             <button
                                 type="submit"
                                 disabled={status === "loading" || status === "success"}
-                                className="absolute right-2 px-6 py-2 bg-white/5 hover:bg-white/10 text-imperium-gold text-sm uppercase tracking-wider font-bold rounded-lg transition-colors border border-imperium-border/50 disabled:opacity-50"
+                                className="absolute right-1.5 sm:right-2 px-4 sm:px-6 py-2 bg-white/5 hover:bg-white/10 text-imperium-gold text-xs sm:text-sm uppercase tracking-wider font-bold rounded-lg transition-colors border border-imperium-border/50 disabled:opacity-50"
                             >
-                                {status === "loading" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Deploy"}
+                                {status === "loading" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Deploy"}
                             </button>
                         </div>
 

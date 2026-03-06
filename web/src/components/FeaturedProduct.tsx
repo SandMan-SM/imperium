@@ -13,10 +13,10 @@ const BENEFITS = [
 
 export function FeaturedProduct() {
     return (
-        <section className="py-20 relative overflow-hidden px-4 md:px-8">
+        <section className="py-16 sm:py-20 relative overflow-hidden px-3 sm:px-4 md:px-8">
             <div className="container mx-auto max-w-6xl">
                 {/* Large Glass Product Card Container */}
-                <div className="glass-card rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-16 lg:p-20 relative overflow-hidden border border-white/[0.08] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.5)]">
+                <div className="glass-card rounded-2xl sm:rounded-[3rem] p-4 sm:p-6 md:p-16 lg:p-20 relative overflow-hidden border border-white/[0.08] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.5)]">
                     <div className="absolute top-0 right-0 w-[600px] h-full bg-gradient-to-l from-imperium-gold/[0.05] to-transparent pointer-events-none" />
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center relative z-10">
@@ -88,20 +88,20 @@ export function FeaturedProduct() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="relative lg:pl-10 order-2 lg:order-2"
+                            className="relative lg:pl-10 order-2 lg:order-2 mt-8 lg:mt-0"
                         >
-                            <div className="relative rounded-[2rem] overflow-hidden bg-black border border-white/5 p-8 md:p-14 shadow-2xl">
-                                <div className="text-center mb-8 md:mb-12">
-                                    <h3 className="text-lg md:text-xl font-bold text-white uppercase tracking-[0.35em] mb-3">Imperium Elite</h3>
-                                    <p className="text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] font-bold">Credential Protocol</p>
+                            <div className="relative rounded-2xl sm:rounded-[2rem] overflow-hidden bg-black border border-white/5 p-6 sm:p-8 md:p-14 shadow-2xl">
+                                <div className="text-center mb-6 sm:mb-8 md:mb-12">
+                                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white uppercase tracking-[0.35em] mb-2 sm:mb-3">Imperium Elite</h3>
+                                    <p className="text-[9px] sm:text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] font-bold">Credential Protocol</p>
                                 </div>
 
-                                <div className="text-center mb-8 md:mb-12">
-                                    <div className="text-6xl md:text-8xl font-light text-white leading-none tracking-tighter">$20</div>
-                                    <div className="text-white/10 text-[8px] md:text-[9px] mt-4 uppercase tracking-[0.35em] font-bold">Standard Monthly Tribute</div>
+                                <div className="text-center mb-6 sm:mb-8 md:mb-12">
+                                    <div className="text-5xl sm:text-6xl md:text-8xl font-light text-white leading-none tracking-tighter">$20</div>
+                                    <div className="text-white/10 text-[7px] sm:text-[8px] md:text-[9px] mt-2 sm:mt-4 uppercase tracking-[0.35em] font-bold">Standard Monthly Tribute</div>
                                 </div>
 
-                                <div className="space-y-3 md:space-y-4 mb-8 md:mb-10">
+                                <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-6 sm:mb-8 md:mb-10">
                                     {BENEFITS.slice(0, 4).map((b, i) => (
                                         <div key={i} className="flex items-center gap-4 text-xs text-white/40 py-4 border-b border-white/5 last:border-0">
                                             <div className="w-1.5 h-1.5 rounded-full bg-white/10" />

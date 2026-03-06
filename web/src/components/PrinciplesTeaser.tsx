@@ -39,7 +39,7 @@ export function PrinciplesTeaser() {
                     </p>
                 </motion.div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 px-2 sm:px-0">
                     {PRINCIPLES_PREVIEW.map((p, i) => (
                         <motion.div
                             key={p.num}
@@ -47,29 +47,29 @@ export function PrinciplesTeaser() {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: i * 0.1 }}
-                            className="group flex gap-6 items-start bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 hover:border-imperium-gold/25 hover:bg-white/[0.04] transition-all duration-500"
+                            className="group flex gap-3 sm:gap-6 items-start bg-white/[0.02] border border-white/[0.06] rounded-lg sm:rounded-xl p-4 sm:p-6 hover:border-imperium-gold/25 hover:bg-white/[0.04] transition-all duration-500"
                         >
-                            <span className="text-3xl font-bold text-imperium-gold/30 group-hover:text-imperium-gold/60 transition-colors font-mono leading-none pt-1 flex-shrink-0 w-12">{p.num}</span>
+                            <span className="text-2xl sm:text-3xl font-bold text-imperium-gold/30 group-hover:text-imperium-gold/60 transition-colors font-mono leading-none pt-0.5 sm:pt-1 flex-shrink-0 w-8 sm:w-12">{p.num}</span>
                             <div>
-                                <h3 className="text-base font-semibold text-white mb-2 tracking-wide group-hover:text-imperium-gold transition-colors duration-300">{p.title}</h3>
-                                <p className="text-sm text-gray-500 font-light leading-relaxed">{p.desc}</p>
+                                <h3 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2 tracking-wide group-hover:text-imperium-gold transition-colors duration-300">{p.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-500 font-light leading-relaxed">{p.desc}</p>
                             </div>
                         </motion.div>
                     ))}
 
                     {/* Locked teaser items */}
                     {[...Array(3)].map((_, i) => (
-                        <div key={`locked-${i}`} className="relative flex gap-6 items-start bg-white/[0.01] border border-white/[0.04] rounded-xl p-6 overflow-hidden">
+                        <div key={`locked-${i}`} className="relative flex gap-3 sm:gap-6 items-start bg-white/[0.01] border border-white/[0.04] rounded-lg sm:rounded-xl p-4 sm:p-6 overflow-hidden">
                             <div className="absolute inset-0 backdrop-blur-[2px] bg-imperium-bg/60 flex items-center justify-center z-10">
-                                <div className="flex items-center gap-3 text-gray-600">
-                                    <Lock className="w-4 h-4" />
-                                    <span className="text-xs uppercase tracking-[0.2em] font-bold">Subscribe to Unlock</span>
+                                <div className="flex items-center gap-2 sm:gap-3 text-gray-600">
+                                    <Lock className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">Subscribe to Unlock</span>
                                 </div>
                             </div>
-                            <span className="text-3xl font-bold text-gray-800 font-mono leading-none pt-1 flex-shrink-0 w-12">0{i + 6}</span>
+                            <span className="text-2xl sm:text-3xl font-bold text-gray-800 font-mono leading-none pt-0.5 sm:pt-1 flex-shrink-0 w-8 sm:w-12">0{i + 6}</span>
                             <div>
-                                <h3 className="text-base font-semibold text-gray-700 mb-2">Classified Principle</h3>
-                                <p className="text-sm text-gray-700 leading-relaxed">This principle is locked behind the Imperium Elite subscription.</p>
+                                <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-1 sm:mb-2">Classified Principle</h3>
+                                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">This principle is locked behind the Imperium Elite subscription.</p>
                             </div>
                         </div>
                     ))}
