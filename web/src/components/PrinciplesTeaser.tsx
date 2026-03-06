@@ -86,10 +86,9 @@ export function PrinciplesTeaser() {
                         href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group relative px-10 py-4 bg-gradient-to-br from-imperium-gold to-[#b38f2d] text-black font-bold uppercase tracking-[0.2em] text-sm rounded-full transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] overflow-hidden"
-                    >
+                        className="group relative inline-flex items-center justify-center px-4 sm:px-10 py-3 sm:py-4 bg-gradient-to-br from-imperium-gold to-[#b38f2d] text-black font-bold uppercase tracking-[0.12em] text-xs sm:text-sm rounded-full transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)] overflow-hidden max-w-full">
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        <span className="relative">Unlock All 28 — $20/month</span>
+                        <span className="relative text-center break-words sm:whitespace-nowrap">Unlock All 28 — $20/month</span>
                     </a>
                     <Link
                         href="/28principles"
