@@ -1,10 +1,12 @@
 # Environments
 venv/
 env/
+.venv/
 *.env
 
 # Databases
 *.db
+*.sqlite
 telegram-bot/imperium.db
 
 # Python cache

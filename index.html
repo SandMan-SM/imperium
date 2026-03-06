@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IMPERIUM ELITE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;600;700;800&display=swap');
+        
+        :root {
+            --gold: #d4af37;
+            --gold-bright: #f1d592;
+            --obsidian: #0a0a0a;
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
+            --gold-glow: rgba(212, 175, 55, 0.1);
+            --led-green: #2ecc71;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% -20%, #1a1a1a, transparent 70%);
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.015em;
+            min-height: 100vh;
+        }
+
+        .header { 
+            text-align: center; 
+            margin-bottom: 0;
+            padding: 50px 20px 45px;
+            border-radius: 32px;
+            background: linear-gradient(to bottom, rgba(5,5,5,0.5), rgba(5,5,5,0.9)), 
+                        url('https://raw.githubusercontent.com/SandMan-SM/imperium/main/banner.jpg') center/cover;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 400px) {
+            .header {
+                padding: 20px 15px 25px;
+                min-height: 180px;
+                border-radius: 24px;
+            }
+        }
+
+        .hero-banner {
+            display: none;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin: 0 0 20px;
+        }
+
+        .imperium-logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 38px;
+            letter-spacing: 16px;
+            text-transform: uppercase;
+            margin: 0;
+            padding-left: 16px;
+            background: linear-gradient(to bottom, #fff5d6 0%, #f1d592 30%, #d4af37 70%, #b38f2d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.6)) drop-shadow(0 0 30px rgba(212, 175, 55, 0.3));
+            animation: gold-shimmer 4s infinite alternate ease-in-out;
+            opacity: 0;
+        }
+
+        @media (max-width: 400px) {
+            .imperium-logo {
+                font-size: 18px;
+                letter-spacing: 6px;
+                padding-left: 6px;
+            }
+            .logo-underline {
+                width: 30px;
+                margin: 6px auto 0;
+            }
+        }
+
+        .logo-underline {
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 16px auto 0;
+            opacity: 0;
+        }
+
+        @keyframes logoFadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes gold-glow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4)); }
+            50% { filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.7)); }
+        }
+
+        .logo-glow {
+            animation: logoFadeIn 0.8s ease-out forwards, gold-glow 3s ease-in-out infinite;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--gold), #b38f2d);
+            color: #000;
+            padding: 16px 24px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: none;
+            width: 100%;
+            max-width: 320px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+            margin-top: 12px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(212, 175, 55, 0.6);
+        }
+
+        .cta-button.granted {
+            background: transparent !important;
+            color: var(--gold) !important;
+            border: 1px solid var(--gold) !important;
+            box-shadow: none !important;
+            cursor: default !important;
+            pointer-events: none !important;
+            padding: 16px 24px;
+            max-width: 320px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 12px;
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        .daily-oath-btn {
+            background: linear-gradient(135deg, var(--gold), #b38f2d);
+            border: none;
+            color: #000;
+            padding: 16px 24px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 320px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .daily-oath-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(212, 175, 55, 0.6);
+        }
+
+        .daily-oath-btn.completed {
+            background: transparent !important;
+            border: 1px solid var(--gold) !important;
+            color: var(--gold) !important;
+            box-shadow: none !important;
+            cursor: default !important;
+            pointer-events: none !important;
+            opacity: 1 !important;
+        }
+
+        .daily-oath-btn.completed:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(212, 175, 55, 0.6);
+        }
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 20px;
+        }
+
+        .cta-button.granted {
+            background: transparent !important;
+            color: var(--gold) !important;
+            border: 1px solid var(--gold) !important;
+            box-shadow: none !important;
+            cursor: default !important;
+            pointer-events: none !important;
+            padding: 16px 24px;
+            max-width: 320px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 12px;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            transition: 0.3s ease;
+        }
+
+        .card.locked { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; }
+        .card:not(.locked) { border-left: 1px solid var(--gold); cursor: pointer; }
+
+        .status-led {
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card.completed .status-led {
+            background: var(--led-green);
+            box-shadow: 0 0 12px var(--led-green);
+            animation: pulse-led 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-led {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        #oathModal, #lessonModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5,5,5,0.98);
+            z-index: 2000;
+            padding: 25px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+        }
+
+        .obsidian-panel {
+            background: var(--obsidian);
+            border: 1px solid var(--gold);
+            border-radius: 32px;
+            padding: 40px 25px;
+            margin-top: 15px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+        }
+
+        .obsidian-panel h1 { color: var(--gold); font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; text-align: center; }
+        .obsidian-panel h2 { color: #fff; font-size: 14px; margin-top: 35px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .obsidian-panel p { line-height: 1.8; color: #999; font-size: 15px; margin-top: 10px; font-weight: 300; }
+        
+        .face-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+        .face-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); padding: 18px; border-radius: 18px; }
+        .face-item strong { color: var(--gold); display: block; margin-bottom: 5px; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .face-item span { font-size: 14px; color: #ccc; font-weight: 300; line-height: 1.5; }
+
+        .directive-box { 
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+            border: 1px solid var(--gold); 
+            padding: 30px 20px; 
+            border-radius: 24px; 
+            color: #fff; 
+            text-align: center;
+            margin: 45px 0 20px;
+        }
+
+        .close-btn { background: none; border: 1px solid var(--border); color: #666; padding: 12px 24px; border-radius: 14px; font-size: 10px; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; }
+
+        .oath-container {
+            max-width: 600px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .oath-mantra {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #fff;
+            font-weight: 400;
+            margin: 30px 0;
+            padding: 40px 30px;
+            border: 1px solid var(--gold);
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .oath-title {
+            font-size: 14px;
+            letter-spacing: 8px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .phase-header {
+            text-align: center;
+            margin: 50px 0 30px;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .phase-label {
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .phase-name {
+            font-size: 28px;
+            font-weight: 200;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            color: #fff;
+        }
+
+        .unit-section {
+            margin-top: 30px;
+        }
+
+        .lesson-item::before {
+            content: "◆";
+            color: var(--gold);
+            font-size: 6px;
+        }
+
+        @media (max-width: 400px) {
+            .cta-button, .daily-oath-btn {
+                padding: 12px 16px;
+                font-size: 10px;
+                max-width: 260px;
+                margin-top: 10px;
+            }
+        }
+
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        #lesson-list {
+            margin-top: 20px;
+            padding: 0 15px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 400px) {
+            #lesson-list {
+                padding: 0 10px;
+            }
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="hero-banner"></div>
+        <div class="logo-container">
+            <h1 id="logo" class="imperium-logo logo-glow">IMPERIUM</h1>
+            <div class="logo-underline"></div>
+        </div>
+        <button id="premium-status" class="cta-button" onclick="handlePayment()">UNLOCK EXCLUSIVE ACCESS</button>
+        
+        <button class="daily-oath-btn" onclick="showOath()">
+            DAILY OATH — CLICK TO BEGIN
+        </button>
+    </div>
+
+    <div id="lesson-list">
+        <!-- PHASE I: IGNITION -->
+        <div class="phase-header">
+            <div class="phase-label">Phase I</div>
+            <div class="phase-name">Ignition</div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-1" onclick="handleCardClick(1)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">01: The Power of Purpose</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Purpose turns scattered effort into focused power that multiplies every action.</p>
+                </div>
+                <div id="status-1" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-2" onclick="handleCardClick(2)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">02: The Rising</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Rebuilding your identity from scratch lets you consciously design the person who wins.</p>
+                </div>
+                <div id="status-2" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-3" onclick="handleCardClick(3)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">03: Three Currencies</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Mastering time, money, and knowledge lets you convert limited resources into unlimited opportunity.</p>
+                </div>
+                <div id="status-3" class="status-led"></div>
+            </div>
+        </div>
+
+        <!-- PHASE II: FOUNDATION -->
+        <div class="phase-header">
+            <div class="phase-label">Phase II</div>
+            <div class="phase-name">Foundation</div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-4" onclick="handleCardClick(4)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">04: Mind is Everything</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Strong systems conserve mental energy and guarantee progress when motivation fades.</p>
+                </div>
+                <div id="status-4" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-5" onclick="handleCardClick(5)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">05: Chaos to Power</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Discipline transforms short bursts of motivation into automatic behaviors that build unstoppable momentum.</p>
+                </div>
+                <div id="status-5" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-6" onclick="handleCardClick(6)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">06: Absolute Ownership</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Radical ownership converts every obstacle into an asset under your control.</p>
+                </div>
+                <div id="status-6" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-7" onclick="handleCardClick(7)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">07: Continuous Growth</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Small, consistent improvements compound into exponential personal and financial growth.</p>
+                </div>
+                <div id="status-7" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-8" onclick="handleCardClick(8)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">08: Price of Ambition</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Ambition becomes power when sacrifice aligns daily actions with long-term vision.</p>
+                </div>
+                <div id="status-8" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-9" onclick="handleCardClick(9)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">09: Unbreakable Confidence</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Confidence built through repeated action creates evidence that silences doubt.</p>
+                </div>
+                <div id="status-9" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-10" onclick="handleCardClick(10)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">10: Mastering Awareness</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Heightened awareness reveals hidden opportunities others overlook.</p>
+                </div>
+                <div id="status-10" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-11" onclick="handleCardClick(11)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">11: Emotional Sovereignty</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Emotional control channels inner energy into strategic, goal-aligned decisions.</p>
+                </div>
+                <div id="status-11" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-12" onclick="handleCardClick(12)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">12: Power of Gratitude</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Gratitude shifts perception, unlocking resilience and sustained optimism.</p>
+                </div>
+                <div id="status-12" class="status-led"></div>
+            </div>
+        </div>
+
+        <!-- PHASE III: EXPANSION -->
+        <div class="phase-header">
+            <div class="phase-label">Phase III</div>
+            <div class="phase-name">Expansion</div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-13" onclick="handleCardClick(13)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">13: Builder's Mindset</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Building strong foundations turns luck into a predictable outcome.</p>
+                </div>
+                <div id="status-13" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-14" onclick="handleCardClick(14)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">14: Law of Attraction</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">An abundance mindset magnetizes people, resources, and possibilities.</p>
+                </div>
+                <div id="status-14" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-15" onclick="handleCardClick(15)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">15: Law of Leverage</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Strategic leverage turns calculated risk into disproportionate reward.</p>
+                </div>
+                <div id="status-15" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-16" onclick="handleCardClick(16)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">16: Inner Circle</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Proximity to excellence accelerates growth beyond solo effort.</p>
+                </div>
+                <div id="status-16" class="status-led"></div>
+            </div>
+        </div>
+
+        <!-- PHASE IV: MASTERY -->
+        <div class="phase-header">
+            <div class="phase-label">Phase IV</div>
+            <div class="phase-name">Mastery</div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-17" onclick="handleCardClick(17)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">17: Strategy</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Clear strategy converts raw ambition into precise, executable advantage.</p>
+                </div>
+                <div id="status-17" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-18" onclick="handleCardClick(18)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">18: The Secret</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Exclusivity increases perceived value and deepens commitment.</p>
+                </div>
+                <div id="status-18" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-19" onclick="handleCardClick(19)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">19: SPIN Selling</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Structured questioning guides others to convince themselves.</p>
+                </div>
+                <div id="status-19" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-20" onclick="handleCardClick(20)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">20: Reciprocity</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Generosity creates invisible contracts that return multiplied value.</p>
+                </div>
+                <div id="status-20" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-21" onclick="handleCardClick(21)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">21: Strategic Silence</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Silence applied strategically shifts power without force.</p>
+                </div>
+                <div id="status-21" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-22" onclick="handleCardClick(22)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">22: The Mask</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Controlled perception protects influence while preserving authenticity.</p>
+                </div>
+                <div id="status-22" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-23" onclick="handleCardClick(23)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">23: Art of War</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Mastering conflict and leadership aligns others to execute your vision.</p>
+                </div>
+                <div id="status-23" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-24" onclick="handleCardClick(24)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">24: The Alchemist</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Adaptive cunning turns uncertainty into opportunity.</p>
+                </div>
+                <div id="status-24" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-25" onclick="handleCardClick(25)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">25: Enlightenment</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Inner alignment with higher principles creates unshakable peace and clarity.</p>
+                </div>
+                <div id="status-25" class="status-led"></div>
+            </div>
+        </div>
+
+        <!-- PHASE V: LEGACY -->
+        <div class="phase-header">
+            <div class="phase-label">Phase V</div>
+            <div class="phase-name">Legacy</div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-26" onclick="handleCardClick(26)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">26: While You're Here</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Intentional planning today transforms present effort into lasting impact.</p>
+                </div>
+                <div id="status-26" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-27" onclick="handleCardClick(27)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">27: When You're Gone</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Structured legacy systems allow your influence to outlive your presence.</p>
+                </div>
+                <div id="status-27" class="status-led"></div>
+            </div>
+        </div>
+
+        <div class="unit-section">
+            <div class="card locked" id="card-28" onclick="handleCardClick(28)">
+                <div class="card-info">
+                    <h3 style="color:var(--gold); font-size: 16px; font-weight: 700;">28: The Mentor</h3>
+                    <p style="font-size: 12px; opacity: 0.6; margin-top: 4px;">Teaching others multiplies your knowledge into generational wealth and impact.</p>
+                </div>
+                <div id="status-28" class="status-led"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAILY OATH MODAL -->
+    <div id="oathModal">
+        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <button class="close-btn" onclick="closeOath()">CLOSE</button>
+        </div>
+        <div class="oath-container">
+            <div class="oath-title">The Imperium Oath</div>
+            <div class="oath-mantra">
+                Today I rise with purpose.<br><br>
+                I am the architect of my destiny.<br><br>
+                I will act with discipline, think with clarity, and serve with excellence.<br><br>
+                My potential is unlimited.<br><br>
+                My focus is absolute.<br><br>
+                Super Mortem.
+            </div>
+            <button class="cta-button" onclick="confirmOath()">I ACCEPT THIS OATH</button>
+        </div>
+    </div>
+
+    <!-- LESSON MODAL -->
+    <div id="lessonModal">
+        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <button class="close-btn" onclick="closeLesson()">CLOSE BRIEFING</button>
+        </div>
+        <div id="lessonContent"></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const SUPABASE_URL = 'https://odvxtychuxxsudfpcqqs.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kdnh0eWNodXh4c3VkZnBjcXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MjkzMjQsImV4cCI6MjA4NzUwNTMyNH0.Ka-pmRzzDwAoTFNbkuvZqtWJMefrtM0pypIr_dZ6lYA';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const userId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id.toString() : null;
+        let userProfile = null;
+        let oathCompletedToday = false;
+        const today = new Date().toDateString();
+
+        const lessons = {
+            1: {
+                title: "UNIT 01: THE POWER OF PURPOSE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 01: THE POWER OF PURPOSE</h1>
+                        
+                        <h2>01. Being Open-Minded</h2>
+                        <p>To upgrade your life, you must first dismantle your current ego. Your results are a direct reflection of your beliefs. Radical open-mindedness is the strategic ability to delete outdated data the second superior information arrives. The man who refuses to learn is the man who refuses to grow.</p>
+                        
+                        <h2>02. The 5 Faces of Purpose</h2>
+                        <p>Most fail because they vibrate on someone else's "Why." Identify which of these archetypes anchors your biological drive:</p>
+                        
+                        <div class="face-grid">
+                            <div class="face-item"><strong>Service</strong><span>The necessity to solve massive problems for others. Your value is determined by the problems you solve.</span></div>
+                            <div class="face-item"><strong>Creation</strong><span>The divine urge to build things that didn't exist before you. Creators leave marks on reality.</span></div>
+                            <div class="face-item"><strong>Knowledge</strong><span>The obsession with mastery and uncovering hidden truths. Knowledge is power when applied.</span></div>
+                            <div class="face-item"><strong>Growth</strong><span>The fanatical pursuit of your own biological optimization. You are your greatest investment.</span></div>
+                            <div class="face-item"><strong>Legacy</strong><span>The construction of influence that outlives your name. True immortality through impact.</span></div>
+                        </div>
+
+                        <h2>03. Understanding Your "Why"</h2>
+                        <p>Your "Why" is your psychological armor. In the dark phases of growth, discipline will fail you, but your "Why" will sustain you. It is the fuel that makes the sacrifice feel like a privilege. When everything is against you, your Why becomes your only reason to continue.</p>
+
+                        <h2>04. The Importance of a Purpose Statement</h2>
+                        <p>A Purpose Statement is your ultimate decision-making tool. It is a filter that automatically says "No" to 99% of the world's noise, protecting your finite time for the 1% that matters. Without a purpose statement, you are reactive. With one, you are proactive.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Synthesize your why and your pillar into one absolute sentence. This is your primary directive.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(1)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            2: {
+                title: "UNIT 02: THE RISING (REBIRTH)",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 02: THE RISING (REBIRTH)</h1>
+                        
+                        <h2>01. Forget What You Know</h2>
+                        <p>The first step to transformation is surrender. You cannot fill a cup that is already full. To become more, you must release who you were. The ego fights this because it fears death—but your old self must die for your new self to be born. Empty yourself to become everything.</p>
+                        
+                        <h2>02. Identity</h2>
+                        <p>You will never act consistently with your aspirations, only with your identity. Identity is the foundation of all behavior change. If you see yourself as a loser, you will behave like one. If you see yourself as an Imperium-level performer, your actions will align. Define who you are BEFORE you define what you do.</p>
+
+                        <h2>03. Affirmations</h2>
+                        <p>Affirmations are not magic—they are programming. Your subconscious mind believes what you repeat to it. Daily affirmations rewire neural pathways. But they must be BELIEVED to be effective. Fake it until you make it is real neuroscience. Say it until you feel it. Feel it until you become it.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Write 5 new identity affirmations. Begin each with "I am..."</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(2)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            3: {
+                title: "UNIT 03: THE THREE CURRENCIES OF LIFE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 03: THE THREE CURRENCIES OF LIFE</h1>
+                        
+                        <h2>01. Time | Money | Knowledge</h2>
+                        <p>These are the three currencies of life—and only one is truly renewable. Time is the only currency you cannot earn back. Every second spent is gone forever. Money is a tool, not a master. Knowledge is power compound. The wise invest in knowledge because it multiplies their effectiveness with time.</p>
+                        
+                        <h2>02. How to Leverage the Three Currencies</h2>
+                        <p>The masters understand: Time is leverage when used to acquire knowledge. Money is leverage when used to buy time. Knowledge is leverage when applied to multiply both. Stop trading time for money exclusively. Start trading time for knowledge. The highest ROI investment is always in yourself.</p>
+
+                        <h2>03. Where to Find Knowledge</h2>
+                        <p>Knowledge is abundant. The barrier is not access—it is application. Books, mentors, courses, experiences, failures, reflections. The information age has made knowledge the cheapest currency. What separates the successful from the unsuccessful is not knowledge acquisition—it is knowledge execution.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one knowledge gap blocking your growth. Find a resource to fill it within 7 days.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(3)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            4: {
+                title: "UNIT 04: THE MIND IS EVERYTHING",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 04: THE MIND IS EVERYTHING</h1>
+                        
+                        <h2>01. Preservation of Energy</h2>
+                        <p>Your energy is your most valuable resource. Every interaction, decision, and thought depletes it. The elite preserve energy through boundaries, routines, and strategic indifference to things outside their control. Protect your energy like your life depends on it—because it does.</p>
+                        
+                        <h2>02. The Chains of Habit</h2>
+                        <p>"The chains of habit are too light to be felt until they are too heavy to be broken." Small habits create massive trajectories. Good habits build momentum. Bad habits build prisons. You don't rise to the level of your goals—you fall to the level of your systems. Design your environment for the person you want to become.</p>
+
+                        <h2>03. A Man Doesn't Fall to the Level of His Goals</h2>
+                        <p>Goals without systems are just wishes. A man with ambitious goals but poor systems will always underperform. The goal is the destination, but the system is the vehicle. Build systems that make success inevitable. Focus on the process, not the prize.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Design your environment for success. Remove friction from good habits, add friction to bad ones.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(4)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            5: {
+                title: "UNIT 05: CHAOS TO POWER",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 05: CHAOS TO POWER</h1>
+                        
+                        <h2>01. Motivation → Discipline → Habit</h2>
+                        <p>Motivation is emotion—and emotions are temporary. Discipline is choice when motivation fails. Habit is automatic behavior. The progression is: Motivation gets you started, Discipline keeps you going, Habit makes you unstoppable. Most people stay at level one. The elite advance to level three.</p>
+                        
+                        <h2>02. How This Builds Discipline</h2>
+                        <p>Discipline is a muscle. Every time you do what you should when you don't want to, you strengthen it. The chaos of life is the forge where discipline is forged. You don't build character in comfort—you build it in chaos. Embrace the struggle. The pain of discipline is always less than the pain of regret.</p>
+
+                        <h2>03. The Power of Identity Association</h2>
+                        <p>You become the average of the five people you spend the most time with. Choose your circle wisely. Associations shape identity. If you surround yourself with excellence, excellence becomes normal. If you surround yourself with mediocrity, mediocrity becomes acceptable. Choose your influences.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Audit your inner circle. Who is elevating you? Who is pulling you down?</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(5)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            6: {
+                title: "UNIT 06: ABSOLUTE OWNERSHIP",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 06: ABSOLUTE OWNERSHIP</h1>
+                        
+                        <h2>01. The Intelligence Trap</h2>
+                        <p>Smart people often fail because they overthink. Analysis paralysis is real. The intelligence trap is using intelligence as an excuse for inaction. Thinking too much about risk prevents risk-taking. Sometimes you must act on 80% information and adjust. Perfect is the enemy of progress.</p>
+                        
+                        <h2>02. Taking Responsibility</h2>
+                        <p>Victims blame. Leaders take responsibility. 100% ownership of your life means zero excuses. External circumstances don't determine your destiny—your response to them does. When you take full responsibility, you gain full control. There is no one to blame, so there is nothing stopping you.</p>
+
+                        <h2>03. The Art of Hustling</h2>
+                        <p>A CEO's #1 job is exposure. Not working in the business—but working on the business. Getting the product, service, or message in front of the right people. Hustle is the bridge between ambition and achievement. Without exposure, even the best product fails. Your job is to be seen.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one area where you've blamed external factors. Take 100% ownership today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(6)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            7: {
+                title: "UNIT 07: CONTINUOUS GROWTH",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 07: CONTINUOUS GROWTH</h1>
+                        
+                        <h2>01. 1% Better Each Day</h2>
+                        <p>The #1 investment is yourself. 1% improvement daily leads to 37x improvement annually. Compound growth is the most powerful force in the universe. Small consistent actions create massive results over time. The key is consistency, not intensity. Show up every day and get 1% better.</p>
+                        
+                        <h2>02. Long-Term Exposure</h2>
+                        <p>Short-term thinking leads to short-term results. Long-term exposure builds empires. The market rewards patience. Relationships deepen over time. Skills compound with practice. Think in decades, not days. The rich get richer because they think in longer timeframes.</p>
+
+                        <h2>03. Permanent Relationships</h2>
+                        <p>Relationships are the ultimate ROI. Invest in people who invest in you. Quality relationships are lifetime assets. Build a network of high-performers who push you higher. Your network is your net worth—not just financially, but emotionally and intellectually.</p>
+
+                        <h2>04. Mind, Body, and Spirit</h2>
+                        <p>Total optimization requires growth in all three dimensions. Mind: continuous learning. Body: physical excellence. Spirit: purpose and meaning. Neglect any one and you create a ceiling. The elite pursue holistic development. Fortify all three pillars.</p>
+
+                        <h2>05. Compound Growth (Investing)</h2>
+                        <p>Money multiplied over time creates wealth. The earlier you start, the more time works for you. Compound interest is the eighth wonder of the world. But the greatest compound growth is in yourself—your skills, your knowledge, your capabilities.</p>
+
+                        <h2>06. Warren Buffett's $30 → $10K Principle</h2>
+                        <p>Warren Buffett's rule: Don't save what's left after spending—spend what's left after saving. Automate your savings. Start with 30 dollars. Invest consistently. Let time work. In 40 years, discipline becomes fortune. The principle is simple: consistent small deposits create massive wealth.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Set up automated investment in yourself: 1 hour daily for learning, 30 minutes for body, 15 minutes for reflection.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(7)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            8: {
+                title: "UNIT 08: THE PRICE OF AMBITION",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 08: THE PRICE OF AMBITION</h1>
+                        
+                        <h2>01. Fostering Positive Ambition Through Purpose</h2>
+                        <p>Ambition without purpose becomes greed. Ambition aligned with purpose becomes legacy. The difference between obsession and drive is the "Why." When your ambition serves something greater than yourself, it becomes sustainable. Purpose transforms ambition from selfish to noble.</p>
+                        
+                        <h2>02. Sacrifice and Obedience</h2>
+                        <p>Success requires sacrifice. You cannot have it all—you can only have what you prioritize. Sacrifice is the transaction. Obedience to your higher purpose is the commitment. The elite say no to good opportunities to say yes to great ones. Sacrifice is temporary. Regret is forever.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one sacrifice you're willing to make to achieve your purpose.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(8)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            9: {
+                title: "UNIT 09: UNBREAKABLE CONFIDENCE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 09: UNBREAKABLE CONFIDENCE</h1>
+                        
+                        <h2>01. Delusional Belief in Your Own Capabilities</h2>
+                        <p>Confidence that borders on delusion is the mark of high performers. The world doesn't believe in you until you believe in yourself first. Self-doubt is a self-fulfilling prophecy. Belief creates reality. Think you're unstoppable? You become it. The gap between where you are and where you want to be is closed by belief.</p>
+                        
+                        <h2>02. Build Confidence Through Action</h2>
+                        <p>Confidence is built, not born. Every victory—no matter how small—adds to your confidence bank. Action creates evidence. Evidence creates belief. Start with small wins. Build momentum. The more you do, the more you know you can do. Confidence follows competence.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Complete one action today that builds evidence of your capability.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(9)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            10: {
+                title: "UNIT 10: MASTERING AWARENESS",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 10: MASTERING AWARENESS</h1>
+                        
+                        <h2>01. Practice Makes Perfect</h2>
+                        <p>Mastery is not born—it is earned through repetition. 10,000 hours of deliberate practice creates experts. But practice must be deliberate: focused, intentional, with feedback. Blind repetition without reflection is wasted time. Practice with purpose. Perfect practice makes perfect.</p>
+                        
+                        <h2>02. Flow State (Thoth)</h2>
+                        <p>Flow is the state of optimal performance. Time disappears. Effort becomes effortless. The ancient Egyptians worshipped Thoth—the god of knowledge and mastery. Flow is modern Thoth: the union of skill and challenge. Find the edge where flow lives.</p>
+
+                        <h2>03. Everything You Need Is Already Around You</h2>
+                        <p>The answers exist. You already have what you need. Resources, opportunities, and possibilities surround you. The obstacle is not lack—it's recognition. Train your eyes to see what others miss. The treasure is in your own backyard.</p>
+
+                        <h2>04. Perspective vs Perception</h2>
+                        <p>Perception is how you see the world. Perspective is how you interpret it. Your perception might be accurate, but your perspective shapes your reality. Change your perspective, change your life. The same event can destroy or elevate—depending on your frame.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Practice deliberate focus. Enter flow state for 30 minutes today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(10)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            11: {
+                title: "UNIT 11: EMOTIONAL SOVEREIGNTY",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 11: EMOTIONAL SOVEREIGNTY</h1>
+                        
+                        <h2>01. Turn Emotions Into Productive Actions</h2>
+                        <p>Emotions are fuel—not the driver. Feel everything, but steer with logic. Anger can fuel determination. Fear can fuel caution. Joy can fuel generosity. Don't suppress emotions—direct them. Emotional sovereignty means feeling fully but acting intentionally.</p>
+                        
+                        <h2>02. Emotional Intelligence</h2>
+                        <p>EQ is the ability to recognize, understand, and manage emotions—yours and others'. High EQ means empathy plus boundaries. It means reading rooms, handling conflicts, and leading with emotional intelligence. IQ gets you hired. EQ gets you promoted.</p>
+
+                        <h2>03. Detachment</h2>
+                        <p>Detachment is not indifference—it is emotional independence. Detach from outcomes. Attach to processes. You control effort, not results. Detachment from results reduces anxiety. Attachment to excellence drives performance. Master the art of trying hard while letting go.</p>
+
+                        <h2>04. Self-Awareness</h2>
+                        <p>Know your triggers. Know your patterns. Self-awareness is the foundation of self-mastery. What makes you react? What pushes your buttons? Awareness precedes change. Track your emotional landscape like you track your finances.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Journal your emotional triggers for 7 days. Build your self-awareness.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(11)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            12: {
+                title: "UNIT 12: THE POWER OF GRATITUDE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 12: THE POWER OF GRATITUDE</h1>
+                        
+                        <h2>01. Adopting a Positive Mindset</h2>
+                        <p>Gratitude rewires the brain for positivity. The brain is a prediction machine—it sees what it expects to see. Train your brain to expect abundance. Gratitude attracts more to be grateful for. What you appreciate appreciates. Train your mind to find the gift in every situation.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Write 3 things you're grateful for every morning for 30 days.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(12)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            13: {
+                title: "UNIT 13: THE BUILDER'S MINDSET",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 13: THE BUILDER'S MINDSET</h1>
+                        
+                        <h2>01. Definition of Luck</h2>
+                        <p>Luck is when preparation meets opportunity. There is no such thing as pure luck. The "lucky" are the ones who positioned themselves to receive. Create your own luck through action, visibility, and readiness. Luck follows those who chase it—but preparation makes the chase worthwhile.</p>
+                        
+                        <h2>02. Building Foundations</h2>
+                        <p>Before you build high, dig deep. Foundations determine heights. Cut corners now, pay later. The elite invest in foundations. Build your infrastructure before you scale. Solid foundations survive storms. Weak ones collapse under pressure.</p>
+
+                        <h2>03. Bringing People Up With You</h2>
+                        <p>Crabs in a bucket pull each other down. Leaders pull others up. The greatest leaders create more leaders. Lift as you climb. Your legacy is not what you achieve—it's who you elevate. Generosity creates reciprocity. Help others and the universe helps you.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one person you can lift up this week. Take action.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(13)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            14: {
+                title: "UNIT 14: THE LAW OF ATTRACTION",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 14: THE LAW OF ATTRACTION</h1>
+                        
+                        <h2>01. People Love Confidence</h2>
+                        <p>Confidence is attractive. Insecurity repels. People are drawn to those who carry themselves with certainty. Not arrogance—confidence. The middle ground: quiet certainty. Confidence signals competence. It attracts opportunities. Fake it until you become it.</p>
+                        
+                        <h2>02. The Lure of Mystery</h2>
+                        <p>Say less, reveal more. Mystery creates intrigue. When you give everything away, you become predictable. Leave room for curiosity. The unknown is more compelling than the known. Be the question, not the answer.</p>
+
+                        <h2>03. The Abundance Mindset</h2>
+                        <p>Scarcity thinking creates scarcity reality. Abundance mindset creates abundance opportunities. There is enough for everyone. When you operate from scarcity, you compete. When you operate from abundance, you create. Choose abundance.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Practice strategic silence in one conversation today. Listen more than you speak.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(14)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            15: {
+                title: "UNIT 15: THE LAW OF LEVERAGE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 15: THE LAW OF LEVERAGE</h1>
+                        
+                        <h2>01. Risk and Reward</h2>
+                        <p>No risk, no reward. But intelligent risk is not blind gambling—it's calculated exposure. The greater the risk, the greater the potential reward. The elite understand risk-reward ratios. They take bets where upside far exceeds downside.</p>
+                        
+                        <h2>02. The Butterfly Effect</h2>
+                        <p>Small actions create massive consequences. One conversation changes a life. One decision alters a destiny. The butterfly effect reminds us: everything matters. Your smallest actions ripple outward. Be intentional with your inputs.</p>
+
+                        <h2>03. The Power of Momentum</h2>
+                        <p>Momentum is the force multiplier. Starting is hard. Keeping going is easier. Once momentum builds, the universe cooperates. Momentum creates its own gravity. The key is getting started and not stopping. Push through the friction zone.</p>
+
+                        <h2>04. Make Your Money Work for You</h2>
+                        <p>Work for money, or money works for you. Passive income, investments, assets that appreciate. The goal is financial independence—money generating money. Make your capital multiply. Let money be the employee, not the employer.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one area where you can apply leverage today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(15)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            16: {
+                title: "UNIT 16: THE INNER CIRCLE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 16: THE INNER CIRCLE</h1>
+                        
+                        <h2>01. The Principle of Proximity</h2>
+                        <p>You become who you surround yourself with. Proximity is invisible influence. Your environment shapes your thinking, behavior, and outcomes. Choose your environments deliberately. Spend time where success lives. Proximity is destiny.</p>
+                        
+                        <h2>02. Explosive Growth (Bulgarian Horses)</h2>
+                        <p>The Bulgarian horse story: horses trained alone performed poorly. Horses trained together pushed each other to极限. The group dynamic elevates performance. Isolation limits growth. Community accelerates it. Find your pack.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Seek out one high-performer community to join this month.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(16)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            17: {
+                title: "UNIT 17: STRATEGY",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 17: STRATEGY</h1>
+                        
+                        <h2>01. Using These Strategies as Your Tools</h2>
+                        <p>Strategy without execution is fantasy. Execution without strategy is chaos. The 28 principles are your tools. Learn when to use each. Strategy is the intelligent application of knowledge. It's not about knowing more—it's about applying what you know better.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Choose one principle to apply strategically this week.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(17)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            18: {
+                title: "UNIT 18: THE SECRET",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 18: THE SECRET</h1>
+                        
+                        <h2>01. Making People Feel Exclusive</h2>
+                        <p>Exclusivity creates value. Everyone wants to feel special. The secret to influence: make people feel like they're part of something exclusive. VIP treatment, insider information, personal attention. Exclusivity creates loyalty. Give people the feeling of being chosen.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Make one person feel exclusive today with personalized attention.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(18)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            19: {
+                title: "UNIT 19: SPIN SELLING",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 19: SPIN SELLING</h1>
+                        
+                        <h2>01. Get Information</h2>
+                        <p>Before you sell, understand. Ask questions. Listen more than you talk. Information is power. The more you know about the prospect's situation, the better you can position your solution. Discovery precedes persuasion.</p>
+                        
+                        <h2>02. Make It Obvious</h2>
+                        <p>Obvious beats clever. Make the value crystal clear. Reduce friction to understanding. When it's obvious, decision is easy. Don't make them work to understand—make it obvious why they need this.</p>
+
+                        <h2>03. Get Commitment</h2>
+                        <p>Ask for the sale. Always. The unasked question receives no answer. Commitment is incremental: small yeses lead to big yeses. Build momentum. Close with confidence. Ask, ask, ask.</p>
+
+                        <h2>04. AIWL Effect</h2>
+                        <p>Alice in Wonderland: Loop them in emotion, plant ideas while confused. Keep them chasing the next answer. Confusion creates commitment. The deeper they go, the harder it is to leave.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Apply SPIN in your next sales conversation.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(19)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            20: {
+                title: "UNIT 20: PRINCIPLE OF RECIPROCITY",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 20: PRINCIPLE OF RECIPROCITY</h1>
+                        
+                        <h2>01. Give and They Give Back</h2>
+                        <p>Reciprocity is universal. Give value first, without expectation. The universe reciprocates. Not always from the same source, but reciprocates nonetheless. Give generously. The more you give, the more returns to you. This is not magic—it's psychology and law.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Give value to someone without expecting anything in return today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(20)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            21: {
+                title: "UNIT 21: STRATEGIC SILENCE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 21: STRATEGIC SILENCE</h1>
+                        
+                        <h2>01. Choosing to Speak Is an Action</h2>
+                        <p>Words are actions. Every word spoken has impact. Choose wisely. Silence is also action—or inaction. In negotiations, silence creates pressure. In conversation, silence invites depth. Not every moment requires your voice.</p>
+                        
+                        <h2>02. The Power of Saying No</h2>
+                        <p>No is a complete sentence. No protects your time, energy, and focus. Yes to everything is yes to nothing. Strategic no creates space for strategic yes. The powerful word is no. Use it wisely. Use it often.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Practice strategic silence. Listen more than you speak in one conversation today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(21)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            22: {
+                title: "UNIT 22: THE MASK",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 22: THE MASK</h1>
+                        
+                        <h2>01. Public, Private, and Secret Life</h2>
+                        <p>The mask is strategy. Public: what you show the world. Private: what you share with trusted few. Secret: what you keep only to yourself. Different audiences require different faces. The mask is not deception—it's adaptation. Know when to wear which.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Audit your different faces. Are you authentic in each context?</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(22)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            23: {
+                title: "UNIT 23: THE ART OF WAR",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 23: THE ART OF WAR</h1>
+                        
+                        <h2>01. TAO</h2>
+                        <p>The Art of War, by Sun Tzu, is the ultimate strategic text. Know yourself, know your enemy. Win all battles without fighting. The greatest victory is won without battle. Strategy over force. Outthink, don't just outfight.</p>
+                        
+                        <h2>02. Generals</h2>
+                        <p>Generals lead armies. Your teams, your family, your life. Leaders are generals. The general's job is strategy, not manual labor. Delegate, direct, decide. Lead from above the fray. Be the general your troops need.</p>
+
+                        <h2>03. Recruiting to Your Cause</h2>
+                        <p>Leaders recruit. The best recruiters inspire, not just incentivize. People join causes, not companies. Paint the vision. Make the mission compelling. Recruit those who believe what you believe.</p>
+
+                        <h2>04. Leadership</h2>
+                        <p>Leadership is service. Leaders eat last. Put others first. Lead by example. Be the standard. Great leaders make other leaders. Your job is to make yourself unnecessary—build leaders who can replace you.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Lead by example in one area today. Be the standard.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(23)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            24: {
+                title: "UNIT 24: THE ALCHEMIST",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 24: THE ALCHEMIST</h1>
+                        
+                        <h2>01. Sweet, Cunning, and Ruthless</h2>
+                        <p>The alchemist transforms base into gold. Sweet: charm and warmth. Cunning: intelligence and strategy. Ruthless: willingness to do what's necessary. All three in balance. Too sweet, you're manipulated. Too ruthless, you're isolated. Too cunning, you're suspected. Master all three.</p>
+                        
+                        <h2>02. Luck and Coincidences</h2>
+                        <p>The alchemist creates luck. Recognize opportunities disguised as coincidences. When luck meets preparation, magic happens. Create your own luck by being in the right place, with the right people, at the right time. Prepare for luck.</p>
+
+                        <h2>03. Moving with the Universe</h2>
+                        <p>Flow with reality, not against it. The alchemist doesn't fight the current—uses it. Read the energy. Adapt. Surrender to what's bigger than you. Work with the universe, not against it. Harmony creates ease.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Practice flow. Adapt to one situation instead of resisting it.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(24)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            25: {
+                title: "UNIT 25: ENLIGHTENMENT",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 25: ENLIGHTENMENT</h1>
+                        
+                        <h2>01. Inner Peace Through Love and Knowledge</h2>
+                        <p>Enlightenment is not escape—it's integration. Inner peace comes from loving what is and knowing your place in the universe. Not knowledge of facts—knowledge of self. Love for all beings. The highest state combines both.</p>
+                        
+                        <h2>02. Connection with Source</h2>
+                        <p>Source is whatever is greater than you—universe, God, energy, consciousness. Connect daily. Prayer, meditation, nature. This connection grounds you. Returns you to center. Reminds you that you are part of something larger.</p>
+
+                        <h2>03. Ascended Teachings (Buddha)</h2>
+                        <p>The Buddha taught: suffering comes from attachment. Release attachment to outcomes. Embrace impermanence. The eightfold path: right view, intention, speech, action, livelihood, effort, mindfulness, concentration. Ancient wisdom for modern mastery.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Connect with source through 15 minutes of silence today.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(25)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            26: {
+                title: "UNIT 26: WHILE YOU'RE HERE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 26: WHILE YOU'RE HERE</h1>
+                        
+                        <h2>01. What Do You Want to Be Remembered For?</h2>
+                        <p>Legacy is the question that outlasts all others. When you're gone, what remains? Not what you achieved—but who you elevated. What you created. What you changed. Define your legacy now, while you can still shape it.</p>
+                        
+                        <h2>02. Don't Wait for Change—Make It Happen</h2>
+                        <p>Waiting is the enemy of destiny. Change doesn't come—it's created. The future is not predicted—it's built. Don't hope for better. Build better. Your hands shape your future. Stop waiting. Start building.</p>
+
+                        <h2>03. Leverage Through Life Insurance</h2>
+                        <p>Life insurance is legacy leverage. When you're gone, your family is protected. The death of risk. Use insurance as strategic asset. Protect what you love. Build a safety net that outlives you.</p>
+
+                        <h2>04. The Power of Investing Now</h2>
+                        <p>Time in the market beats timing the market. The power of now. Compound needs time. Start now. Not tomorrow. Not next month. Now. Every day delayed is money lost. The best time to start was yesterday. The second best time is now.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Write your legacy statement in one sentence.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(26)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            27: {
+                title: "UNIT 27: WHEN YOU'RE GONE",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 27: WHEN YOU'RE GONE</h1>
+                        
+                        <h2>01. Setting Up Your Trust</h2>
+                        <p>Trusts protect legacy. Avoid probate. Direct asset distribution. Protect your family from legal battles. Set up trust while you're here. Let your wealth serve your loved ones according to YOUR wishes, not courts.</p>
+                        
+                        <h2>02. AGI Legacy Model</h2>
+                        <p>The future is AGI (Artificial General Intelligence). Your legacy can live on through your ideas encoded in AI. Teach the machine what you know. Create digital immortality. Your wisdom, amplified and eternal.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Start the estate planning conversation. Consult a professional.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(27)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            },
+            28: {
+                title: "UNIT 28: THE MENTOR",
+                content: `
+                    <div class="obsidian-panel">
+                        <h1>UNIT 28: THE MENTOR</h1>
+                        
+                        <h2>01. "If You Want to Make Money, Grow Rice. If You Want to Create Generational Wealth, Grow People."</h2>
+                        <p>The greatest legacy is not money—it's people. Grow rice, you eat once. Grow people, you eat forever. Invest in others. Mentor aggressively. Your knowledge dies with you unless you pass it on. Transfer your wisdom. Multiply your impact.</p>
+                        
+                        <h2>02. Time to Teach What You've Learned</h2>
+                        <p>Teaching is the final principle. You have learned 28 principles. Now teach them. The best way to learn is to teach. Share your journey. Elevate others. The mentor becomes the legacy. Imperium continues through those you raise.</p>
+
+                        <div class="directive-box">
+                            <span style="color:var(--gold); font-size: 10px; letter-spacing: 4px; font-weight: 800; display: block; margin-bottom: 12px; opacity: 0.8;">ACTION REQUIRED</span>
+                            <p style="color:#fff; margin:0; font-size: 16px; font-weight: 400; line-height: 1.5;">Identify one person to mentor. Start the conversation.</p>
+                        </div>
+
+                        <button class="cta-button" style="margin-top:20px;" onclick="completeUnit(28)">SYNCHRONIZE PROGRESS</button>
+                    </div>
+                `
+            }
+        };
+
+        async function initImperium() {
+            const numericUserId = Number(userId);
+            console.log("Loading profile for ID:", numericUserId);
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('telegram_id', numericUserId)
+                .single();
+
+            if (error) {
+                console.error("Profile Load Error:", error.message);
+                return;
+            }
+
+            if (data) {
+                console.log("Profile Found! Premium Status:", data.is_premium);
+                userProfile = data;
+                
+                if (data.is_premium === true) {
+                    document.body.classList.add('premium-unlocked');
+                    unlockUnits();
+                }
+
+                if (data.completed_units && Array.isArray(data.completed_units)) {
+                    data.completed_units.forEach(id => {
+                        const card = document.getElementById(`card-${id}`);
+                        if (card) card.classList.add('completed');
+                    });
+                }
+
+                if (data.oath_date === today) {
+                    oathCompletedToday = true;
+                    updateOathUI();
+                }
+            } else {
+                await supabaseClient.from('profiles').insert([
+                    { telegram_id: numericUserId, username: tg.initDataUnsafe.user?.username || 'Seeker' }
+                ]);
+            }
+        }
+
+        function unlockUnits() {
+            const btn = document.getElementById('premium-status');
+            btn.innerText = "EXCLUSIVE ACCESS ACTIVE";
+            btn.classList.add('granted');
+            btn.onclick = null;
+            for (let i = 1; i <= 28; i++) {
+                document.getElementById(`card-${i}`).classList.remove('locked');
+            }
+        }
+
+        async function completeUnit(unitId) {
+            if (!userProfile) return;
+
+            let updatedUnits = [...new Set([...(userProfile.completed_units || []), unitId])];
+
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ completed_units: updatedUnits })
+                .eq('telegram_id', userId);
+
+            if (!error) {
+                userProfile.completed_units = updatedUnits;
+                document.getElementById(`card-${unitId}`).classList.add('completed');
+                console.log(`Unit ${unitId} saved to your legacy.`);
+            }
+        }
+
+        function handlePayment() {
+            const stripeBaseUrl = "https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07";
+            const checkoutUrl = `${stripeBaseUrl}?client_reference_id=${userId}`;
+            tg.openLink(checkoutUrl);
+        }
+
+        function updateOathUI() {
+            const btn = document.querySelector('.daily-oath-btn');
+            btn.innerHTML = 'DAILY OATH COMPLETED';
+            btn.classList.add('completed');
+        }
+
+        function showOath() {
+            document.getElementById('oathModal').style.display = 'block';
+        }
+
+        function closeOath() {
+            document.getElementById('oathModal').style.display = 'none';
+        }
+
+        async function confirmOath() {
+            oathCompletedToday = true;
+            updateOathUI();
+            closeOath();
+            await supabaseClient.from('profiles').upsert({ telegram_id: userId, oath_date: today }, { onConflict: 'telegram_id' });
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function handleCardClick(id) {
+            if (!oathCompletedToday) {
+                tg.showAlert("Complete your Daily Oath first to unlock the principles.");
+                showOath();
+                return;
+            }
+            if (!userProfile || !userProfile.is_premium) {
+                tg.showConfirm("Exclusive Access required. Join the Mastermind?", (c) => { if(c) handlePayment(); });
+                return;
+            }
+            currentLessonId = id;
+            const modal = document.getElementById('lessonModal');
+            const lesson = lessons[id];
+            if (lesson) {
+                const isCompleted = userProfile && userProfile.completed_units && userProfile.completed_units.includes(id);
+                let content = lesson.content;
+                content = content.replace(
+                    new RegExp(`onclick="completeUnit\\(${id}\\)"`, 'g'),
+                    `onclick="toggleUnit(${id})"`
+                );
+                content = content.replace(
+                    />SYNCHRONIZE PROGRESS</g,
+                    `>${isCompleted ? 'UNMARK COMPLETE' : 'SYNCHRONIZE PROGRESS'}<`
+                );
+                document.getElementById('lessonContent').innerHTML = content;
+                modal.style.display = 'block';
+            }
+        }
+
+        async function toggleUnit(id) {
+            if (!userProfile) return;
+            
+            const currentUnits = userProfile.completed_units || [];
+            let updatedUnits;
+            
+            if (currentUnits.includes(id)) {
+                updatedUnits = currentUnits.filter(unitId => unitId !== id);
+                document.getElementById(`card-${id}`).classList.remove('completed');
+            } else {
+                updatedUnits = [...currentUnits, id];
+                document.getElementById(`card-${id}`).classList.add('completed');
+            }
+            
+            await supabaseClient
+                .from('profiles')
+                .update({ completed_units: updatedUnits })
+                .eq('telegram_id', userId);
+            
+            userProfile.completed_units = updatedUnits;
+            
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            closeLesson();
+        }
+
+        function completeUnit(id) {
+            toggleUnit(id);
+            closeLesson();
+        }
+
+        function closeLesson() { 
+            document.getElementById('lessonModal').style.display = 'none';
+            animateLogo();
+        }
+
+        function animateLogo() {
+            const logo = document.getElementById('logo');
+            const underline = document.querySelector('.logo-underline');
+            logo.classList.remove('logo-glow');
+            underline.classList.remove('logo-glow');
+            void logo.offsetWidth;
+            logo.classList.add('logo-glow');
+            underline.classList.add('logo-glow');
+        }
+
+        // Initialize
+        async function init() {
+            await initImperium();
+            animateLogo();
+        }
+        
+        init();
+    </script>
+</body>
+</html>
