@@ -29,8 +29,7 @@ export function Header() {
     }, []);
 
     const navLinks = [
-        { label: "Intelligence", href: "/#newsletter" },
-        ...(isAuthenticated ? [{ label: "28 Principles", href: "/28principles" }] : []),
+        { label: "28 Principles", href: "/28principles" },
         { label: "Newsletter", href: "/newsletter" },
         { label: "Arsenal", href: "/shop" },
     ];
