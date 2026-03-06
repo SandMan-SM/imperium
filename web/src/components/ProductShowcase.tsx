@@ -78,15 +78,15 @@ export function ProductShowcase() {
         : products.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
 
     return (
-        <section className="py-20">
+        <section className="py-12 sm:py-20">
             {/* Categories */}
-            <div className="flex justify-center mb-16 px-4 overflow-x-auto w-full no-scrollbar">
-                <div className="flex items-center gap-3 p-1 border border-white/5 bg-white/[0.02] rounded-full min-w-max">
+            <div className="flex justify-center mb-10 sm:mb-16 px-4">
+                <div className="flex items-center gap-2 sm:gap-3 p-1 border border-white/5 bg-white/[0.02] rounded-full overflow-x-auto">
                     {categories.map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className={`px-5 py-2 text-[10px] font-bold tracking-[0.2em] uppercase rounded-full transition-all duration-300 ${activeCategory === cat
+                            className={`px-4 sm:px-5 py-2 text-[9px] sm:text-[10px] font-bold tracking-[0.15em] sm:tracking-[0.2em] uppercase rounded-full transition-all duration-300 whitespace-nowrap ${activeCategory === cat
                                 ? "bg-white text-black shadow-lg shadow-white/10"
                                 : "text-white/30 hover:text-white/60"
                                 }`}
@@ -98,15 +98,15 @@ export function ProductShowcase() {
             </div>
 
             {/* Grid */}
-            <div className="container mx-auto px-6 max-w-6xl">
+            <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
                 {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {[...Array(5)].map((_, i) => (
-                            <div key={i} className="animate-pulse glass-card rounded-2xl h-96" />
+                            <div key={i} className="animate-pulse glass-card rounded-2xl h-80 sm:h-96" />
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {filtered.map((product, i) => (
                             <motion.div
                                 key={product.id}
