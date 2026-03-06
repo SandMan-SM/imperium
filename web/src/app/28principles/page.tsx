@@ -61,9 +61,14 @@ export default function PrinciplesPage() {
                     <p className="text-gray-400 max-w-xl mx-auto font-light leading-relaxed text-sm sm:text-base px-2 sm:px-0">
                         The complete Imperium operating system. Laws derived from history's most formidable sovereigns, condensed into an executable framework.
                     </p>
-                    <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-imperium-gold/70 font-bold uppercase tracking-widest">
-                        5 Free · Remaining 23 Unlocked with Subscription
-                    </p>
+                    <a
+                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-5 sm:mt-6 px-6 sm:px-8 py-3 sm:py-4 bg-white text-black text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:bg-imperium-gold transition-all duration-200"
+                    >
+                        Join Now — $20/month
+                    </a>
                 </div>
             </div>
 
