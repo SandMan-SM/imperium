@@ -39,18 +39,6 @@ export default function ShopPage() {
             {/* Daily Intelligence Newsletter */}
             <div className="py-16 sm:py-20 border-t border-imperium-border">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5 mb-4">
-                            <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                            <span className="text-imperium-gold text-[9px] sm:text-[10px] font-bold tracking-widest uppercase">Daily Intelligence</span>
-                        </div>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl text-white mb-3 sm:mb-4">
-                            Strategic Intelligence <span className="font-display italic text-gold-gradient">Brief</span>
-                        </h2>
-                        <p className="text-white/40 font-light text-sm sm:text-base max-w-lg mx-auto px-2 sm:px-0">
-                            Daily precision frameworks for discipline, strategy, and self-mastery. Join 2,400+ sovereign-minded operators.
-                        </p>
-                    </div>
                     <NewsletterOptin />
                     <p className="text-center text-[10px] sm:text-[11px] text-white/20 font-bold tracking-widest uppercase mt-6">
                         Free to join · $20/month for full access · Cancel anytime
