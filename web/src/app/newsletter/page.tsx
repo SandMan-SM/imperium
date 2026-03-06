@@ -17,7 +17,7 @@ export default function NewsletterPage() {
     return (
         <div className="min-h-screen bg-imperium-bg">
             {/* Hero */}
-            <div className="relative border-b border-imperium-border pt-[72px] overflow-hidden">
+            <div className="relative border-b border-imperium-border pt-[84px] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="relative container mx-auto px-4 sm:px-6 max-w-3xl py-12 sm:py-16 md:py-24 text-center">
@@ -26,7 +26,7 @@ export default function NewsletterPage() {
                         <span className="text-imperium-gold text-[10px] sm:text-[11px] font-bold tracking-widest uppercase">Intelligence Network</span>
                     </div>
 
-                    <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-6 leading-tight px-2 sm:px-0">
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-6 leading-tight px-2 sm:px-0" style={{ paddingTop: '6px' }}>
                         The{" "}
                         <span className="font-display italic text-gold-gradient">Imperium</span>{" "}
                         Intelligence Brief

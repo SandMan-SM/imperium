@@ -16,7 +16,7 @@ export function Hero() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030712]/40 to-[#030712]" />
 
             {/* Content */}
-            <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-[72px] sm:pt-[72px] md:pt-0 flex flex-col items-center text-center max-w-4xl">
+            <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-[84px] sm:pt-[84px] md:pt-0 flex flex-col items-center text-center max-w-4xl">
 
                 {/* Badge */}
                 <motion.div

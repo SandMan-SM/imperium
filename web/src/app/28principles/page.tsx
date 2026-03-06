@@ -43,13 +43,13 @@ export default function PrinciplesPage() {
     return (
         <div className="min-h-screen bg-imperium-bg">
             {/* Page hero */}
-            <div className="relative border-b border-imperium-border pt-[72px] pb-12 sm:pb-16 md:pb-24 text-center overflow-hidden">
+            <div className="relative border-b border-imperium-border pt-[84px] pb-12 sm:pb-16 md:pb-24 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative container mx-auto px-4">
                     <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
                         <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">The Doctrine</span>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-3 sm:mb-4 px-2 sm:px-0">
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-3 sm:mb-4 px-2 sm:px-0" style={{ paddingTop: '6px' }}>
                         The{" "}
                         <span
                             className="text-imperium-gold"
