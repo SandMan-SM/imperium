@@ -20,23 +20,23 @@ export default function NewsletterPage() {
             <div className="relative border-b border-imperium-border pt-[72px] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
 
-                <div className="relative container mx-auto px-6 max-w-3xl py-24 text-center">
-                    <div className="inline-flex items-center gap-2.5 mb-6 px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
+                <div className="relative container mx-auto px-4 sm:px-6 max-w-3xl py-12 sm:py-16 md:py-24 text-center">
+                    <div className="inline-flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-6 px-3 sm:px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
                         <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                        <span className="text-imperium-gold text-[11px] font-bold tracking-widest uppercase">Intelligence Network</span>
+                        <span className="text-imperium-gold text-[10px] sm:text-[11px] font-bold tracking-widest uppercase">Intelligence Network</span>
                     </div>
 
-                    <h1 className="text-3xl md:text-6xl text-white mb-6 leading-tight">
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-6 leading-tight px-2 sm:px-0">
                         The{" "}
                         <span className="font-display italic text-gold-gradient">Imperium</span>{" "}
                         Intelligence Brief
                     </h1>
 
-                    <p className="text-white/45 font-light text-sm md:text-lg leading-relaxed mb-4">
+                    <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-3 sm:mb-4 px-2 sm:px-0">
                         A daily dose of raw tactical intellect for the disciplined sovereign. No noise, no motivation platitudes — just precision frameworks from the world's most formidable strategic minds.
                     </p>
 
-                    <p className="text-imperium-gold/60 text-[10px] md:text-[11px] font-bold tracking-widest uppercase">
+                    <p className="text-imperium-gold/60 text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-widest uppercase">
                         2,400+ subscribers · $20 / month · Cancel anytime
                     </p>
                 </div>

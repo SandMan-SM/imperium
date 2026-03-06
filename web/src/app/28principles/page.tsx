@@ -43,13 +43,13 @@ export default function PrinciplesPage() {
     return (
         <div className="min-h-screen bg-imperium-bg">
             {/* Page hero */}
-            <div className="relative border-b border-imperium-border pt-[72px] pb-24 text-center overflow-hidden">
+            <div className="relative border-b border-imperium-border pt-[72px] pb-12 sm:pb-16 md:pb-24 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative container mx-auto px-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
                         <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">The Doctrine</span>
                     </div>
-                    <h1 className="text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-3 sm:mb-4 px-2 sm:px-0">
                         The{" "}
                         <span
                             className="text-imperium-gold"
@@ -58,50 +58,50 @@ export default function PrinciplesPage() {
                             28 Principles
                         </span>
                     </h1>
-                    <p className="text-gray-400 max-w-xl mx-auto font-light leading-relaxed">
+                    <p className="text-gray-400 max-w-xl mx-auto font-light leading-relaxed text-sm sm:text-base px-2 sm:px-0">
                         The complete Imperium operating system. Laws derived from history's most formidable sovereigns, condensed into an executable framework.
                     </p>
-                    <p className="mt-4 text-sm text-imperium-gold/70 font-bold uppercase tracking-widest">
+                    <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-imperium-gold/70 font-bold uppercase tracking-widest">
                         5 Free · Remaining 23 Unlocked with Subscription
                     </p>
                 </div>
             </div>
 
             {/* Principles list */}
-            <div className="container mx-auto px-4 max-w-3xl py-16">
+            <div className="container mx-auto px-3 sm:px-4 max-w-3xl py-12 sm:py-16">
                 <div className="space-y-3">
                     {ALL_PRINCIPLES.map((p, i) => {
                         const isLocked = p.desc === null;
                         return (
                             <div
                                 key={p.num}
-                                className={`group relative flex gap-6 items-start rounded-xl border p-6 transition-all duration-500 ${isLocked
+                                className={`group relative flex gap-3 sm:gap-6 items-start rounded-lg sm:rounded-xl border p-4 sm:p-6 transition-all duration-500 ${isLocked
                                     ? "border-white/[0.04] bg-white/[0.01]"
                                     : "border-white/[0.07] bg-white/[0.02] hover:border-imperium-gold/25 hover:bg-white/[0.04]"
                                     }`}
                             >
                                 {isLocked && (
-                                    <div className="absolute inset-0 rounded-xl backdrop-blur-[1px] bg-imperium-bg/50 flex items-center justify-center z-10">
+                                    <div className="absolute inset-0 rounded-lg sm:rounded-xl backdrop-blur-[1px] bg-imperium-bg/50 flex items-center justify-center z-10">
                                         <div className="flex items-center gap-2 text-gray-600">
-                                            <Lock className="w-4 h-4" />
-                                            <span className="text-xs uppercase tracking-[0.2em] font-bold">Subscribe to Unlock</span>
+                                            <Lock className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                            <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] font-bold">Subscribe to Unlock</span>
                                         </div>
                                     </div>
                                 )}
                                 <span
-                                    className={`text-3xl font-bold font-mono leading-none pt-1 flex-shrink-0 w-12 transition-colors duration-300 ${isLocked ? "text-gray-800" : "text-imperium-gold/30 group-hover:text-imperium-gold/70"
+                                    className={`text-2xl sm:text-3xl font-bold font-mono leading-none pt-0.5 sm:pt-1 flex-shrink-0 w-8 sm:w-12 transition-colors duration-300 ${isLocked ? "text-gray-800" : "text-imperium-gold/30 group-hover:text-imperium-gold/70"
                                         }`}
                                 >
                                     {p.num}
                                 </span>
                                 <div>
                                     <h2
-                                        className={`text-base font-semibold mb-2 tracking-wide transition-colors duration-300 ${isLocked ? "text-gray-700" : "text-white group-hover:text-imperium-gold"
+                                        className={`text-sm sm:text-base font-semibold mb-1 sm:mb-2 tracking-wide transition-colors duration-300 ${isLocked ? "text-gray-700" : "text-white group-hover:text-imperium-gold"
                                             }`}
                                     >
                                         {p.title}
                                     </h2>
-                                    <p className={`text-sm font-light leading-relaxed ${isLocked ? "text-gray-700" : "text-gray-500"}`}>
+                                    <p className={`text-xs sm:text-sm font-light leading-relaxed ${isLocked ? "text-gray-700" : "text-gray-500"}`}>
                                         {p.desc ?? "This principle is locked behind the Imperium Elite subscription. Subscribe to unlock all 28 laws."}
                                     </p>
                                 </div>
@@ -111,21 +111,21 @@ export default function PrinciplesPage() {
                 </div>
 
                 {/* Unlock CTA */}
-                <div className="mt-16 text-center">
-                    <div className="inline-block bg-white/[0.02] border border-imperium-gold/20 rounded-3xl p-8 md:p-12 relative overflow-hidden">
-                        <h3 className="text-2xl font-light text-white uppercase tracking-widest mb-3">Unlock the Full Doctrine</h3>
-                        <p className="text-gray-400 mb-8 max-w-sm mx-auto font-light text-sm leading-relaxed">
+                <div className="mt-12 sm:mt-16 text-center">
+                    <div className="inline-block bg-white/[0.02] border border-imperium-gold/20 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 relative overflow-hidden">
+                        <h3 className="text-xl sm:text-2xl font-light text-white uppercase tracking-widest mb-3">Unlock the Full Doctrine</h3>
+                        <p className="text-gray-400 mb-6 sm:mb-8 max-w-sm mx-auto font-light text-sm leading-relaxed px-2 sm:px-0">
                             All 28 Principles. Daily intelligence briefs. Inner Circle access. All for less than a single coffee per week.
                         </p>
                         <a
                             href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-br from-imperium-gold to-[#b38f2d] text-black font-bold uppercase tracking-[0.2em] text-sm rounded-full transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
+                            className="inline-flex items-center gap-2 px-8 sm:px-10 py-3 sm:py-4 bg-gradient-to-br from-imperium-gold to-[#b38f2d] text-black font-bold uppercase tracking-[0.2em] text-xs sm:text-sm rounded-full transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
                         >
                             Subscribe — $20/month
                         </a>
-                        <p className="mt-4 text-xs text-gray-600 uppercase tracking-widest">Cancel anytime.</p>
+                        <p className="mt-3 sm:mt-4 text-xs text-gray-600 uppercase tracking-widest">Cancel anytime.</p>
                     </div>
                 </div>
 

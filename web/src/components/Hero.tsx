@@ -16,18 +16,18 @@ export function Hero() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030712]/40 to-[#030712]" />
 
             {/* Content */}
-            <div className="relative z-10 container mx-auto px-6 pt-[72px] flex flex-col items-center text-center max-w-4xl">
+            <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-[72px] sm:pt-[72px] md:pt-0 flex flex-col items-center text-center max-w-4xl">
 
                 {/* Badge */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="flex items-center gap-2 mb-8 px-4 py-1.5 border border-[#d4af37]/25 rounded-full"
+                    className="flex items-center gap-2 mb-6 sm:mb-8 px-3 sm:px-4 py-1.5 border border-[#d4af37]/25 rounded-full"
                     style={{ background: "rgba(212,175,55,0.05)" }}
                 >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />
-                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#d4af37]">Daily Intelligence · Inner Circle</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase text-[#d4af37]">Daily Intelligence · Inner Circle</span>
                 </motion.div>
 
                 {/* Headline */}
@@ -59,7 +59,7 @@ export function Hero() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="text-sm md:text-lg text-white/50 font-light max-w-lg mx-auto mb-10 leading-relaxed"
+                    className="text-xs sm:text-sm md:text-lg text-white/50 font-light max-w-lg mx-auto mb-8 sm:mb-10 leading-relaxed px-2 sm:px-0"
                 >
                     Daily precision frameworks for discipline, strategy, and self-mastery — curated for those who operate at the highest level.
                 </motion.p>
@@ -98,7 +98,7 @@ export function Hero() {
             </div>
 
             {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
                 <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/20">Scroll</span>
             </div>
         </section>
