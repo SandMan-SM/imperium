@@ -39,23 +39,6 @@ export async function POST(req: NextRequest) {
       }
       return null;
     }
-      try {
-        const m = url.match(/buy\.stripe\.com\/([^\/?#]+)/);
-        if (m && m[1]) {
-          const id = m[1].split('?')[0];
-          // try retrieve
-          try {
-            const pl = await stripe.paymentLinks.retrieve(id);
-            return pl;
-          } catch (err) {
-            // fallthrough to listing
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
-      return null;
-    }
 
     // Get a page of payment links to match by URL (fallback)
     const list = await stripe.paymentLinks.list({ limit: 100 });
