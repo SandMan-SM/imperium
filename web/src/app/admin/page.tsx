@@ -442,6 +442,8 @@ function CRMView() {
 function ProductManager() {
     const [products, setProducts] = useState<any[]>([]);
     const [syncing, setSyncing] = useState(false);
+    const [syncResult, setSyncResult] = useState<any | null>(null);
+    const [syncError, setSyncError] = useState<string | null>(null);
 
     useEffect(() => {
         supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts(data || []));
@@ -449,6 +451,8 @@ function ProductManager() {
 
     const handleSyncStripe = async () => {
         setSyncing(true);
+        setSyncResult(null);
+        setSyncError(null);
         try {
             // fetch latest products from supabase to ensure fresh data
             const { data: latest } = await supabase.from('products').select('*');
@@ -456,6 +460,7 @@ function ProductManager() {
 
             if (toSync.length === 0) {
                 setSyncing(false);
+                setSyncResult({ message: 'No products to sync' });
                 return;
             }
 
@@ -464,13 +469,19 @@ function ProductManager() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ products: toSync }),
             });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Sync API error: ${response.status} ${text}`);
+            }
             const result = await response.json();
+            setSyncResult(result);
             if (result.results) {
                 const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
                 setProducts(refreshed || []);
             }
         } catch (err) {
             console.error('Sync error:', err);
+            setSyncError(String(err));
         }
         setSyncing(false);
     };
@@ -519,6 +530,18 @@ function ProductManager() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+            {syncResult && (
+                <div className="mt-6 p-4 rounded-xl bg-[#071018] border border-white/[0.04]">
+                    <h4 className="text-sm text-white/40 mb-2">Sync Result</h4>
+                    <pre className="text-xs text-white/60 overflow-auto">{JSON.stringify(syncResult, null, 2)}</pre>
+                </div>
+            )}
+            {syncError && (
+                <div className="mt-6 p-4 rounded-xl bg-[#2a0b0b] border border-red-600">
+                    <h4 className="text-sm text-red-300 mb-2">Sync Error</h4>
+                    <div className="text-xs text-red-200">{syncError}</div>
                 </div>
             )}
         </div>
