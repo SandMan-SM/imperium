@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",

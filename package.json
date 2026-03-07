@@ -8,6 +8,6 @@
     "start": "npm --prefix web run start"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }
