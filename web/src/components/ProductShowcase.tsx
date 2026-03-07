@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingBag, Plus, Check } from "lucide-react";
+import { useCart } from "@/lib/cart-context";
 
 type Product = {
     id: string;
@@ -11,38 +12,34 @@ type Product = {
     category: string;
     description: string;
     price: number;
-    image_url: string;
-    stripe_url?: string;
+    image_url: string | null;
+    stripe_url?: string | null;
 };
 
-// 5 unique products — 1 tee, 2 hoodies, 2 sweats — no bracelet, no duplicates
 const CATALOG: Product[] = [
     {
         id: "tee-01",
         name: "Imperium Command Tee",
-        category: "T-Shirt",
+        category: "shirts",
         description: "Premium heavyweight cotton. Minimal Imperium insignia on chest. Structured drop-cut silhouette designed for the serious operator.",
         price: 44,
         image_url: "/products/shirt.jpeg",
-        stripe_url: "https://buy.stripe.com/14A5kCeKobrC36j9Hh5AQ05",
     },
     {
         id: "hoodie-01",
         name: "Exclusive Imperium Hoodie",
-        category: "Hoodie",
+        category: "hoodies",
         description: "400gsm heavyweight fleece. Boxy architectural fit with embossed Imperium emblem. Built to signal sovereignty in any room.",
         price: 88,
         image_url: "/products/hoodie.jpeg",
-        stripe_url: "https://buy.stripe.com/bJedR8gSw67i9uHg5F5AQ03",
     },
     {
         id: "sweats-01",
         name: "Imperium Stealth Sweats",
-        category: "Sweatpants",
+        category: "sweats",
         description: "French terry sweatpants. Tapered fit, minimal embroidery, zippered ankles. Built for recovery, remapped for command.",
         price: 80,
         image_url: "/products/sweats.jpeg",
-        stripe_url: "https://buy.stripe.com/4gM5kC45K8fq36j2eP5AQ06",
     },
 ];
 
@@ -50,21 +47,35 @@ export function ProductShowcase() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
+    const [addedProduct, setAddedProduct] = useState<string | null>(null);
 
-    const categories = ["All", "T-Shirt", "Hoodie", "Sweatpants"];
+    const categories = ["All", "Shirts", "Hoodies", "Sweats", "Hats", "Beanies"];
+
+    const { addItem } = useCart();
 
     useEffect(() => {
         async function fetchProducts() {
             try {
-                if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")) {
+                const { data, error } = await supabase
+                    .from("products")
+                    .select("*")
+                    .eq("in_stock", true)
+                    .order("created_at", { ascending: false });
+                
+                if (error) {
+                    console.error("Supabase error:", error);
                     setProducts(CATALOG);
                     setLoading(false);
                     return;
                 }
-                const { data, error } = await supabase.from("products").select("*").eq("in_stock", true).limit(8);
-                if (error) throw error;
-                setProducts(data?.length ? data : CATALOG);
-            } catch {
+                
+                if (data && data.length > 0) {
+                    setProducts(data);
+                } else {
+                    setProducts(CATALOG);
+                }
+            } catch (err) {
+                console.error("Fetch error:", err);
                 setProducts(CATALOG);
             } finally {
                 setLoading(false);
@@ -73,15 +84,26 @@ export function ProductShowcase() {
         fetchProducts();
     }, []);
 
+    const handleAddToCart = (product: Product) => {
+        addItem({
+            id: product.id,
+            name: product.name,
+            price: Number(product.price),
+            image_url: product.image_url,
+        });
+        setAddedProduct(product.id);
+        setTimeout(() => setAddedProduct(null), 2000);
+    };
+
     const filtered = activeCategory === "All"
         ? products
-        : products.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
+        : products.filter(p => p.category?.toLowerCase() === activeCategory.toLowerCase());
 
     return (
         <section className="py-12 sm:py-20">
             {/* Categories */}
             <div className="flex justify-center mb-10 sm:mb-16 px-4">
-                <div className="flex items-center gap-2 sm:gap-3 p-1 border border-white/5 bg-white/[0.02] rounded-full overflow-x-auto">
+                <div className="flex items-center gap-2 sm:gap-3 p-1 border border-white/5 bg-white/[0.02] rounded-full overflow-x-auto max-w-full">
                     {categories.map((cat) => (
                         <button
                             key={cat}
@@ -118,14 +140,17 @@ export function ProductShowcase() {
                             >
                                 {/* Image */}
                                 <div className="relative aspect-[4/5] overflow-hidden bg-imperium-surface">
-                                    <img
-                                        src={product.image_url}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-104 opacity-80 group-hover:opacity-95"
-                                        style={{ transform: "scale(1)" }}
-                                        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.04)")}
-                                        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                                    />
+                                    {product.image_url ? (
+                                        <img
+                                            src={product.image_url}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-104 opacity-80 group-hover:opacity-95"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-imperium-surface">
+                                            <span className="text-imperium-gold text-4xl font-bold tracking-widest">I</span>
+                                        </div>
+                                    )}
                                     {/* Category badge */}
                                     <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10">
                                         <span className="text-[10px] font-bold tracking-widest uppercase text-white/70">{product.category}</span>
@@ -133,32 +158,47 @@ export function ProductShowcase() {
                                 </div>
 
                                 {/* Info */}
-                                <div className="p-6 flex flex-col flex-1">
-                                    <div className="flex items-start justify-between gap-4 mb-3">
+                                <div className="p-5 sm:p-6 flex flex-col flex-1">
+                                    <div className="flex items-start justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
                                         <h3 className="text-base font-medium text-white leading-snug">{product.name}</h3>
-                                        <span className="text-imperium-gold font-bold text-sm flex-shrink-0">${product.price}</span>
+                                        <span className="text-imperium-gold font-bold text-sm flex-shrink-0">${Number(product.price).toFixed(2)}</span>
                                     </div>
 
-                                    <p className="text-sm text-white/40 font-light leading-relaxed mb-6 flex-1">
+                                    <p className="text-sm text-white/40 font-light leading-relaxed mb-4 sm:mb-6 flex-1">
                                         {product.description}
                                     </p>
 
-                                    <div className="pt-4">
-                                        {product.stripe_url ? (
+                                    <div className="pt-3 sm:pt-4 flex gap-2">
+                                        <button
+                                            onClick={() => handleAddToCart(product)}
+                                            disabled={addedProduct === product.id}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all duration-300 ${
+                                                addedProduct === product.id
+                                                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                                    : "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/30 hover:bg-imperium-gold/20"
+                                            }`}
+                                        >
+                                            {addedProduct === product.id ? (
+                                                <>
+                                                    <Check className="w-3.5 h-3.5" />
+                                                    Added
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                    Add to Cart
+                                                </>
+                                            )}
+                                        </button>
+                                        {product.stripe_url && (
                                             <a
                                                 href={product.stripe_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold tracking-widest uppercase text-white/50 hover:text-imperium-gold transition-colors duration-300"
+                                                className="flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-bold tracking-widest uppercase text-white/50 hover:text-white border border-white/10 hover:border-white/20 rounded-lg transition-colors"
                                             >
                                                 <ShoppingBag className="w-3.5 h-3.5" />
-                                                Acquire
                                             </a>
-                                        ) : (
-                                            <button className="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold tracking-widest uppercase text-white/50 hover:text-imperium-gold transition-colors duration-300">
-                                                <ShoppingBag className="w-3.5 h-3.5" />
-                                                Acquire
-                                            </button>
                                         )}
                                     </div>
                                 </div>
