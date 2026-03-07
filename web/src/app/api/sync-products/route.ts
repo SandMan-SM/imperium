@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
         for (const product of products) {
             try {
-                // Skip products that already have a payment link
-                if (product.stripe_url || product.payment_link_url) {
+                // Skip products that already have a payment link (only skip when payment_link_url exists)
+                if (product.payment_link_url) {
                     results.push({ id: product.id, name: product.name, success: true, skipped: true });
                     continue;
                 }
