@@ -121,11 +121,22 @@ export async function POST(req: NextRequest) {
                     })
                     .eq("id", product.id);
 
+                // Retrieve the Stripe product to return images for immediate verification
+                let stripeProductRecord: any = null;
+                try {
+                    stripeProductRecord = await stripe.products.retrieve(String(stripeProductId));
+                } catch (err) {
+                    console.warn(`Failed to retrieve stripe product ${stripeProductId} after creation:`, err);
+                }
+
                 results.push({
                     id: product.id,
                     name: product.name,
                     stripe_url: stripePaymentLink.url,
                     payment_link_url: stripePaymentLink.url,
+                    stripe_product_id: stripeProductId,
+                    stripe_price_id: stripePriceId,
+                    stripe_product_images: stripeProductRecord?.images ?? null,
                     success: true,
                 });
             } catch (error: any) {
