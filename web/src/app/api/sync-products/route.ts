@@ -44,7 +44,11 @@ export async function POST(req: NextRequest) {
                 let siteUrl = envSite;
                 if (!siteUrl) {
                     const host = req.headers.get('host') || '';
-                    const proto = req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-protocol') || 'https';
+                    // Prefer forwarded proto when present. If not, assume https except for localhost/127.0.0.1 where http is required in dev.
+                    let proto = req.headers.get('x-forwarded-proto') || req.headers.get('x-forwarded-protocol') || '';
+                    if (!proto) {
+                        proto = /localhost|127\.0\.0\.1/.test(host) ? 'http' : 'https';
+                    }
                     if (host) siteUrl = `${proto}://${host}`;
                 }
                 let images: string[] = [];
