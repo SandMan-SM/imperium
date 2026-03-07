@@ -31,6 +31,26 @@ export async function POST(req: NextRequest) {
                 let stripeProductId = product.stripe_product_id;
                 let stripePriceId = product.stripe_price_id;
 
+                // If product has a payment link URL already but missing Stripe ids, try to resolve them
+                if (!stripeProductId && product.stripe_url) {
+                    try {
+                        // list payment links and find matching url (fall back to scanning recent links)
+                        const list = await stripe.paymentLinks.list({ limit: 100 });
+                        const match = list.data.find((pl: any) => pl.url === product.stripe_url || pl.url === product.payment_link_url);
+                        if (match) {
+                            // retrieve full payment link to access line items
+                            const full = await stripe.paymentLinks.retrieve(match.id, { expand: ['line_items'] });
+                            const li = (full as any).line_items?.data?.[0];
+                            if (li) {
+                                stripePriceId = (li.price as any)?.id ?? (li.price as any)?.id;
+                                stripeProductId = (li.price as any)?.product ?? (li.price as any)?.product;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn(`Failed to resolve stripe ids from existing payment link for product ${product.id}:`, err);
+                    }
+                }
+
                 // Ensure we have a valid numeric price
                 const priceNum = Number(product.price);
                 if (!Number.isFinite(priceNum) || priceNum <= 0) {
