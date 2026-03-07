@@ -457,11 +457,18 @@ function ProductManager() {
         try {
             // fetch latest products from supabase to ensure fresh data
             const { data: latest } = await supabase.from('products').select('*');
-            const toSync = (latest || []).filter((p: any) => !p.stripe_url && !p.payment_link_url);
+            // Sync any product missing a payment_link_url. This includes rows that may already have stripe_url but lack payment_link_url.
+            const toSync = (latest || []).filter((p: any) => !p.payment_link_url);
 
             if (toSync.length === 0) {
                 setSyncing(false);
                 setSyncResult({ message: 'No products to sync' });
+                // still check link statuses for display
+                const map: any = {};
+                (latest || []).forEach((p: any) => {
+                    map[p.id] = { active: !!p.payment_link_url, found: !!(p.payment_link_url || p.stripe_url), url: p.payment_link_url || p.stripe_url || null };
+                });
+                setLinkStatuses(map);
                 return;
             }
 
