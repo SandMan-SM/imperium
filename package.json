@@ -1,0 +1,13 @@
+{
+  "name": "imperium",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix web run start"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
