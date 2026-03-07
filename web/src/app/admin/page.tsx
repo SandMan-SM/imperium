@@ -444,6 +444,7 @@ function ProductManager() {
     const [syncing, setSyncing] = useState(false);
     const [syncResult, setSyncResult] = useState<any | null>(null);
     const [syncError, setSyncError] = useState<string | null>(null);
+    const [linkStatuses, setLinkStatuses] = useState<Record<string, { active: boolean; found: boolean; url: string | null }> | null>(null);
 
     useEffect(() => {
         supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts(data || []));
@@ -478,6 +479,22 @@ function ProductManager() {
             if (result.results) {
                 const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
                 setProducts(refreshed || []);
+                // After syncing, check link statuses for products
+                try {
+                    const checkRes = await fetch('/api/check-payment-links', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ products: refreshed || [] }),
+                    });
+                    if (checkRes.ok) {
+                        const { results } = await checkRes.json();
+                        const map: any = {};
+                        results.forEach((r: any) => (map[r.id] = r));
+                        setLinkStatuses(map);
+                    }
+                } catch (e) {
+                    console.warn('Failed to check payment links after sync:', e);
+                }
             }
         } catch (err) {
             console.error('Sync error:', err);
@@ -522,8 +539,14 @@ function ProductManager() {
                                     <span>Sold: {product.sold_count || 0}</span>
                                     <span>Stock: {product.available_stock || 0}</span>
                                 </div>
-                                {product.stripe_url ? (
-                                    <span className="text-green-500">Stripe</span>
+                                {linkStatuses && linkStatuses[product.id] ? (
+                                    linkStatuses[product.id].active ? (
+                                        <span className="text-green-400">Active</span>
+                                    ) : (
+                                        <span className="text-red-400">Inactive</span>
+                                    )
+                                ) : product.payment_link_url || product.stripe_url ? (
+                                    <span className="text-yellow-400">Checking...</span>
                                 ) : (
                                     <span className="text-yellow-500">Not Connected</span>
                                 )}
