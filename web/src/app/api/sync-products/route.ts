@@ -120,7 +120,6 @@ export async function POST(req: NextRequest) {
                         payment_link_url: stripePaymentLink.url,
                     })
                     .eq("id", product.id);
-
                 // Retrieve the Stripe product to return images for immediate verification
                 let stripeProductRecord: any = null;
                 try {
@@ -136,6 +135,8 @@ export async function POST(req: NextRequest) {
                     payment_link_url: stripePaymentLink.url,
                     stripe_product_id: stripeProductId,
                     stripe_price_id: stripePriceId,
+                    // what we attempted to send to Stripe (first image in images array), for debugging
+                    image_sent_to_stripe: images && images.length > 0 ? images[0] : null,
                     stripe_product_images: stripeProductRecord?.images ?? null,
                     success: true,
                 });
