@@ -135,15 +135,35 @@ export async function POST(req: NextRequest) {
                     },
                 });
 
-                await supabaseAdmin
-                    .from("products")
-                    .update({
-                        stripe_product_id: stripeProductId,
-                        stripe_price_id: stripePriceId,
-                        stripe_url: stripePaymentLink.url,
-                        payment_link_url: stripePaymentLink.url,
-                    })
-                    .eq("id", product.id);
+                // Try to persist the payment link id as well if the DB schema supports it.
+                // Some deployments may not have `payment_link_id` column yet; fall back gracefully.
+                try {
+                    await supabaseAdmin
+                        .from("products")
+                        .update({
+                            stripe_product_id: stripeProductId,
+                            stripe_price_id: stripePriceId,
+                            stripe_url: stripePaymentLink.url,
+                            payment_link_url: stripePaymentLink.url,
+                            payment_link_id: stripePaymentLink.id,
+                        })
+                        .eq("id", product.id);
+                } catch (dbErr) {
+                    console.warn(`Failed to write payment_link_id for product ${product.id}, retrying without it:`, dbErr);
+                    try {
+                        await supabaseAdmin
+                            .from("products")
+                            .update({
+                                stripe_product_id: stripeProductId,
+                                stripe_price_id: stripePriceId,
+                                stripe_url: stripePaymentLink.url,
+                                payment_link_url: stripePaymentLink.url,
+                            })
+                            .eq("id", product.id);
+                    } catch (dbErr2) {
+                        console.error(`Failed to update product ${product.id} after creating payment link:`, dbErr2);
+                    }
+                }
                 // Retrieve the Stripe product to return images for immediate verification
                 let stripeProductRecord: any = null;
                 try {
@@ -157,6 +177,7 @@ export async function POST(req: NextRequest) {
                     name: product.name,
                     stripe_url: stripePaymentLink.url,
                     payment_link_url: stripePaymentLink.url,
+                    payment_link_id: stripePaymentLink.id,
                     stripe_product_id: stripeProductId,
                     stripe_price_id: stripePriceId,
                     // what we attempted to send to Stripe (first image in images array), for debugging
