@@ -123,16 +123,29 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-imperium-bg flex">
-            {/* Left Sidebar - fixed overlay on mobile, fixed left on desktop */}
-            <aside className={`${collapsed ? 'w-16' : 'w-56'} border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-40 fixed md:relative left-0 top-[72px] bottom-0 md:top-0 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+            {/* Left Sidebar */}
+            <aside className={`
+                ${collapsed ? 'w-16' : 'w-56'} 
+                border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col 
+                fixed md:relative left-0 top-[72px] bottom-0 md:top-0 z-40 
+                transition-transform duration-300 
+                ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
                 <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between">
                     {!collapsed && <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Command Center</h1>}
+                    {/* Single toggle button for both mobile close and desktop collapse */}
                     <button
                         onClick={() => {
-                            setCollapsed((s) => {
-                                try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
-                                return !s;
-                            });
+                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                                // Mobile: close sidebar
+                                setMobileOpen(false);
+                            } else {
+                                // Desktop: toggle collapse
+                                setCollapsed((s) => {
+                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
+                                    return !s;
+                                });
+                            }
                         }}
                         className="p-2 rounded-md text-white/60 hover:text-white"
                         aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
@@ -146,14 +159,20 @@ export default function AdminDashboard() {
                         {adminTabs.map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center ${collapsed ? 'justify-start pl-3' : 'gap-3'} w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase rounded-lg transition-all ${
-                                    activeTab === tab.id
-                                        ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
-                                        : "text-white/40 hover:text-white hover:bg-white/[0.02]"
-                                }`}
+                                onClick={() => {
+                                    setActiveTab(tab.id);
+                                    // Close mobile menu when selecting a tab
+                                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                                        setMobileOpen(false);
+                                    }
+                                }}
+                                className={`
+                                    flex items-center w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase rounded-lg transition-all
+                                    ${collapsed ? 'justify-start' : 'gap-3'} 
+                                    ${activeTab === tab.id ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
+                                `}
                             >
-                                <tab.icon className="w-4 h-4" />
+                                <tab.icon className="w-4 h-4 flex-shrink-0" />
                                 {!collapsed && <span className="hidden sm:inline">{tab.label}</span>}
                             </button>
                         ))}
@@ -162,31 +181,35 @@ export default function AdminDashboard() {
 
                 <div className="mt-auto p-2 sm:p-4 border-t border-white/[0.06]">
                     <div className="flex flex-col gap-2">
-                        <Link href="/account" className={`flex items-center ${collapsed ? 'justify-start pl-3' : 'gap-2'} w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}>
-                            <ShoppingBag className="w-4 h-4" />
+                        <Link href="/account" className={`flex items-center ${collapsed ? 'justify-start' : 'gap-2'} w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}>
+                            <ShoppingBag className="w-4 h-4 flex-shrink-0" />
                             {!collapsed && <span>Settings</span>}
                         </Link>
                         <button
                             onClick={handleSignOut}
-                            className={`flex items-center ${collapsed ? 'justify-start pl-3' : 'gap-2'} w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}
+                            className={`flex items-center ${collapsed ? 'justify-start' : 'gap-2'} w-full px-3 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}
                         >
-                            <LogOut className="w-4 h-4" />
+                            <LogOut className="w-4 h-4 flex-shrink-0" />
                             {!collapsed && <span>Sign Out</span>}
                         </button>
                     </div>
                 </div>
             </aside>
 
-            {/* Mobile menu toggle button */}
+            {/* Mobile only hamburger - shows when sidebar is hidden on mobile */}
             <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden fixed top-[80px] left-4 z-50 p-2 bg-[#0a0e14] border border-white/[0.08] rounded-lg text-white/60 hover:text-white"
-                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                onClick={() => setMobileOpen(true)}
+                className={`
+                    md:hidden fixed top-[80px] left-4 z-50 p-2 bg-[#0a0e14] border border-white/[0.08] rounded-lg text-white/60 hover:text-white
+                    transition-opacity duration-300
+                    ${mobileOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                `}
+                aria-label="Open menu"
             >
-                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <Menu className="w-5 h-5" />
             </button>
 
-            {/* Mobile overlay */}
+            {/* Mobile overlay - shows when sidebar is open on mobile */}
             {mobileOpen && (
                 <div 
                     className="md:hidden fixed inset-0 bg-black/50 z-30 top-[72px]"
@@ -194,9 +217,9 @@ export default function AdminDashboard() {
                 />
             )}
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto" style={{ marginLeft: collapsed ? 64 : 224 }}>
-                <div className="p-4 sm:p-6 lg:p-8">
+            {/* Main Content - no margin on mobile, margin on desktop for sidebar */}
+            <main className="flex-1 overflow-auto">
+                <div className="p-4 sm:p-6 lg:p-8 md:ml-56">
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
