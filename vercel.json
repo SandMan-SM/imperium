@@ -5,5 +5,10 @@
       "src": "web/package.json",
       "use": "@vercel/next"
     }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "^/$", "dest": "/web/" },
+    { "src": "^/(.*)$", "dest": "/web/$1" }
   ]
 }
