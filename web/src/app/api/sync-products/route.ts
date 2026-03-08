@@ -6,10 +6,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2026-02-25.clover",
 });
 
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Use the runtime-friendly admin client from lib/supabase which supports multiple env var names
+import { supabaseAdmin as _supabaseAdmin } from '@/lib/supabase';
+
+const supabaseAdmin = _supabaseAdmin;
 
 export async function POST(req: NextRequest) {
     try {
