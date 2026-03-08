@@ -123,8 +123,8 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-imperium-bg flex">
-            {/* Left Sidebar (always visible, can collapse to icons) */}
-            <aside className={`fixed left-0 top-[72px] bottom-0 ${collapsed ? 'w-16' : 'w-56'} border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-30`}>
+            {/* Left Sidebar - fixed overlay on mobile, fixed left on desktop */}
+            <aside className={`${collapsed ? 'w-16' : 'w-56'} border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-40 fixed md:relative left-0 top-[72px] bottom-0 md:top-0 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
                 <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between">
                     {!collapsed && <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Command Center</h1>}
                     <button
@@ -177,6 +177,23 @@ export default function AdminDashboard() {
                 </div>
             </aside>
 
+            {/* Mobile menu toggle button */}
+            <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="md:hidden fixed top-[80px] left-4 z-50 p-2 bg-[#0a0e14] border border-white/[0.08] rounded-lg text-white/60 hover:text-white"
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            >
+                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            {/* Mobile overlay */}
+            {mobileOpen && (
+                <div 
+                    className="md:hidden fixed inset-0 bg-black/50 z-30 top-[72px]"
+                    onClick={() => setMobileOpen(false)}
+                />
+            )}
+
             {/* Main Content */}
             <main className="flex-1 overflow-auto" style={{ marginLeft: collapsed ? 64 : 224 }}>
                 <div className="p-4 sm:p-6 lg:p-8">
@@ -187,7 +204,6 @@ export default function AdminDashboard() {
                     {activeTab === "settings" && <SettingsView />}
                 </div>
             </main>
-            {/* Mobile overlay removed: sidebar stays on the left for all sizes (collapsed on small screens) */}
         </div>
     );
 }
