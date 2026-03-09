@@ -171,7 +171,7 @@ export default function AdminDashboard() {
                                     ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3'} 
                                     ${activeTab === tab.id 
                                         ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
-                                        : "text-white/40 hover:text-white hover:bg-white/[0.02] transition-all duration-200 ease-in-out"}
+                                        : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                 `}
                             >
                                 <tab.icon className="w-5 h-5 flex-shrink-0 transition-transform duration-200" />
