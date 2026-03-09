@@ -133,7 +133,7 @@ export default function AdminDashboard() {
                 ${collapsed ? 'md:w-16' : ''}
             `}>
                 <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px]">
-                    <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Command Center</h1>
+                    <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Command Center</h1>
                     {/* Single toggle button for both mobile close and desktop collapse */}
                     <button
                         onClick={() => {
@@ -169,14 +169,14 @@ export default function AdminDashboard() {
                                 }}
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
-                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3'} 
+                                    ${collapsed ? 'md:px-1 md:justify-center md:aspect-square px-3 py-2.5 gap-3' : 'px-3 py-2.5 gap-3'} 
                                     ${activeTab === tab.id 
                                         ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
                                         : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                 `}
                             >
                                 <tab.icon className="w-5 h-5 flex-shrink-0" />
-                                <span className={`hidden sm:inline transition-opacity duration-200 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>{tab.label}</span>
+                                <span className={`hidden sm:inline transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>{tab.label}</span>
                             </button>
                         ))}
                     </nav>
@@ -184,16 +184,16 @@ export default function AdminDashboard() {
 
                 <div className="mt-auto p-2 sm:p-4 border-t border-white/[0.06]">
                     <div className="flex flex-col gap-2">
-                        <Link href="/account" className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square rounded-lg' : 'gap-2 px-3 py-2.5 rounded-lg'} text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}>
+                        <Link href="/account" className={`flex items-center ${collapsed ? 'md:justify-center md:px-1 md:aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}>
                             <ShoppingBag className="w-5 h-5 flex-shrink-0" />
-                            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Settings</span>
+                            <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Settings</span>
                         </Link>
                         <button
                             onClick={handleSignOut}
-                            className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square rounded-lg' : 'gap-2 px-3 py-2.5 rounded-lg'} text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}
+                            className={`flex items-center ${collapsed ? 'md:justify-center md:px-1 md:aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}
                         >
                             <LogOut className="w-5 h-5 flex-shrink-0" />
-                            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Sign Out</span>
+                            <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Sign Out</span>
                         </button>
                     </div>
                 </div>
