@@ -267,7 +267,7 @@ export function UserPortal({ userView }: { userView: "free" | "premium" }) {
     return (
         <div className="min-h-screen bg-imperium-bg flex">
             {/* Left Sidebar (fixed to left edge) */}
-            <aside className="fixed left-0 top-[72px] bottom-0 w-56 sm:w-64 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-20">
+            <aside className="fixed md:relative left-0 top-[72px] md:top-0 bottom-0 w-56 sm:w-64 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-20">
                 <div className="p-4 sm:p-6 border-b border-white/[0.06]">
                     <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Command Center</h1>
                 </div>
@@ -298,7 +298,7 @@ export function UserPortal({ userView }: { userView: "free" | "premium" }) {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto" style={{ marginLeft: 224 }}>
+            <main className="flex-1 overflow-auto md:ml-56">
                 <div className="p-4 sm:p-6 sm:max-w-lg">
                     <div className="mb-6">
                         <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
