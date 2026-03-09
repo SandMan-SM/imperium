@@ -28,7 +28,7 @@ export function Header() {
         if (isAdmin) {
             const view = previewView || localStorage.getItem('preview_view') || 'admin';
             setCurrentView(view);
-            
+
             // Try to dynamically load a local-only helper script at /local/admin-preview.js.
             // If the file exists in web/public/local/admin-preview.js it will expose
             // window.__imperium_admin_preview which enables the Eye control.
@@ -137,14 +137,16 @@ export function Header() {
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
                                                 setCurrentView('public');
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) {
                                                     try { helper.setPreview('public'); } catch (e) { window.location.reload(); }
                                                 } else {
                                                     // update context preview as well so pages that depend on checkPremiumStatus update
-                                                    try { await setPreview('public'); } catch (e) { /* ignore */ }
+                                                    if (setPreview) {
+                                                        try { await setPreview('public'); } catch (e) { /* ignore */ }
+                                                    }
                                                     // no forced reload here; context will re-fetch profile and components will update
                                                 }
                                                 setViewDropdownOpen(false);
@@ -155,13 +157,15 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) { }
                                                 setCurrentView('subscriber');
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) {
                                                     try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); }
                                                 } else {
-                                                    try { await setPreview('subscriber'); } catch (e) { /* ignore */ }
+                                                    if (setPreview) {
+                                                        try { await setPreview('subscriber'); } catch (e) { /* ignore */ }
+                                                    }
                                                 }
                                                 setViewDropdownOpen(false);
                                             }}
@@ -171,13 +175,15 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) { }
                                                 setCurrentView('free');
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) {
                                                     try { helper.setPreview('free'); } catch (e) { window.location.reload(); }
                                                 } else {
-                                                    try { await setPreview('free'); } catch (e) { /* ignore */ }
+                                                    if (setPreview) {
+                                                        try { await setPreview('free'); } catch (e) { /* ignore */ }
+                                                    }
                                                 }
                                                 setViewDropdownOpen(false);
                                             }}
@@ -187,13 +193,15 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) { }
                                                 setCurrentView('premium');
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) {
                                                     try { helper.setPreview('premium'); } catch (e) { window.location.reload(); }
                                                 } else {
-                                                    try { await setPreview('premium'); } catch (e) { /* ignore */ }
+                                                    if (setPreview) {
+                                                        try { await setPreview('premium'); } catch (e) { /* ignore */ }
+                                                    }
                                                 }
                                                 setViewDropdownOpen(false);
                                             }}
@@ -204,7 +212,7 @@ export function Header() {
                                         <div className="border-t border-white/[0.06] my-1" />
                                         <button
                                             onClick={() => {
-                                                try { localStorage.removeItem('preview_view'); } catch (e) {}
+                                                try { localStorage.removeItem('preview_view'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.clearPreview) {
                                                     try { helper.clearPreview(); } catch (e) { window.location.reload(); }
@@ -276,10 +284,10 @@ export function Header() {
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) { try { helper.setPreview('public'); } catch (e) { window.location.reload(); } }
-                                                else { try { await setPreview('public'); } catch (e) { /* ignore */ } }
+                                                else { if (setPreview) { try { await setPreview('public'); } catch (e) { /* ignore */ } } }
                                                 setViewDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'public' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
@@ -288,10 +296,10 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) { try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); } }
-                                                else { try { await setPreview('subscriber'); } catch (e) { /* ignore */ } }
+                                                else { if (setPreview) { try { await setPreview('subscriber'); } catch (e) { /* ignore */ } } }
                                                 setViewDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'subscriber' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
@@ -300,10 +308,10 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) { try { helper.setPreview('free'); } catch (e) { window.location.reload(); } }
-                                                else { try { await setPreview('free'); } catch (e) { /* ignore */ } }
+                                                else { if (setPreview) { try { await setPreview('free'); } catch (e) { /* ignore */ } } }
                                                 setViewDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'free' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
@@ -312,10 +320,10 @@ export function Header() {
                                         </button>
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) {}
+                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.setPreview) { try { helper.setPreview('premium'); } catch (e) { window.location.reload(); } }
-                                                else { try { await setPreview('premium'); } catch (e) { /* ignore */ } }
+                                                else { if (setPreview) { try { await setPreview('premium'); } catch (e) { /* ignore */ } } }
                                                 setViewDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'premium' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
@@ -325,10 +333,10 @@ export function Header() {
                                         <div className="border-t border-white/[0.06] my-1" />
                                         <button
                                             onClick={async () => {
-                                                try { localStorage.removeItem('preview_view'); } catch (e) {}
+                                                try { localStorage.removeItem('preview_view'); } catch (e) { }
                                                 const helper = (window as any).__imperium_admin_preview;
                                                 if (helper && helper.clearPreview) { try { helper.clearPreview(); } catch (e) { window.location.reload(); } }
-                                                else { try { await setPreview(null); } catch (e) { /* ignore */ } }
+                                                else { if (setPreview) { try { await setPreview(null); } catch (e) { /* ignore */ } } }
                                                 setViewDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'admin' ? 'text-imperium-gold' : 'text-imperium-gold/60'} hover:bg-white/[0.02]`}
