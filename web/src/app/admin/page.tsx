@@ -155,7 +155,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex-1 overflow-auto">
-                    <nav className="p-2 sm:p-4 space-y-1">
+                    <nav className="p-2 sm:p-4 space-y-2">
                         {adminTabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -167,12 +167,12 @@ export default function AdminDashboard() {
                                     }
                                 }}
                                 className={`
-                                    flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg transition-all
-                                    ${collapsed ? 'px-1 justify-center' : 'px-3 gap-3'} 
+                                    flex items-center w-full text-[11px] font-medium tracking-wider uppercase transition-all
+                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3 rounded-lg'} 
                                     ${activeTab === tab.id ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                 `}
                             >
-                                <tab.icon className="w-4 h-4 flex-shrink-0" />
+                                <tab.icon className={collapsed ? 'w-5 h-5 flex-shrink-0' : 'w-4 h-4 flex-shrink-0'} />
                                 {!collapsed && <span className="hidden sm:inline">{tab.label}</span>}
                             </button>
                         ))}
@@ -180,16 +180,16 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="mt-auto p-2 sm:p-4 border-t border-white/[0.06]">
-                    <div className="flex flex-col gap-1">
-                        <Link href="/account" className={`flex items-center ${collapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}>
-                            <ShoppingBag className="w-4 h-4 flex-shrink-0" />
+                    <div className="flex flex-col gap-2">
+                        <Link href="/account" className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square' : 'gap-2 px-3 py-2.5 rounded-lg'} text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors hover:bg-white/[0.02]`}>
+                            <ShoppingBag className={collapsed ? 'w-5 h-5 flex-shrink-0' : 'w-4 h-4 flex-shrink-0'} />
                             {!collapsed && <span>Settings</span>}
                         </Link>
                         <button
                             onClick={handleSignOut}
-                            className={`flex items-center ${collapsed ? 'justify-center px-1' : 'gap-2 px-3'} py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]`}
+                            className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square' : 'gap-2 px-3 py-2.5 rounded-lg'} text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors hover:bg-white/[0.02]`}
                         >
-                            <LogOut className="w-4 h-4 flex-shrink-0" />
+                            <LogOut className={collapsed ? 'w-5 h-5 flex-shrink-0' : 'w-4 h-4 flex-shrink-0'} />
                             {!collapsed && <span>Sign Out</span>}
                         </button>
                     </div>
