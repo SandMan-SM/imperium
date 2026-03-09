@@ -26,9 +26,9 @@ export function FeaturedProduct() {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.7 }}
-                            className="order-1"
+                            className="order-1 text-left flex flex-col items-start"
                         >
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 md:mb-8 border border-imperium-gold/25 rounded-full bg-imperium-gold/8">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 md:mb-8 border border-imperium-gold/25 rounded-full bg-imperium-gold/8 mx-auto">
                                 <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
                                 <span className="text-[9px] md:text-[10px] font-bold tracking-[0.25em] text-imperium-gold uppercase">The Core Directive</span>
                             </div>
@@ -44,7 +44,7 @@ export function FeaturedProduct() {
                                 For $20 a month.
                             </div>
 
-                            <p className="text-white/40 font-light leading-relaxed mb-8 md:mb-10 max-w-md text-sm md:text-base">
+                            <p className="text-white/40 font-light leading-relaxed mb-8 md:mb-10 max-w-xl text-sm md:text-base">
                                 The Imperium Elite Mastermind is a high-performance architecture for the modern sovereign. Raw strategic intellect, translated into executable daily frameworks.
                             </p>
 
@@ -66,7 +66,7 @@ export function FeaturedProduct() {
                                 ))}
                             </ul>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-6">
+                            <div className="flex flex-col items-center gap-3">
                                 <a
                                     href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                                     target="_blank"
@@ -76,7 +76,8 @@ export function FeaturedProduct() {
                                     <span>Initiate Uplink</span>
                                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                                 </a>
-                                <div className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-bold text-center sm:text-left">
+
+                                <div className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-bold text-center">
                                     No Contracts<br />Absolute ROI
                                 </div>
                             </div>

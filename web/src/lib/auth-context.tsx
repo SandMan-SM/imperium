@@ -20,6 +20,9 @@ interface Profile {
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
+  previewView?: string | null;
+  setPreview?: (view: string | null) => Promise<void>;
+  rawProfile?: Profile | null;
   // becomes true once we've attempted to load the profile (even if it's null)
   profileLoaded?: boolean;
   session: Session | null;
@@ -37,6 +40,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [rawProfile, setRawProfile] = useState<Profile | null>(null);
+  const [previewView, setPreviewView] = useState<string | null>(null);
+
+  // initialize previewView from localStorage on mount so context reflects current state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const v = localStorage.getItem('preview_view');
+        if (v) setPreviewView(v);
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
+  // Listen for storage events so changes to preview_view in another tab or via the helper
+  // update the context and re-fetch the profile across the app without requiring a full reload.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onStorage = async (e: StorageEvent) => {
+      if (e.key === 'preview_view') {
+        try {
+          const v = e.newValue;
+          setPreviewView(v);
+          if (user) {
+            const p = await fetchProfile(user.id);
+            setProfile(p);
+          }
+        } catch (err) {
+          console.warn('failed to handle preview_view storage event', err);
+        }
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user]);
+
+  // When previewView changes in this context, re-fetch the profile so the app reflects the
+  // new preview without relying on a full page reload.
+  useEffect(() => {
+    if (!user) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const p = await fetchProfile(user.id);
+        if (mounted) setProfile(p);
+      } catch (e) {
+        /* ignore */
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [previewView, user]);
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
@@ -52,10 +111,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Error fetching profile:", error);
         return null;
       }
+
+      // keep an unmodified copy of the raw profile for admin-only features
+      try { setRawProfile(data as Profile); } catch (e) {}
+
+      // Check for preview view (admin testing feature)
+      const pv = previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null);
+      if (pv && data) {
+        const previewProfile = { ...data };
+        switch (pv) {
+          case 'public':
+            previewProfile.is_subscribed = false;
+            previewProfile.is_premium = false;
+            previewProfile.subscription_status = null;
+            // when previewing as a non-admin view, ensure admin flag is false
+            previewProfile.is_admin = false;
+            break;
+          case 'subscriber':
+            previewProfile.is_subscribed = true;
+            previewProfile.is_premium = false;
+            previewProfile.subscription_status = null;
+            previewProfile.is_admin = false;
+            break;
+          case 'free':
+            previewProfile.is_subscribed = true;
+            previewProfile.is_premium = false;
+            previewProfile.subscription_status = null;
+            previewProfile.is_admin = false;
+            break;
+          case 'premium':
+            previewProfile.is_subscribed = true;
+            previewProfile.is_premium = true;
+            previewProfile.subscription_status = 'active';
+            previewProfile.is_admin = false;
+            break;
+          // 'admin' or null = real profile data
+        }
+        
+        return previewProfile as Profile;
+      }
+      
       return data as Profile;
     } catch (error) {
       console.error("Error fetching profile:", error);
       return null;
+    }
+  };
+
+  // Set preview view programmatically (updates localStorage + refreshes profile)
+  const setPreview = async (view: string | null) => {
+    try {
+      if (typeof window !== 'undefined') {
+        if (view) localStorage.setItem('preview_view', view);
+        else localStorage.removeItem('preview_view');
+      }
+      setPreviewView(view);
+      if (user) {
+        const p = await fetchProfile(user.id);
+        setProfile(p);
+      }
+    } catch (e) {
+      console.warn('setPreview failed', e);
     }
   };
 
@@ -173,6 +289,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { isPremium: false, profile: null };
       }
 
+      // Apply client-side preview override if present (admin testing feature)
+      if (typeof window !== 'undefined') {
+        const previewView = localStorage.getItem('preview_view');
+        if (previewView) {
+          const previewProfile = { ...(data as Profile) } as Profile;
+          switch (previewView) {
+            case 'public':
+              previewProfile.is_subscribed = false;
+              previewProfile.is_premium = false;
+              previewProfile.subscription_status = null;
+              previewProfile.is_admin = false;
+              break;
+            case 'subscriber':
+              previewProfile.is_subscribed = true;
+              previewProfile.is_premium = false;
+              previewProfile.subscription_status = null;
+              previewProfile.is_admin = false;
+              break;
+            case 'free':
+              previewProfile.is_subscribed = true;
+              previewProfile.is_premium = false;
+              previewProfile.subscription_status = null;
+              previewProfile.is_admin = false;
+              break;
+            case 'premium':
+              previewProfile.is_subscribed = true;
+              previewProfile.is_premium = true;
+              previewProfile.subscription_status = 'active';
+              previewProfile.is_admin = false;
+              break;
+          }
+
+          return {
+            isPremium: previewProfile.is_premium === true || previewProfile.subscription_status === 'active',
+            profile: previewProfile,
+          };
+        }
+      }
+
       return {
         isPremium: data.is_premium === true || data.subscription_status === "active",
         profile: data as Profile,
@@ -183,23 +338,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        profile,
-        profileLoaded,
-        session,
-        loading,
-        signIn,
-        signUp,
-        signOut,
-        checkPremiumStatus,
-        refreshProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+      <AuthContext.Provider
+        value={{
+          user,
+          profile,
+          rawProfile,
+          previewView,
+          profileLoaded,
+          session,
+          loading,
+          signIn,
+          signUp,
+          signOut,
+          checkPremiumStatus,
+          refreshProfile,
+          setPreview,
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {

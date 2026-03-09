@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ShoppingBag, User } from "lucide-react";
+import { Menu, X, ShoppingBag, User, Eye } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useCart } from "@/lib/cart-context";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -11,8 +11,76 @@ import { CartDrawer } from "@/components/CartDrawer";
 export function Header() {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
-    const { user, profile, signOut, loading } = useAuth();
+    const [viewDropdownOpen, setViewDropdownOpen] = useState(false);
+    const { user, profile, rawProfile, previewView, setPreview, signOut, loading } = useAuth();
     const { itemCount, setIsCartOpen } = useCart();
+
+    // show eyeball when the underlying raw profile is admin (so preview doesn't hide it)
+    const isAdmin = rawProfile?.is_admin || profile?.is_admin;
+
+    const [currentView, setCurrentView] = useState<string>('admin');
+    const [hasLocalPreview, setHasLocalPreview] = useState(false);
+
+    // derive active view from context or storage so highlighting is accurate
+    const activeView = (previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null) || 'admin');
+
+    useEffect(() => {
+        if (isAdmin) {
+            const view = previewView || localStorage.getItem('preview_view') || 'admin';
+            setCurrentView(view);
+            
+            // Try to dynamically load a local-only helper script at /local/admin-preview.js.
+            // If the file exists in web/public/local/admin-preview.js it will expose
+            // window.__imperium_admin_preview which enables the Eye control.
+            try {
+                const script = document.createElement('script');
+                script.src = '/local/admin-preview.js';
+                script.async = true;
+                script.onload = () => {
+                    try {
+                        const helper = (window as any).__imperium_admin_preview;
+                        setHasLocalPreview(!!(helper && helper.shouldShowEye));
+                    } catch (e) {
+                        setHasLocalPreview(false);
+                    }
+                };
+                script.onerror = () => setHasLocalPreview(false);
+                document.head.appendChild(script);
+
+                // ensure currentView reflects previewView immediately when script loads
+                script.onload = () => {
+                    try {
+                        const helper = (window as any).__imperium_admin_preview;
+                        setHasLocalPreview(!!(helper && helper.shouldShowEye));
+                        const v = localStorage.getItem('preview_view') || previewView || 'admin';
+                        setCurrentView(v);
+                    } catch (e) {
+                        setHasLocalPreview(false);
+                    }
+                };
+
+                return () => {
+                    // cleanup appended script
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                };
+            } catch (e) {
+                setHasLocalPreview(false);
+            }
+        } else {
+            // ensure currentView falls back to admin for non-admin pages
+            setCurrentView('admin');
+        }
+    }, [isAdmin]);
+
+    // Keep the local `currentView` in sync with the Auth context previewView
+    useEffect(() => {
+        try {
+            const v = previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null) || 'admin';
+            setCurrentView(v);
+        } catch (e) {
+            // ignore
+        }
+    }, [previewView]);
 
     // keep for future conditional behavior; not used currently
     const isAdminPage = pathname === "/admin";
@@ -54,6 +122,107 @@ export function Header() {
 
                     {/* Desktop CTA */}
                     <div className="hidden md:flex items-center gap-3 lg:gap-5">
+                        {/* Admin View Switcher */}
+                        {isAdmin && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
+                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
+                                    aria-label="View options"
+                                    aria-expanded={viewDropdownOpen}
+                                >
+                                    <Eye className="w-5 h-5" />
+                                </button>
+                                {viewDropdownOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) {}
+                                                setCurrentView('public');
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) {
+                                                    try { helper.setPreview('public'); } catch (e) { window.location.reload(); }
+                                                } else {
+                                                    // update context preview as well so pages that depend on checkPremiumStatus update
+                                                    try { await setPreview('public'); } catch (e) { /* ignore */ }
+                                                    // no forced reload here; context will re-fetch profile and components will update
+                                                }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
+                                        >
+                                            <span className={activeView === 'public' ? 'text-imperium-gold' : ''}>Public</span>
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) {}
+                                                setCurrentView('subscriber');
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) {
+                                                    try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); }
+                                                } else {
+                                                    try { await setPreview('subscriber'); } catch (e) { /* ignore */ }
+                                                }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
+                                        >
+                                            <span className={activeView === 'subscriber' ? 'text-imperium-gold' : ''}>Subscriber</span>
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) {}
+                                                setCurrentView('free');
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) {
+                                                    try { helper.setPreview('free'); } catch (e) { window.location.reload(); }
+                                                } else {
+                                                    try { await setPreview('free'); } catch (e) { /* ignore */ }
+                                                }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
+                                        >
+                                            <span className={activeView === 'free' ? 'text-imperium-gold' : ''}>Free</span>
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) {}
+                                                setCurrentView('premium');
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) {
+                                                    try { helper.setPreview('premium'); } catch (e) { window.location.reload(); }
+                                                } else {
+                                                    try { await setPreview('premium'); } catch (e) { /* ignore */ }
+                                                }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
+                                        >
+                                            <span className={activeView === 'premium' ? 'text-imperium-gold' : ''}>Premium</span>
+                                        </button>
+                                        <div className="border-t border-white/[0.06] my-1" />
+                                        <button
+                                            onClick={() => {
+                                                try { localStorage.removeItem('preview_view'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.clearPreview) {
+                                                    try { helper.clearPreview(); } catch (e) { window.location.reload(); }
+                                                } else {
+                                                    window.location.reload();
+                                                }
+                                                setCurrentView('admin');
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-imperium-gold hover:bg-white/[0.02]"
+                                        >
+                                            <span className={activeView === 'admin' ? 'text-imperium-gold' : ''}>Admin</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Cart Button */}
                         <button
                             onClick={() => setIsCartOpen(true)}
@@ -92,6 +261,85 @@ export function Header() {
 
                     {/* Mobile toggle & cart */}
                     <div className="flex md:hidden items-center gap-2">
+                        {/* Mobile Eye (only when helper enabled for admins) */}
+                        {isAdmin && hasLocalPreview && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
+                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
+                                    aria-label="View options"
+                                    aria-expanded={viewDropdownOpen}
+                                >
+                                    <Eye className="w-5 h-5" />
+                                </button>
+                                {viewDropdownOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) { try { helper.setPreview('public'); } catch (e) { window.location.reload(); } }
+                                                else { try { await setPreview('public'); } catch (e) { /* ignore */ } }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'public' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
+                                        >
+                                            Public
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) { try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); } }
+                                                else { try { await setPreview('subscriber'); } catch (e) { /* ignore */ } }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'subscriber' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
+                                        >
+                                            Subscriber
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) { try { helper.setPreview('free'); } catch (e) { window.location.reload(); } }
+                                                else { try { await setPreview('free'); } catch (e) { /* ignore */ } }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'free' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
+                                        >
+                                            Free
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.setPreview) { try { helper.setPreview('premium'); } catch (e) { window.location.reload(); } }
+                                                else { try { await setPreview('premium'); } catch (e) { /* ignore */ } }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'premium' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
+                                        >
+                                            Premium
+                                        </button>
+                                        <div className="border-t border-white/[0.06] my-1" />
+                                        <button
+                                            onClick={async () => {
+                                                try { localStorage.removeItem('preview_view'); } catch (e) {}
+                                                const helper = (window as any).__imperium_admin_preview;
+                                                if (helper && helper.clearPreview) { try { helper.clearPreview(); } catch (e) { window.location.reload(); } }
+                                                else { try { await setPreview(null); } catch (e) { /* ignore */ } }
+                                                setViewDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'admin' ? 'text-imperium-gold' : 'text-imperium-gold/60'} hover:bg-white/[0.02]`}
+                                        >
+                                            Admin
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <button
                             onClick={() => setIsCartOpen(true)}
                             className="relative p-2 text-white/60 hover:text-white transition-colors"

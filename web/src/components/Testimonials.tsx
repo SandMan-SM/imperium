@@ -171,34 +171,7 @@ export function Testimonials() {
                 <MarqueeRow cards={ROW_2} reverse />
             </div>
 
-            {/* Stat strip */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-                className="container mx-auto px-4 max-w-4xl mt-16"
-            >
-                <div className="grid grid-cols-3 gap-px bg-imperium-border rounded-2xl overflow-hidden">
-                    {[
-                        { value: "2,400+", label: "Subscribers" },
-                        { value: "98%", label: "Retention Rate" },
-                        { value: "$20", label: "Life-Altering ROI" },
-                    ].map((stat, i) => (
-                        <div
-                            key={i}
-                            className="bg-imperium-bg px-6 py-8 text-center group hover:bg-imperium-card transition-colors duration-300"
-                        >
-                            <div className="text-3xl md:text-4xl font-bold text-white group-hover:text-imperium-gold transition-colors duration-300 mb-1">
-                                {stat.value}
-                            </div>
-                            <div className="text-xs text-gray-500 uppercase tracking-[0.15em] font-bold">
-                                {stat.label}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
+            {/* Stat strip removed (moved to Hero) */}
         </section>
     );
 }

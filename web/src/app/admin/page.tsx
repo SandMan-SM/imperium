@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import { Users, Package, Mail, Search, PlusCircle, ShieldCheck, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, Menu, X } from "lucide-react";
+import { Users, Package, Mail, Search, PlusCircle, ShieldCheck, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, Menu, X, ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -119,31 +119,19 @@ export default function AdminDashboard() {
         { id: "crm" as AdminTab, label: "Client CRM", icon: Users },
         { id: "inventory" as AdminTab, label: "Inventory", icon: Package },
         { id: "comms" as AdminTab, label: "Comms Studio", icon: Mail },
-        { id: "settings" as AdminTab, label: "Settings", icon: ShieldCheck },
     ];
 
     return (
         <div className="min-h-screen bg-imperium-bg flex">
-            {/* Left Sidebar */}
+            {/* Left Sidebar - always fixed */}
             <aside className={`
-                w-56 md:w-56
+                ${collapsed ? 'w-16' : 'w-56'}
                 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col 
-                fixed md:relative left-0 top-[72px] bottom-0 md:top-0 z-40 
-                transition-all duration-300 ease-in-out
-                ${collapsed ? 'md:w-16' : ''}
+                fixed left-0 top-[72px] bottom-0 z-40 
             `}>
-                <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px] relative">
-                    <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Command Center</h1>
-                    <div className="flex items-center gap-1">
-                        {/* Hash button to open menu */}
-                        <button
-                            onClick={() => setMenuOpen(true)}
-                            className={`flex items-center justify-center w-6 h-6 rounded-md text-white/40 hover:text-white text-lg font-light ${collapsed ? 'md:hidden' : ''}`}
-                            aria-label="Open menu"
-                        >
-                            #
-                        </button>
-                        {/* Toggle button for collapse/expand */}
+                <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center min-h-[57px] relative">
+                    <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight absolute left-2 sm:left-4 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Command Center</h1>
+                    <div className={`flex items-center ${collapsed ? 'w-full justify-center' : 'ml-auto'}`}>
                         <button
                             onClick={() => {
                                 setCollapsed((s) => {
@@ -151,10 +139,10 @@ export default function AdminDashboard() {
                                     return !s;
                                 });
                             }}
-                            className="hidden md:flex p-2 rounded-md text-white/60 hover:text-white"
+                            className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20"
                             aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
                         >
-                            {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                         </button>
                     </div>
                 </div>
@@ -169,14 +157,14 @@ export default function AdminDashboard() {
                                 }}
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
-                                    ${collapsed ? 'md:px-1 md:justify-center md:aspect-square px-3 py-2.5 gap-3' : 'px-3 py-2.5 gap-3'} 
+                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3'} 
                                     ${activeTab === tab.id 
                                         ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
                                         : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                 `}
                             >
                                 <tab.icon className="w-5 h-5 flex-shrink-0" />
-                                <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>{tab.label}</span>
+                                <span className={`${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>{tab.label}</span>
                             </button>
                         ))}
                     </nav>
@@ -184,24 +172,20 @@ export default function AdminDashboard() {
 
                 <div className="mt-auto p-2 sm:p-4 border-t border-white/[0.06]">
                     <div className="flex flex-col gap-2">
-                        <Link href="/account" className={`flex items-center ${collapsed ? 'md:justify-center md:px-1 md:aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}>
-                            <ShoppingBag className="w-5 h-5 flex-shrink-0" />
-                            <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Settings</span>
-                        </Link>
-                        <button
-                            onClick={handleSignOut}
-                            className={`flex items-center ${collapsed ? 'md:justify-center md:px-1 md:aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}
+                        <button 
+                            onClick={() => setActiveTab("settings")}
+                            className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}
                         >
-                            <LogOut className="w-5 h-5 flex-shrink-0" />
-                            <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Sign Out</span>
+                            <Settings className="w-5 h-5 flex-shrink-0" />
+                            <span className={`${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Settings</span>
                         </button>
                     </div>
                 </div>
             </aside>
 
-            {/* Main Content - margin on mobile for sidebar, no margin on desktop */}
+            {/* Main Content - margin on mobile for sidebar */}
             <main className="flex-1 overflow-auto">
-                <div className="p-4 sm:p-6 lg:p-8 ml-56 md:ml-0">
+                <div className={`p-4 sm:p-6 lg:p-8 ${collapsed ? 'ml-16' : 'ml-56'}`}>
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
@@ -291,7 +275,7 @@ export function PortalLogin() {
 
 export function UserPortal({ userView }: { userView: "free" | "premium" }) {
     const { profile, signOut } = useAuth();
-    const [activeTab, setActiveTab] = useState<"principles" | "newsletter">("principles");
+    const [activeTab, setActiveTab] = useState<"principles" | "newsletter" | "settings">("principles");
 
     const handleSignOut = async () => {
         await signOut();
@@ -305,7 +289,7 @@ export function UserPortal({ userView }: { userView: "free" | "premium" }) {
     return (
         <div className="min-h-screen bg-imperium-bg flex">
             {/* Left Sidebar (fixed to left edge) */}
-            <aside className="fixed md:relative left-0 top-[72px] md:top-0 bottom-0 w-56 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-20">
+            <aside className="fixed left-0 top-[72px] bottom-0 w-56 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-40">
                 <div className="p-4 sm:p-6 border-b border-white/[0.06]">
                     <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Command Center</h1>
                 </div>
@@ -326,65 +310,72 @@ export function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                 <div className="p-3 sm:p-4 border-t border-white/[0.06]">
                     <button
-                        onClick={handleSignOut}
+                        onClick={() => setActiveTab("settings")}
                         className="flex items-center gap-2 w-full px-3 sm:px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]"
+                        aria-label="Open settings"
                     >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
+                        <Settings className="w-4 h-4" />
+                        Settings
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-auto ml-56">
                 <div className="p-4 sm:p-6 sm:max-w-lg">
-                    <div className="mb-6">
-                        <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
-                        <p className="text-white/40 text-sm">
-                            {userView === "premium" 
-                                ? "You have premium access to all content."
-                                : "Upgrade to premium for full access to all content."}
-                        </p>
-                    </div>
+                    {activeTab === "settings" ? (
+                        <SettingsView />
+                    ) : (
+                        <>
+                            <div className="mb-6">
+                                <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
+                                <p className="text-white/40 text-sm">
+                                    {userView === "premium" 
+                                        ? "You have premium access to all content."
+                                        : "Upgrade to premium for full access to all content."}
+                                </p>
+                            </div>
 
-                    <div className="grid gap-3 sm:gap-4">
-                        <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
-                            <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
-                                <BookOpen className="text-imperium-gold w-5 h-6" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">28 Principles</h3>
-                                <p className="text-white/40 text-sm">Access the Imperium doctrine</p>
-                            </div>
-                        </Link>
+                            <div className="grid gap-3 sm:gap-4">
+                                <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
+                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
+                                        <BookOpen className="text-imperium-gold w-5 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">28 Principles</h3>
+                                        <p className="text-white/40 text-sm">Access the Imperium doctrine</p>
+                                    </div>
+                                </Link>
 
-                        <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
-                            <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
-                                <Mail className="text-imperium-gold w-5 h-6" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Newsletter</h3>
-                                <p className="text-white/40 text-sm">View intelligence briefs</p>
-                            </div>
-                        </Link>
+                                <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
+                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
+                                        <Mail className="text-imperium-gold w-5 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Newsletter</h3>
+                                        <p className="text-white/40 text-sm">View intelligence briefs</p>
+                                    </div>
+                                </Link>
 
-                        {userView === "free" && (
-                            <a 
-                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-4 p-4 sm:p-5 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
-                            >
-                                <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold flex items-center justify-center flex-shrink-0">
-                                    <Crown className="text-imperium-bg w-5 h-6" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-imperium-gold font-medium">Upgrade to Premium</h3>
-                                    <p className="text-white/40 text-sm">$20/month for full access</p>
-                                </div>
-                            </a>
-                        )}
-                    </div>
+                                {userView === "free" && (
+                                    <a 
+                                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-4 p-4 sm:p-5 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
+                                    >
+                                        <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold flex items-center justify-center flex-shrink-0">
+                                            <Crown className="text-imperium-bg w-5 h-6" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-imperium-gold font-medium">Upgrade to Premium</h3>
+                                            <p className="text-white/40 text-sm">$20/month for full access</p>
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </main>
         </div>
@@ -656,87 +647,24 @@ function ProductManager() {
 }
 
 function SettingsView() {
-    const [products, setProducts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<any | null>(null);
+    const { signOut } = useAuth();
 
-    useEffect(() => {
-        supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts(data || []));
-    }, []);
-
-    const handleSyncMissing = useCallback(async () => {
-        setLoading(true);
-        try {
-            // only send products missing payment link (stripe_url or payment_link_url)
-            const toSync = products.filter(p => !p.stripe_url && !p.payment_link_url);
-
-            if (toSync.length === 0) {
-                setResult({ message: 'No products to sync' });
-                setLoading(false);
-                return;
-            }
-
-            const res = await fetch('/api/sync-products', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ products: toSync }),
-            });
-            const data = await res.json();
-            setResult(data);
-
-            // refresh products list from supabase
-            const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            setProducts(refreshed || []);
-        } catch (err) {
-            console.error('Settings sync error:', err);
-            setResult({ error: String(err) });
-        }
-        setLoading(false);
-    }, [products]);
+    const handleSignOut = async () => {
+        await signOut();
+    };
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg sm:text-xl font-light text-white">Settings</h2>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleSyncMissing}
-                        disabled={loading}
-                        className="border border-imperium-gold/30 text-imperium-gold text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg hover:bg-imperium-gold/10 transition-all disabled:opacity-50"
-                    >
-                        {loading ? 'Syncing...' : 'Sync Stripe (missing)'}
-                    </button>
-                </div>
-            </div>
-
-            <div className="mb-4">
-                <p className="text-white/40 text-sm">This will create Stripe products/prices/payment links for any products missing a payment link.</p>
-            </div>
-
-            {result && (
-                <div className="mb-6 p-4 rounded-xl bg-[#071018] border border-white/[0.04]">
-                    <pre className="text-xs text-white/60 overflow-auto">{JSON.stringify(result, null, 2)}</pre>
-                </div>
-            )}
-
-            <div>
-                <h3 className="text-sm text-white/40 mb-3">Products</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {products.map(p => (
-                        <div key={p.id} className="p-4 bg-[#0f131a] border border-white/[0.06] rounded-xl">
-                            <div className="flex justify-between items-center mb-2">
-                                <div>
-                                    <div className="text-white font-medium">{p.name}</div>
-                                    <div className="text-white/30 text-xs">{p.category || 'Uncategorized'}</div>
-                                </div>
-                                <div className="text-sm text-imperium-gold">${p.price || 0}</div>
-                            </div>
-                            <div className="text-xs text-white/40">
-                                Stripe: {p.stripe_url ? <span className="text-green-400">Yes</span> : <span className="text-yellow-400">No</span>} · Payment Link: {p.payment_link_url ? <span className="text-green-400">Yes</span> : <span className="text-yellow-400">No</span>}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            <h2 className="text-lg sm:text-xl font-light text-white mb-6">Settings</h2>
+            
+            <div className="pt-6 border-t border-white/[0.06]">
+                <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg text-white/40 hover:text-white hover:bg-white/[0.02] w-full"
+                >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                </button>
             </div>
         </div>
     );

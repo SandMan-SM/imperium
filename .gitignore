@@ -25,3 +25,6 @@ web/.vercel/
 # OS
 .DS_Store
 .DS_Store?
+
+# Local-only admin preview helper (dev-only)
+/web/public/local/admin-preview.js
