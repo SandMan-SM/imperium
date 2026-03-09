@@ -134,14 +134,29 @@ export default function AdminDashboard() {
             `}>
                 <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px] relative">
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Command Center</h1>
-                    {/* Desktop hash button to open menu */}
-                    <button
-                        onClick={() => setMenuOpen(true)}
-                        className="hidden md:flex items-center justify-center w-6 h-6 rounded-md text-white/40 hover:text-white text-lg font-light"
-                        aria-label="Open menu"
-                    >
-                        #
-                    </button>
+                    <div className="flex items-center gap-1">
+                        {/* Hash button to open menu */}
+                        <button
+                            onClick={() => setMenuOpen(true)}
+                            className={`flex items-center justify-center w-6 h-6 rounded-md text-white/40 hover:text-white text-lg font-light ${collapsed ? 'md:hidden' : ''}`}
+                            aria-label="Open menu"
+                        >
+                            #
+                        </button>
+                        {/* Toggle button for collapse/expand */}
+                        <button
+                            onClick={() => {
+                                setCollapsed((s) => {
+                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
+                                    return !s;
+                                });
+                            }}
+                            className="hidden md:flex p-2 rounded-md text-white/60 hover:text-white"
+                            aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+                        >
+                            {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-hidden">
