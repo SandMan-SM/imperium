@@ -125,7 +125,7 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-imperium-bg flex">
             {/* Left Sidebar */}
             <aside className={`
-                w-16 md:w-56
+                w-56 md:w-56
                 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col 
                 fixed md:relative left-0 top-[72px] bottom-0 md:top-0 z-40 
                 transition-all duration-300 ease-in-out
@@ -155,10 +155,6 @@ export default function AdminDashboard() {
                                 key={tab.id}
                                 onClick={() => {
                                     setActiveTab(tab.id);
-                                    // Close mobile menu when selecting a tab
-                                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                                        setMobileOpen(false);
-                                    }
                                 }}
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
@@ -194,7 +190,7 @@ export default function AdminDashboard() {
 
             {/* Main Content - margin on mobile for sidebar, no margin on desktop */}
             <main className="flex-1 overflow-auto">
-                <div className="p-4 sm:p-6 lg:p-8 ml-16 md:ml-0">
+                <div className="p-4 sm:p-6 lg:p-8 ml-56 md:ml-0">
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
