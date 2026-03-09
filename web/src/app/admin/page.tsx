@@ -125,30 +125,23 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-imperium-bg flex">
             {/* Left Sidebar */}
             <aside className={`
-                w-56
+                w-16 md:w-56
                 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col 
                 fixed md:relative left-0 top-[72px] bottom-0 md:top-0 z-40 
                 transition-all duration-300 ease-in-out
-                ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                 ${collapsed ? 'md:w-16' : ''}
             `}>
                 <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px]">
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Command Center</h1>
-                    {/* Single toggle button for both mobile close and desktop collapse */}
+                    {/* Desktop only toggle button */}
                     <button
                         onClick={() => {
-                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                                // Mobile: close sidebar
-                                setMobileOpen(false);
-                            } else {
-                                // Desktop: toggle collapse
-                                setCollapsed((s) => {
-                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
-                                    return !s;
-                                });
-                            }
+                            setCollapsed((s) => {
+                                try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
+                                return !s;
+                            });
                         }}
-                        className="p-2 rounded-md text-white/60 hover:text-white"
+                        className="hidden md:flex p-2 rounded-md text-white/60 hover:text-white"
                         aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
                     >
                         {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
@@ -176,7 +169,7 @@ export default function AdminDashboard() {
                                 `}
                             >
                                 <tab.icon className="w-5 h-5 flex-shrink-0" />
-                                <span className={`hidden sm:inline transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>{tab.label}</span>
+                                <span className={`transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>{tab.label}</span>
                             </button>
                         ))}
                     </nav>
@@ -199,30 +192,9 @@ export default function AdminDashboard() {
                 </div>
             </aside>
 
-            {/* Mobile only hamburger - shows when sidebar is hidden on mobile */}
-            <button
-                onClick={() => setMobileOpen(true)}
-                className={`
-                    md:hidden fixed top-[80px] left-4 z-50 p-2 bg-[#0a0e14] border border-white/[0.08] rounded-lg text-white/60 hover:text-white
-                    transition-opacity duration-300
-                    ${mobileOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}
-                `}
-                aria-label="Open menu"
-            >
-                <Menu className="w-5 h-5" />
-            </button>
-
-            {/* Mobile overlay - shows when sidebar is open on mobile */}
-            {mobileOpen && (
-                <div 
-                    className="md:hidden fixed inset-0 bg-black/50 z-30 top-[72px]"
-                    onClick={() => setMobileOpen(false)}
-                />
-            )}
-
-            {/* Main Content - no margin on mobile, margin on desktop for sidebar */}
+            {/* Main Content - margin on mobile for sidebar, no margin on desktop */}
             <main className="flex-1 overflow-auto">
-                <div className="p-4 sm:p-6 lg:p-8">
+                <div className="p-4 sm:p-6 lg:p-8 ml-16 md:ml-0">
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
