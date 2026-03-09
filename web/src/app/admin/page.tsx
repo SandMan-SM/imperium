@@ -219,7 +219,7 @@ export default function AdminDashboard() {
 
             {/* Main Content - no margin on mobile, margin on desktop for sidebar */}
             <main className="flex-1 overflow-auto">
-                <div className="p-4 sm:p-6 lg:p-8 md:ml-56">
+                <div className="p-4 sm:p-6 lg:p-8">
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
@@ -298,7 +298,7 @@ export function UserPortal({ userView }: { userView: "free" | "premium" }) {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto md:ml-56">
+            <main className="flex-1 overflow-auto">
                 <div className="p-4 sm:p-6 sm:max-w-lg">
                     <div className="mb-6">
                         <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
