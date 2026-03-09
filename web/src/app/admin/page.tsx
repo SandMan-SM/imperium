@@ -29,6 +29,7 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<AdminTab>("analytics");
     const [stats, setStats] = useState({ profiles: 0, products: 0, subs: 0 });
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         // determine userView only once profile/user loading is finished
@@ -131,20 +132,15 @@ export default function AdminDashboard() {
                 transition-all duration-300 ease-in-out
                 ${collapsed ? 'md:w-16' : ''}
             `}>
-                <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px]">
+                <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center justify-between min-h-[57px] relative">
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight transition-opacity duration-200 md:opacity-0 md:w-0 md:overflow-hidden ${collapsed ? '' : 'md:opacity-100 md:w-auto'}`}>Command Center</h1>
-                    {/* Desktop only toggle button */}
+                    {/* Desktop hash button to open menu */}
                     <button
-                        onClick={() => {
-                            setCollapsed((s) => {
-                                try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
-                                return !s;
-                            });
-                        }}
-                        className="hidden md:flex p-2 rounded-md text-white/60 hover:text-white"
-                        aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
+                        onClick={() => setMenuOpen(true)}
+                        className="hidden md:flex items-center justify-center w-6 h-6 rounded-md text-white/40 hover:text-white text-lg font-light"
+                        aria-label="Open menu"
                     >
-                        {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                        #
                     </button>
                 </div>
 
@@ -198,6 +194,62 @@ export default function AdminDashboard() {
                     {activeTab === "settings" && <SettingsView />}
                 </div>
             </main>
+
+            {/* Menu Popup Drawer */}
+            {menuOpen && (
+                <div className="fixed inset-0 z-50">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+                    <div className="absolute right-0 top-[72px] h-[calc(100vh-72px)] w-80 bg-[#0a0e14] border-l border-white/[0.08] flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                            <span className="text-lg font-light text-white tracking-tight">Command Center</span>
+                            <button 
+                                onClick={() => setMenuOpen(false)} 
+                                className="p-2 rounded-md text-white/40 hover:text-white"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <nav className="flex-1 p-4 space-y-1">
+                            {adminTabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => {
+                                        setActiveTab(tab.id);
+                                        setMenuOpen(false);
+                                    }}
+                                    className={`
+                                        flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3
+                                        ${activeTab === tab.id 
+                                            ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
+                                            : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
+                                    `}
+                                >
+                                    <tab.icon className="w-4 h-4" />
+                                    {tab.label}
+                                </button>
+                            ))}
+                            <Link
+                                href="/account"
+                                onClick={() => setMenuOpen(false)}
+                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                            >
+                                <ShoppingBag className="w-4 h-4" />
+                                Settings
+                            </Link>
+                            <button
+                                onClick={() => {
+                                    handleSignOut();
+                                    setMenuOpen(false);
+                                }}
+                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                Sign Out
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
