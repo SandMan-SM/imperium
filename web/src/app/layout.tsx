@@ -14,6 +14,9 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Imperium Elite — Build the Mind. Command the Future.",
   description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+  verification: {
+    google: "YOUR_GOOGLE_VERIFICATION_CODE"
+  }
 };
 
 export default function RootLayout({
@@ -25,14 +28,14 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-            <CartProvider>
-              <Header />
-              <AdminPreviewDebug />
-              {/* Offset main content by the fixed header height to avoid content being cut off */}
-              <main className="pt-[72px] min-h-screen bg-imperium-bg">
-                {children}
-              </main>
-            </CartProvider>
+          <CartProvider>
+            <Header />
+            <AdminPreviewDebug />
+            {/* Offset main content by the fixed header height to avoid content being cut off */}
+            <main className="pt-[72px] min-h-screen bg-imperium-bg">
+              {children}
+            </main>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>
