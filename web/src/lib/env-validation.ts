@@ -92,6 +92,38 @@ class EnvironmentValidator {
                 description: 'Resend API key for email sending'
             },
             {
+                name: 'NEXT_PUBLIC_GMAIL_CLIENT_ID',
+                required: false,
+                validator: (value) => {
+                    return value.includes('.apps.googleusercontent.com');
+                },
+                description: 'Gmail OAuth client ID for email sending'
+            },
+            {
+                name: 'NEXT_PUBLIC_GMAIL_CLIENT_SECRET',
+                required: false,
+                validator: (value) => {
+                    return value.length > 10 && !value.includes(' ');
+                },
+                description: 'Gmail OAuth client secret for email sending'
+            },
+            {
+                name: 'NEXT_PUBLIC_GMAIL_REFRESH_TOKEN',
+                required: false,
+                validator: (value) => {
+                    return value.startsWith('1//') && value.length > 50;
+                },
+                description: 'Gmail OAuth refresh token for email sending'
+            },
+            {
+                name: 'NEXT_PUBLIC_GMAIL_FROM_EMAIL',
+                required: false,
+                validator: (value) => {
+                    return value.includes('@') && value.includes('.');
+                },
+                description: 'Gmail email address for sending newsletters'
+            },
+            {
                 name: 'NODE_ENV',
                 required: true,
                 defaultValue: 'production',

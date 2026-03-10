@@ -12,16 +12,23 @@
     "node": "20.x"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.19.0",
     "@supabase/supabase-js": "^2.98.0",
+    "@tiptap/react": "^3.20.1",
+    "@tiptap/starter-kit": "^3.20.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",
     "framer-motion": "^12.35.0",
+    "googleapis": "^171.4.0",
     "lucide-react": "^0.577.0",
+    "mjml": "^4.18.0",
     "next": "16.1.6",
     "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-email": "^5.2.9",
     "recharts": "^3.8.0",
+    "resend": "^6.9.3",
     "stripe": "^20.4.0",
     "tailwind-merge": "^3.5.0"
   },

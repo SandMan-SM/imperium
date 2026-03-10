@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { gmailService } from '@/lib/gmail-service';
 
 /**
  * Expected to be called by n8n or an admin dash trigger
- * Dispatches active campaigns to all active subscribers via Resend/SMTP
+ * Dispatches active campaigns to all active subscribers via Gmail API
  */
 export async function POST(req: Request) {
     try {
@@ -37,17 +38,29 @@ export async function POST(req: Request) {
 
         if (sErr || !subs) throw new Error('Failed to fetch subscribers');
 
-        // 3. Dispatch Emails (Mocked out for execution context)
-        // Normally we'd use resend.emails.send() here in a Promise.all block or via n8n directly
+        // 3. Dispatch Emails via Gmail API
         console.log(`Dispatching [${campaign.subject}] to ${subs.length} subscribers...`);
+
+        // Use Gmail service to send the newsletter
+        const result = await gmailService.sendNewsletterToSubscribers(campaignId);
 
         // 4. Mark Sent
         await supabaseAdmin
             .from('newsletter_campaigns')
-            .update({ sent_status: 'sent', updated_at: new Date() })
+            .update({
+                sent_status: 'sent',
+                updated_at: new Date(),
+                sent_count: result.success,
+                failed_count: result.failed
+            })
             .eq('id', campaignId);
 
-        return NextResponse.json({ success: true, dispatchedTo: subs.length });
+        return NextResponse.json({
+            success: true,
+            dispatchedTo: subs.length,
+            sent: result.success,
+            failed: result.failed
+        });
     } catch (error: any) {
         console.error('Newsletter Dispatch Error:', error);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

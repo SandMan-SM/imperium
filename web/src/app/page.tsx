@@ -52,6 +52,10 @@ export default function Home() {
               <a href="/28principles" className="hover:text-white transition-colors surface-card">28 Principles</a>
               <a href="/shop" className="hover:text-white transition-colors surface-card">Arsenal Shop</a>
               <a href="/#newsletter" className="hover:text-white transition-colors surface-card">Intelligence</a>
+              <div className="flex gap-4 mt-2">
+                <a href="/terms" className="hover:text-white transition-colors surface-card">Terms</a>
+                <a href="/privacy" className="hover:text-white transition-colors surface-card">Privacy</a>
+              </div>
             </div>
           </div>
         </div>
