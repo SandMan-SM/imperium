@@ -66,7 +66,7 @@ export function FeaturedProduct() {
                                 ))}
                             </ul>
 
-                            <div className="flex flex-col items-center gap-3">
+                            <div className="flex flex-col items-center gap-3 mx-auto">
                                 <a
                                     href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                                     target="_blank"
@@ -91,7 +91,7 @@ export function FeaturedProduct() {
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="relative lg:pl-10 order-2 lg:order-2 mt-8 lg:mt-0"
                         >
-                            <div className="relative rounded-2xl sm:rounded-[2rem] overflow-hidden bg-black border border-white/5 p-6 sm:p-8 md:p-14 shadow-2xl">
+                            <div className="relative rounded-2xl sm:rounded-[2rem] overflow-hidden bg-black border border-white/[0.08] p-6 sm:p-8 md:p-14 shadow-2xl">
                                 <div className="text-center mb-6 sm:mb-8 md:mb-12">
                                     <h3 className="text-base sm:text-lg md:text-xl font-bold text-white uppercase tracking-[0.35em] mb-2 sm:mb-3">Imperium Elite</h3>
                                     <p className="text-[9px] sm:text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] font-bold">Credential Protocol</p>
@@ -104,17 +104,17 @@ export function FeaturedProduct() {
 
                                 <div className="space-y-2 sm:space-y-3 md:space-y-4 mb-6 sm:mb-8 md:mb-10">
                                     {BENEFITS.slice(0, 4).map((b, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-xs text-white/40 py-4 border-b border-white/5 last:border-0">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                        <div key={i} className="flex items-center gap-4 text-xs text-white/40 py-3 border-b border-white/[0.08] last:border-0">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-imperium-gold/20 border border-imperium-gold/30" />
                                             <span className="tracking-wide">{b}</span>
                                         </div>
                                     ))}
                                 </div>
 
                                 <div className="pt-6 text-center">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest">Global Access Active</span>
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.08] border border-white/[0.12]">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
+                                        <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Global Access Active</span>
                                     </div>
                                 </div>
                             </div>

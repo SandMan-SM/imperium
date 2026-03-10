@@ -32,7 +32,7 @@ export default function NewsletterPage() {
 
     if (checkingPremium) {
         return (
-            <div className="min-h-screen bg-imperium-bg flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-imperium-gold animate-spin" />
             </div>
         );
@@ -41,9 +41,9 @@ export default function NewsletterPage() {
     const isLoggedIn = !!user;
 
     return (
-        <div className="min-h-screen bg-imperium-bg">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
             {/* Hero */}
-            <div className="relative border-b border-imperium-border pt-[84px] overflow-hidden">
+            <div className="relative border-b border-imperium-gold/20 pt-[84px] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="relative container mx-auto px-4 sm:px-6 max-w-3xl py-12 sm:py-16 md:py-24 text-center">
@@ -66,7 +66,7 @@ export default function NewsletterPage() {
                     </h1>
 
                     <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-3 sm:mb-4 px-2 sm:px-0">
-                        {isPremium && isLoggedIn 
+                        {isPremium && isLoggedIn
                             ? "Exclusive premium intelligence. No marketing, no noise — just pure strategic value delivered to your inbox."
                             : "A daily dose of raw tactical intellect for the disciplined sovereign. No noise, no motivation platitudes — just precision frameworks from the world's most formidable strategic minds."
                         }
@@ -78,30 +78,17 @@ export default function NewsletterPage() {
                 </div>
             </div>
 
-            {/* Premium: Show 28 Principles link, Free: Show benefits */}
+            {/* Unlock Premium Intelligence Section - Free Newsletter Signup */}
             {!isPremium && !isLoggedIn && (
-                <div className="border-b border-imperium-border py-16 md:py-20">
+                <div className="border-b border-imperium-gold/20 py-16 md:py-20">
                     <div className="container mx-auto px-6 max-w-5xl">
                         <div className="text-center mb-12 md:mb-14">
-                            <h2 className="text-2xl md:text-3xl text-white mb-3">What&apos;s included</h2>
-                            <p className="text-white/35 font-light text-sm">Everything you need to operate at an elite level.</p>
+                            <h2 className="text-2xl md:text-3xl text-white mb-3">Unlock Premium Intelligence</h2>
+                            <p className="text-white/35 font-light text-sm">Enter your email to join the free intelligence network.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {[
-                                { label: "Daily Brief", desc: "A curated strategic intelligence drop sent each morning — actionable, precise, zero filler." },
-                                { label: "28 Principles", desc: "Full access to the Imperium doctrine. The complete operating system for the sovereign mind." },
-                                { label: "Inner Circle", desc: "A private network of elite subscribers operating across business, finance, and self-mastery." },
-                                { label: "Archived Library", desc: "Every past brief, organized by theme. A permanent reference of tactical intelligence." },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="glass-card rounded-2xl p-6 md:p-7 relative overflow-hidden group hover:border-imperium-gold/20 transition-all duration-300"
-                                >
-                                    <div className="text-imperium-gold text-[9px] md:text-[10px] font-bold tracking-widest uppercase mb-3">{item.label}</div>
-                                    <p className="text-white/50 font-light text-xs md:text-sm leading-relaxed">{item.desc}</p>
-                                </div>
-                            ))}
+                        <div className="max-w-md mx-auto">
+                            <NewsletterEmailForm />
                         </div>
                     </div>
                 </div>
@@ -115,7 +102,7 @@ export default function NewsletterPage() {
             </div>
 
             {/* CTA Section */}
-            <div className="border-t border-imperium-border py-20">
+            <div className="border-t border-imperium-gold/20 py-20">
                 <div className="container mx-auto px-6 max-w-2xl text-center">
                     {isPremium && isLoggedIn ? (
                         <div className="space-y-6">
@@ -123,7 +110,7 @@ export default function NewsletterPage() {
                                 <Crown className="w-12 h-12 text-imperium-gold mx-auto mb-4" />
                                 <h3 className="text-xl text-white mb-3">Premium Access Active</h3>
                                 <p className="text-white/40 font-light mb-6">You have full access to premium intelligence briefs and the 28 Principles.</p>
-                                <Link href="/28principles" className="inline-flex items-center gap-2 bg-imperium-gold text-imperium-bg px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all">
+                                <Link href="/28principles" className="inline-flex items-center gap-2 px-6 py-3 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary">
                                     <Lock className="w-4 h-4" /> Access 28 Principles
                                 </Link>
                             </div>
@@ -147,7 +134,7 @@ export default function NewsletterPage() {
                         <div className="space-y-6">
                             <h2 className="text-2xl md:text-3xl text-white mb-3">Subscribe Now</h2>
                             <p className="text-white/40 font-light text-sm">Enter your email below or go straight to checkout.</p>
-                            
+
                             <NewsletterEmailForm />
 
                             <div className="mt-8">
@@ -172,18 +159,37 @@ export default function NewsletterPage() {
 
 function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLoggedIn: boolean }) {
     const [newsletters, setNewsletters] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        supabase
-            .from("newsletters")
-            .select("*")
-            .eq("published", true)
-            .order("created_at", { ascending: false })
-            .limit(5)
-            .then(({ data }) => setNewsletters(data || []));
+        async function fetchNewsletters() {
+            setLoading(true);
+            try {
+                const { data } = await supabase
+                    .from("newsletters")
+                    .select("*")
+                    .eq("published", true)
+                    .order("created_at", { ascending: false })
+                    .limit(10);
+
+                setNewsletters(data || []);
+            } catch (error) {
+                console.error("Error fetching newsletters:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchNewsletters();
     }, []);
 
-    const latestNewsletter = newsletters[0];
+    if (loading) {
+        return (
+            <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-imperium-gold/30 border-t-imperium-gold rounded-full animate-spin mx-auto"></div>
+                <p className="text-white/35 font-light text-sm mt-4">Loading intelligence...</p>
+            </div>
+        );
+    }
 
     if (newsletters.length === 0) {
         return (
@@ -202,13 +208,15 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
     }
 
     return (
-        <div className="text-center">
-            <h2 className="text-2xl text-white mb-3">
-                Latest Intelligence Brief
-            </h2>
-            <p className="text-white/35 font-light text-sm mb-10">
-                {isPremium ? "Your exclusive premium intelligence content." : "Public briefs from the Imperium archive."}
-            </p>
+        <div className="space-y-8">
+            <div className="text-center">
+                <h2 className="text-2xl text-white mb-3">
+                    Latest Intelligence Brief
+                </h2>
+                <p className="text-white/35 font-light text-sm">
+                    {isPremium ? "Your exclusive premium intelligence content." : "Public briefs from the Imperium archive."}
+                </p>
+            </div>
 
             {newsletters.map((nl) => (
                 <div key={nl.id} className="glass-card rounded-2xl p-6 md:p-10 text-left relative overflow-hidden mb-6">
@@ -229,26 +237,50 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
                     <h3 className="text-base md:text-lg font-semibold text-white mb-4">
                         {nl.title}
                     </h3>
-                    <div className="text-white/50 font-light text-[13px] md:text-sm leading-relaxed mb-6 whitespace-pre-wrap">
-                        {nl.content?.substring(0, 500)}
-                        {nl.content && nl.content.length > 500 && "..."}
+
+                    {/* Newsletter Content */}
+                    <div className="space-y-6">
+                        {nl.content ? (
+                            <div className="text-white/50 font-light text-[13px] md:text-sm leading-relaxed whitespace-pre-wrap">
+                                {nl.content}
+                            </div>
+                        ) : (
+                            <div className="text-white/40 font-light text-sm">No content available.</div>
+                        )}
                     </div>
 
-                    {nl.is_public && (
-                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-imperium-bg via-imperium-bg/95 to-transparent flex items-end justify-center pb-6">
-                            <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
-                                Public Brief
-                            </span>
-                        </div>
-                    )}
+                    {/* Access Indicator */}
+                    <div className="mt-8 pt-6 border-t border-imperium-border">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {nl.is_public ? (
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
+                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                        Public Brief
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-imperium-gold/10 border border-imperium-gold/20 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
+                                        <span className="w-2 h-2 bg-imperium-gold rounded-full animate-pulse"></span>
+                                        Premium Only
+                                    </span>
+                                )}
+                                <span className="text-white/20 text-[9px] md:text-[10px] font-bold tracking-widest uppercase">
+                                    {nl.is_public ? "Available to all" : "Premium subscribers"}
+                                </span>
+                            </div>
 
-                    {isPremium && !nl.is_public && (
-                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-imperium-bg via-imperium-bg/95 to-transparent flex items-end justify-center pb-6">
-                            <span className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
-                                Premium Only
-                            </span>
+                            {!nl.is_public && !isPremium && isLoggedIn && (
+                                <a
+                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 bg-imperium-gold text-imperium-bg px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-white transition-all"
+                                >
+                                    Upgrade to Premium
+                                </a>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
             ))}
         </div>
@@ -281,8 +313,8 @@ function NewsletterEmailForm() {
             } else {
                 await supabase
                     .from("profiles")
-                    .insert([{ 
-                        email: email.toLowerCase(), 
+                    .insert([{
+                        email: email.toLowerCase(),
                         is_subscribed: true,
                         is_premium: false,
                         is_admin: false,

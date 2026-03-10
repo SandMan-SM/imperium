@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-imperium-bg flex items-center justify-center px-4 py-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 py-20">
       <div className="absolute top-0 right-0 w-96 h-96 bg-imperium-gold/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-imperium-gold/3 rounded-full blur-[80px] pointer-events-none" />
 
@@ -39,7 +39,8 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md relative"
       >
-        <div className="bg-imperium-card border border-imperium-border rounded-2xl p-8 md:p-10 backdrop-blur-md">
+        <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-2xl p-8 md:p-10 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-imperium-gold to-transparent" />
           <div className="text-center mb-8">
             <div className="w-14 h-14 rounded-full bg-imperium-gold/10 flex items-center justify-center mx-auto mb-4 border border-imperium-gold/20">
               <ShieldCheck className="text-imperium-gold w-7 h-7" />
@@ -60,7 +61,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-black/50 border border-imperium-border text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
+                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
                   required
                 />
               </div>
@@ -77,7 +78,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full bg-black/50 border border-imperium-border text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
+                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
                   required
                 />
               </div>
@@ -92,7 +93,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-imperium-gold text-imperium-bg py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-imperium-gold text-imperium-bg py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -106,7 +107,7 @@ export default function LoginPage() {
 
           <div className="mt-8 text-center">
             <p className="text-white/30 text-sm">
-              Don&apos;t have an account?{" "}
+              Don't have an account?{" "}
               <a href="/signup" className="text-imperium-gold hover:underline">
                 Sign up
               </a>

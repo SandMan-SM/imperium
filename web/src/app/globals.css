@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 @import "tailwindcss";
 
-@theme {
+:root {
   --color-imperium-bg: #030712;
   --color-imperium-surface: #0d1117;
   --color-imperium-card: #0f131a;
@@ -51,5 +51,197 @@
   ::selection {
     background: rgba(212, 175, 55, 0.2);
     color: #fff;
+  }
+}
+
+/* 21st.dev Design System */
+@layer components {
+
+  /* Typography System */
+  .text-display {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+  }
+
+  .text-heading {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+  }
+
+  .text-body {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+
+  .text-label {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  /* Surface System */
+  .surface-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--color-imperium-border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .surface-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.05), transparent);
+    pointer-events: none;
+  }
+
+  .surface-glass {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+  }
+
+  /* Button System */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-imperium-gold), var(--color-imperium-gold-bright));
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    color: #000;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    border-color: rgba(212, 175, 55, 0.6);
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--color-imperium-border);
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Animation System */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(50px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out forwards;
+  }
+
+  /* Gradient System */
+  .gradient-gold {
+    background: linear-gradient(135deg, var(--color-imperium-gold), var(--color-imperium-gold-bright));
+  }
+
+  .gradient-gold-dim {
+    background: linear-gradient(135deg, var(--color-imperium-gold-dim), rgba(212, 175, 55, 0.05));
+  }
+
+  /* Shadow System */
+  .shadow-imperium {
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15),
+      0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .shadow-glass {
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  /* Color Utility Classes */
+  .text-imperium-gold {
+    color: var(--color-imperium-gold) !important;
+  }
+
+  .fill-imperium-gold {
+    fill: var(--color-imperium-gold) !important;
+  }
+
+  .bg-imperium-gold {
+    background-color: var(--color-imperium-gold) !important;
   }
 }

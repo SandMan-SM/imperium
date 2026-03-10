@@ -30,6 +30,7 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState({ profiles: 0, products: 0, subs: 0 });
     const [mobileOpen, setMobileOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<"admin" | "preview">("admin");
 
     useEffect(() => {
         // determine userView only once profile/user loading is finished
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
 
     if (loading || userView === null) {
         return (
-            <div className="min-h-screen bg-imperium-bg flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-imperium-gold animate-spin" />
             </div>
         );
@@ -122,30 +123,31 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-imperium-bg flex">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex">
             {/* Left Sidebar - always fixed */}
             <aside className={`
                 ${collapsed ? 'w-16' : 'w-56'}
-                border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col 
-                fixed left-0 top-[72px] bottom-0 z-40 
+                border-r border-imperium-gold/20 bg-gradient-to-b from-gray-900 to-gray-800 flex-shrink-0 flex flex-col 
+                fixed left-0 top-[72px] bottom-0 z-90 
             `}>
-                <div className="p-2 sm:p-4 border-b border-white/[0.06] flex items-center min-h-[57px] relative">
+                <div className="p-2 sm:p-4 border-b border-imperium-gold/20 flex items-center min-h-[57px] relative">
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight absolute left-2 sm:left-4 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Command Center</h1>
                     <div className={`flex items-center ${collapsed ? 'w-full justify-center' : 'ml-auto'}`}>
                         <button
                             onClick={() => {
                                 setCollapsed((s) => {
-                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) {}
+                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) { }
                                     return !s;
                                 });
                             }}
-                            className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                            className="flex items-center justify-center w-7 h-7 rounded-lg border border-imperium-gold/30 text-imperium-gold/60 hover:text-imperium-gold hover:border-imperium-gold/50"
                             aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
                         >
                             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                         </button>
                     </div>
                 </div>
+
 
                 <div className="flex-1 overflow-hidden">
                     <nav className="p-2 sm:p-4 space-y-2">
@@ -158,8 +160,8 @@ export default function AdminDashboard() {
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
                                     ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3'} 
-                                    ${activeTab === tab.id 
-                                        ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
+                                    ${activeTab === tab.id
+                                        ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
                                         : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                 `}
                             >
@@ -170,9 +172,9 @@ export default function AdminDashboard() {
                     </nav>
                 </div>
 
-                <div className="mt-auto p-2 sm:p-4 border-t border-white/[0.06]">
+                <div className="mt-auto p-2 sm:p-4 border-t border-imperium-gold/20">
                     <div className="flex flex-col gap-2">
-                        <button 
+                        <button
                             onClick={() => setActiveTab("settings")}
                             className={`flex items-center ${collapsed ? 'justify-center px-1 aspect-square' : 'gap-2 px-3 py-2.5'} rounded-lg text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white hover:bg-white/[0.02]`}
                         >
@@ -198,11 +200,11 @@ export default function AdminDashboard() {
             {menuOpen && (
                 <div className="fixed inset-0 z-50">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 top-[72px] h-[calc(100vh-72px)] w-80 bg-[#0a0e14] border-l border-white/[0.08] flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+                    <div className="absolute right-0 top-[72px] h-[calc(100vh-72px)] w-80 bg-gradient-to-b from-gray-900 to-gray-800 border-l border-imperium-gold/20 flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-imperium-gold/20">
                             <span className="text-lg font-light text-white tracking-tight">Command Center</span>
-                            <button 
-                                onClick={() => setMenuOpen(false)} 
+                            <button
+                                onClick={() => setMenuOpen(false)}
                                 className="p-2 rounded-md text-white/40 hover:text-white"
                             >
                                 <X className="w-4 h-4" />
@@ -218,8 +220,8 @@ export default function AdminDashboard() {
                                     }}
                                     className={`
                                         flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3
-                                        ${activeTab === tab.id 
-                                            ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20" 
+                                        ${activeTab === tab.id
+                                            ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
                                             : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
                                     `}
                                 >
@@ -253,140 +255,12 @@ export default function AdminDashboard() {
     );
 }
 
-export function PortalLogin() {
-    return (
-        <div className="min-h-screen bg-imperium-bg flex items-center justify-center p-6">
-            <div className="bg-[#0f131a] border border-white/[0.08] p-8 sm:p-10 rounded-2xl max-w-md w-full text-center">
-                <div className="w-14 h-14 rounded-full bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-5 border border-[#d4af37]/20">
-                    <ShieldCheck className="text-[#d4af37] w-7 h-7" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold tracking-[0.2em] uppercase text-white mb-2">Portal Access</h2>
-                <p className="text-[10px] text-white/40 mb-8 tracking-[0.15em] uppercase">Sign in to access your dashboard</p>
-                <Link
-                    href="/login"
-                    className="block w-full bg-[#d4af37] text-[#030712] uppercase tracking-[0.18em] font-bold text-xs py-3.5 rounded-xl hover:bg-[#e8c84a] transition-all"
-                >
-                    Sign In
-                </Link>
-            </div>
-        </div>
-    );
-}
-
-export function UserPortal({ userView }: { userView: "free" | "premium" }) {
-    const { profile, signOut } = useAuth();
-    const [activeTab, setActiveTab] = useState<"principles" | "newsletter" | "settings">("principles");
-
-    const handleSignOut = async () => {
-        await signOut();
-    };
-
-    const portalTabs = [
-        { id: "principles" as const, label: "28 Principles", icon: BookOpen, href: "/28principles" },
-        { id: "newsletter" as const, label: "Newsletter", icon: Mail, href: "/newsletter" },
-    ];
-
-    return (
-        <div className="min-h-screen bg-imperium-bg flex">
-            {/* Left Sidebar (fixed to left edge) */}
-            <aside className="fixed left-0 top-[72px] bottom-0 w-56 border-r border-white/[0.08] bg-[#0a0e14] flex-shrink-0 flex flex-col z-40">
-                <div className="p-4 sm:p-6 border-b border-white/[0.06]">
-                    <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Command Center</h1>
-                </div>
-                
-                <nav className="flex-1 p-3 sm:p-4 space-y-1">
-                    {portalTabs.map((tab) => (
-                        <Link
-                            key={tab.id}
-                            href={tab.href}
-                            className="flex items-center gap-3 px-3 sm:px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase rounded-lg text-white/40 hover:text-white hover:bg-white/[0.02] transition-all"
-                        >
-                            <tab.icon className="w-4 h-4" />
-                            <span className="hidden sm:inline">{tab.label}</span>
-                            <span className="sm:hidden text-[10px]">{tab.label.split(' ')[0]}</span>
-                        </Link>
-                    ))}
-                </nav>
-
-                <div className="p-3 sm:p-4 border-t border-white/[0.06]">
-                    <button
-                        onClick={() => setActiveTab("settings")}
-                        className="flex items-center gap-2 w-full px-3 sm:px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]"
-                        aria-label="Open settings"
-                    >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto ml-56">
-                <div className="p-4 sm:p-6 sm:max-w-lg">
-                    {activeTab === "settings" ? (
-                        <SettingsView />
-                    ) : (
-                        <>
-                            <div className="mb-6">
-                                <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
-                                <p className="text-white/40 text-sm">
-                                    {userView === "premium" 
-                                        ? "You have premium access to all content."
-                                        : "Upgrade to premium for full access to all content."}
-                                </p>
-                            </div>
-
-                            <div className="grid gap-3 sm:gap-4">
-                                <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
-                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
-                                        <BookOpen className="text-imperium-gold w-5 h-6" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">28 Principles</h3>
-                                        <p className="text-white/40 text-sm">Access the Imperium doctrine</p>
-                                    </div>
-                                </Link>
-
-                                <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-5 bg-[#0f131a] border border-white/[0.08] rounded-xl hover:border-imperium-gold/20 transition-all group">
-                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
-                                        <Mail className="text-imperium-gold w-5 h-6" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Newsletter</h3>
-                                        <p className="text-white/40 text-sm">View intelligence briefs</p>
-                                    </div>
-                                </Link>
-
-                                {userView === "free" && (
-                                    <a 
-                                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-4 p-4 sm:p-5 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
-                                    >
-                                        <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold flex items-center justify-center flex-shrink-0">
-                                            <Crown className="text-imperium-bg w-5 h-6" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-imperium-gold font-medium">Upgrade to Premium</h3>
-                                            <p className="text-white/40 text-sm">$20/month for full access</p>
-                                        </div>
-                                    </a>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </main>
-        </div>
-    );
-}
-
+// Analytics View Component
 function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { profiles: number; products: number; subs: number } }) {
     return (
         <div>
             <h2 className="text-lg sm:text-xl font-light text-white mb-4 sm:mb-6">Analytics</h2>
-            
+
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total Users</span>
@@ -439,6 +313,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
     );
 }
 
+// CRM View Component
 function CRMView() {
     const [leads, setLeads] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -447,7 +322,7 @@ function CRMView() {
         supabase.from("profiles").select("*").order("created_at", { ascending: false }).then(({ data }) => setLeads(data || []));
     }, []);
 
-    const filteredLeads = leads.filter(l => 
+    const filteredLeads = leads.filter(l =>
         l.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         l.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         l.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -459,12 +334,12 @@ function CRMView() {
                 <h2 className="text-lg sm:text-xl font-light text-white">Client CRM</h2>
                 <div className="relative w-full sm:w-auto">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                    <input 
-                        type="text" 
-                        placeholder="Search..." 
+                    <input
+                        type="text"
+                        placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full sm:w-56 bg-black/40 border border-white/10 text-white text-xs px-10 py-2.5 rounded-lg focus:outline-none focus:border-imperium-gold/50" 
+                        className="w-full sm:w-56 bg-black/40 border border-white/10 text-white text-xs px-10 py-2.5 rounded-lg focus:outline-none focus:border-imperium-gold/50"
                     />
                 </div>
             </div>
@@ -507,6 +382,7 @@ function CRMView() {
     );
 }
 
+// Product Manager Component
 function ProductManager() {
     const [products, setProducts] = useState<any[]>([]);
     const [syncing, setSyncing] = useState(false);
@@ -583,7 +459,7 @@ function ProductManager() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Inventory</h2>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <button 
+                    <button
                         onClick={handleSyncStripe}
                         disabled={syncing}
                         className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-imperium-gold/10 transition-all disabled:opacity-50"
@@ -646,6 +522,7 @@ function ProductManager() {
     );
 }
 
+// Settings View Component
 function SettingsView() {
     const { signOut } = useAuth();
 
@@ -656,7 +533,7 @@ function SettingsView() {
     return (
         <div>
             <h2 className="text-lg sm:text-xl font-light text-white mb-6">Settings</h2>
-            
+
             <div className="pt-6 border-t border-white/[0.06]">
                 <button
                     onClick={handleSignOut}
@@ -670,6 +547,7 @@ function SettingsView() {
     );
 }
 
+// Newsletter Studio Component
 function NewsletterStudio() {
     const [subscribers, setSubscribers] = useState<any[]>([]);
     const [newsletters, setNewsletters] = useState<any[]>([]);
@@ -686,7 +564,7 @@ function NewsletterStudio() {
     const handleSave = async () => {
         if (!title.trim()) return;
         setSaving(true);
-        
+
         await supabase.from("newsletters").insert({
             title,
             content,
@@ -715,17 +593,17 @@ function NewsletterStudio() {
             </div>
 
             <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
-                <input 
-                    type="text" 
-                    placeholder="Subject line..." 
+                <input
+                    type="text"
+                    placeholder="Subject line..."
                     className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-imperium-gold/50"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
 
                 <label className="flex items-center gap-2 text-xs text-white/40 uppercase tracking-wider cursor-pointer">
-                    <input 
-                        type="checkbox" 
+                    <input
+                        type="checkbox"
                         checked={isPublic}
                         onChange={(e) => setIsPublic(e.target.checked)}
                         className="rounded border-white/10 bg-black/40"
@@ -741,14 +619,14 @@ function NewsletterStudio() {
                 />
 
                 <div className="flex justify-end gap-3">
-                    <button 
+                    <button
                         onClick={handleSave}
                         disabled={saving || !title.trim()}
                         className="px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30 hover:text-white transition-colors disabled:opacity-30"
                     >
                         Save Draft
                     </button>
-                    <button 
+                    <button
                         onClick={handleSave}
                         disabled={saving || !title.trim()}
                         className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50"
@@ -786,3 +664,114 @@ function NewsletterStudio() {
         </div>
     );
 }
+
+
+export function UserPortal({ userView }: { userView: "free" | "premium" }) {
+    const { profile, signOut } = useAuth();
+    const [activeTab, setActiveTab] = useState<"principles" | "newsletter" | "settings">("principles");
+
+    const handleSignOut = async () => {
+        await signOut();
+    };
+
+    const portalTabs = [
+        { id: "principles" as const, label: "28 Principles", icon: BookOpen, href: "/28principles" },
+        { id: "newsletter" as const, label: "Newsletter", icon: Mail, href: "/newsletter" },
+    ];
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex">
+            {/* Left Sidebar (fixed to left edge) */}
+            <aside className="fixed left-0 top-[72px] bottom-0 w-56 border-r border-imperium-gold/20 bg-gradient-to-b from-gray-900 to-gray-800 flex-shrink-0 flex flex-col z-40">
+                <div className="p-4 sm:p-6 border-b border-imperium-gold/20">
+                    <h1 className="text-lg sm:text-xl font-light text-white tracking-tight">Portal</h1>
+                </div>
+
+                <nav className="flex-1 p-3 sm:p-4 space-y-1">
+                    {portalTabs.map((tab) => (
+                        <Link
+                            key={tab.id}
+                            href={tab.href}
+                            className="flex items-center gap-3 px-3 sm:px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase rounded-lg text-white/40 hover:text-white hover:bg-white/[0.02] transition-all"
+                        >
+                            <tab.icon className="w-4 h-4" />
+                            <span className="hidden sm:inline">{tab.label}</span>
+                            <span className="sm:hidden text-[10px]">{tab.label.split(' ')[0]}</span>
+                        </Link>
+                    ))}
+                </nav>
+
+                <div className="p-3 sm:p-4 border-t border-imperium-gold/20">
+                    <button
+                        onClick={() => setActiveTab("settings")}
+                        className="flex items-center gap-2 w-full px-3 sm:px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase text-white/30 hover:text-white transition-colors rounded-lg hover:bg-white/[0.02]"
+                        aria-label="Open settings"
+                    >
+                        <Settings className="w-4 h-4" />
+                        Settings
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto ml-56">
+                <div className="p-4 sm:p-6 sm:max-w-lg">
+                    {activeTab === "settings" ? (
+                        <SettingsView />
+                    ) : (
+                        <>
+                            <div className="mb-6">
+                                <h2 className="text-2xl sm:text-3xl text-white mb-2">Welcome{profile?.first_name ? `, ${profile.first_name}` : ''}</h2>
+                                <p className="text-white/40 text-sm">
+                                    {userView === "premium"
+                                        ? "You have premium access to all content."
+                                        : "Upgrade to premium for full access to all content."}
+                                </p>
+                            </div>
+
+                            <div className="grid gap-3 sm:gap-4">
+                                <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
+                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
+                                        <BookOpen className="text-imperium-gold w-5 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">28 Principles</h3>
+                                        <p className="text-white/40 text-sm">Access the Imperium doctrine</p>
+                                    </div>
+                                </Link>
+
+                                <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
+                                    <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
+                                        <Mail className="text-imperium-gold w-5 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Newsletter</h3>
+                                        <p className="text-white/40 text-sm">View intelligence briefs</p>
+                                    </div>
+                                </Link>
+
+                                {userView === "free" && (
+                                    <a
+                                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-4 p-4 sm:p-5 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
+                                    >
+                                        <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold flex items-center justify-center flex-shrink-0">
+                                            <Crown className="text-imperium-bg w-5 h-6" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-imperium-gold font-medium">Upgrade to Premium</h3>
+                                            <p className="text-white/40 text-sm">$20/month for full access</p>
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </main>
+        </div>
+    );
+}
+

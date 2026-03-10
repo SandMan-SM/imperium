@@ -47,29 +47,25 @@ export function WhyImperium() {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-                    {PILLARS.map((p, i) => {
-                        const Icon = p.icon;
-                        return (
-                            <motion.div
-                                key={p.title}
-                                initial={{ opacity: 0, y: 24 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.55, delay: i * 0.12 }}
-                                className="glass-card rounded-2xl p-8 flex flex-col relative overflow-hidden group hover:border-imperium-gold/20 transition-all duration-400"
-                            >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 relative">
+                    {/* Vertical dividers between columns */}
+                    <div className="hidden md:block absolute left-1/3 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/[0.08] to-transparent transform -translate-x-1/2" />
+                    <div className="hidden md:block absolute right-1/3 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/[0.08] to-transparent transform translate-x-1/2" />
 
-                                <div className="w-10 h-10 rounded-xl bg-imperium-gold/8 border border-imperium-gold/15 flex items-center justify-center mb-6 group-hover:bg-imperium-gold/15 transition-colors">
-                                    <Icon className="w-4.5 h-4.5 text-imperium-gold" size={18} />
-                                </div>
-
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-imperium-gold/60 mb-2">{p.label}</span>
-                                <h3 className="text-base font-semibold text-white mb-3">{p.title}</h3>
-                                <p className="text-sm text-white/40 font-light leading-relaxed">{p.description}</p>
-                            </motion.div>
-                        );
-                    })}
+                    {PILLARS.map((p, i) => (
+                        <motion.div
+                            key={p.title}
+                            initial={{ opacity: 0, y: 24 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.55, delay: i * 0.12 }}
+                            className="glass-card rounded-2xl p-8 flex flex-col relative overflow-hidden group hover:border-imperium-gold/20 transition-all duration-400"
+                        >
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-imperium-gold/60 mb-2">{p.label}</span>
+                            <h3 className="text-base font-semibold text-white mb-3">{p.title}</h3>
+                            <p className="text-sm text-white/40 font-light leading-relaxed">{p.description}</p>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </section>

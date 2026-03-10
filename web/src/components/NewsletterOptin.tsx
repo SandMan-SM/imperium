@@ -26,8 +26,8 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
 
       <div className="glass-card rounded-2xl p-6 md:p-8 border border-imperium-border/50">
         <h3 className="text-sm font-bold tracking-widest uppercase text-imperium-gold mb-4">Latest Brief</h3>
-        
-        <div className="text-left relative overflow-hidden">
+
+        <div className="text-left">
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-imperium-border">
             <div>
               <p className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-imperium-gold mb-1">Imperium Intelligence Brief</p>
@@ -43,17 +43,21 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
             Every move is calculated. The sovereign does not react — he responds from a position of preparation and clarity. Reactivity is the signature of the amateur. This brief breaks down three tactical frameworks used by the most effective operators in history to eliminate reactive decision-making from their behavioral stack.
           </p>
 
-          {/* Blurred bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-imperium-bg via-imperium-bg/95 to-transparent flex items-end justify-center pb-6">
+          <div className="text-center pt-4 border-t border-imperium-border">
             {!isLoggedIn ? (
-              <div className="text-center">
+              <div>
                 <p className="text-white/40 text-xs mb-2">Subscribe to read the full brief</p>
-                <Link href="/signup" className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold hover:text-imperium-gold-bright transition-colors">
-                  Subscribe now →
-                </Link>
+                <a
+                  href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold hover:text-imperium-gold-bright transition-colors inline-block"
+                >
+                  Upgrade to Premium →
+                </a>
               </div>
             ) : (
-              <div className="text-center">
+              <div>
                 <p className="text-white/40 text-xs mb-2">Upgrade to premium for full access</p>
                 <Link href="/#subscribe" className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold hover:text-imperium-gold-bright transition-colors">
                   Upgrade to Premium →
@@ -65,11 +69,13 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
       </div>
 
       {!isLoggedIn && (
-        <div className="mt-8 bg-imperium-card border border-imperium-border rounded-2xl p-6 md:p-8">
-          <div className="text-center mb-4">
-            <p className="text-white/40 font-light text-sm">Get daily intelligence delivered to your inbox</p>
+        <div className="mt-8 bg-imperium-gold/5 border border-imperium-gold/20 rounded-2xl p-6 text-center">
+          <Mail className="w-8 h-8 text-imperium-gold mx-auto mb-3" />
+          <h4 className="text-white font-semibold mb-2">Unlock Premium Intelligence</h4>
+          <p className="text-white/40 text-sm mb-4">Get daily intelligence delivered straight to your inbox</p>
+          <div className="max-w-md mx-auto">
+            <NewsletterEmailForm />
           </div>
-          <NewsletterEmailForm />
         </div>
       )}
 
@@ -88,6 +94,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
           </a>
         </div>
       )}
+
     </div>
   );
 }
@@ -110,7 +117,7 @@ function PremiumNewsletterContent() {
 
       <div className="glass-card rounded-2xl p-6 md:p-8 border border-imperium-gold/20">
         <h3 className="text-sm font-bold tracking-widest uppercase text-imperium-gold mb-4">Latest Premium Brief</h3>
-        
+
         <div className="text-left">
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-imperium-border">
             <div>
@@ -124,7 +131,7 @@ function PremiumNewsletterContent() {
 
           <h3 className="text-base md:text-lg font-semibold text-white mb-4">The Sovereign Operating System</h3>
           <p className="text-white/60 font-light text-[13px] md:text-sm leading-relaxed mb-6">
-            This is premium content with full access. No marketing, no upsells — just pure strategic intelligence. 
+            This is premium content with full access. No marketing, no upsells — just pure strategic intelligence.
             As a premium member, you have access to the complete archive of briefs and the full 28 Principles framework.
           </p>
 

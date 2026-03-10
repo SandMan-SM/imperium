@@ -127,14 +127,14 @@ export function Header() {
                             <div className="relative">
                                 <button
                                     onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
-                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
+                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors surface-card"
                                     aria-label="View options"
                                     aria-expanded={viewDropdownOpen}
                                 >
                                     <Eye className="w-5 h-5" />
                                 </button>
                                 {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
                                         <button
                                             onClick={async () => {
                                                 try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
@@ -234,7 +234,7 @@ export function Header() {
                         {/* Cart Button */}
                         <button
                             onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-white/40 hover:text-white transition-colors"
+                            className="relative p-2 text-white/40 hover:text-white transition-colors surface-card"
                             aria-label="Cart"
                         >
                             <ShoppingBag className="w-5 h-5" />
@@ -251,7 +251,7 @@ export function Header() {
                             <div className="flex items-center gap-3 lg:gap-4">
                                 <Link
                                     href="/portal"
-                                    className="flex items-center gap-2 px-4 py-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-semibold tracking-[0.15em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all"
+                                    className="flex items-center gap-2 px-4 py-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-semibold tracking-[0.15em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all surface-card"
                                 >
                                     <User className="w-4 h-4" />
                                     Portal
@@ -260,7 +260,7 @@ export function Header() {
                         ) : (
                             <Link
                                 href="/login"
-                                className="px-5 py-2 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
+                                className="px-5 py-2 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
                             >
                                 Sign In
                             </Link>
@@ -281,7 +281,7 @@ export function Header() {
                                     <Eye className="w-5 h-5" />
                                 </button>
                                 {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-50 py-1">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
                                         <button
                                             onClick={async () => {
                                                 try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
@@ -389,7 +389,7 @@ export function Header() {
                                     key={l.href}
                                     href={l.href}
                                     onClick={() => setOpen(false)}
-                                    className="py-3.5 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors"
+                                    className="py-3.5 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors surface-card"
                                 >
                                     {l.label}
                                 </Link>
@@ -402,7 +402,7 @@ export function Header() {
                                     <Link
                                         href="/portal"
                                         onClick={() => setOpen(false)}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors"
+                                        className="flex items-center justify-center gap-2 w-full py-3.5 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors surface-card"
                                     >
                                         <User className="w-4 h-4" />
                                         Portal
@@ -412,7 +412,7 @@ export function Header() {
                                             handleSignOut();
                                             setOpen(false);
                                         }}
-                                        className="block w-full text-center py-3.5 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors"
+                                        className="block w-full text-center py-3.5 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors surface-card"
                                     >
                                         Sign Out
                                     </button>
@@ -421,7 +421,7 @@ export function Header() {
                                 <Link
                                     href="/login"
                                     onClick={() => setOpen(false)}
-                                    className="block w-full text-center py-3.5 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-colors"
+                                    className="block w-full text-center py-3.5 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-colors btn-primary"
                                 >
                                     Sign In
                                 </Link>

@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function ShopPage() {
     return (
-        <div className="min-h-screen bg-imperium-bg">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
             {/* Hero */}
-            <div className="relative border-b border-imperium-border pt-[84px] pb-10 sm:pb-14 text-center overflow-hidden">
+            <div className="relative border-b border-imperium-gold/20 pt-[84px] pb-10 sm:pb-14 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-imperium-gold/[0.04] rounded-full blur-[80px] pointer-events-none" />
 
                 {/* Background Logo Backdrop */}
@@ -37,7 +37,7 @@ export default function ShopPage() {
             <ProductShowcase />
 
             {/* Daily Intelligence Newsletter */}
-            <div className="py-16 sm:py-20 border-t border-imperium-border">
+            <div className="py-16 sm:py-20 border-t border-imperium-gold/20">
                 <div className="container mx-auto px-4 max-w-4xl">
                     <NewsletterOptin />
                     <p className="text-center text-[10px] sm:text-[11px] text-white/20 font-bold tracking-widest uppercase mt-6">
