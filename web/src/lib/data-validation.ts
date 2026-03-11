@@ -434,7 +434,9 @@ class DataValidator {
         if (this.validationCache.size >= this.maxCacheSize) {
             // Remove oldest entry
             const oldestKey = this.validationCache.keys().next().value;
-            this.validationCache.delete(oldestKey);
+            if (oldestKey) {
+                this.validationCache.delete(oldestKey);
+            }
         }
 
         this.validationCache.set(cacheKey, result);
@@ -544,7 +546,7 @@ export const crossFieldRules = {
     user: [
         {
             fields: ['firstName', 'lastName'],
-            validator: (data) => {
+            validator: (data: any) => {
                 if (!data.firstName && !data.lastName) {
                     return 'At least one of firstName or lastName must be provided';
                 }
@@ -557,8 +559,8 @@ export const crossFieldRules = {
     subscription: [
         {
             fields: ['amount', 'tier'],
-            validator: (data) => {
-                const tierAmounts = { basic: 20, premium: 50, enterprise: 100 };
+            validator: (data: any) => {
+                const tierAmounts: Record<string, number> = { basic: 20, premium: 50, enterprise: 100 };
                 const expectedAmount = tierAmounts[data.tier];
                 if (data.amount !== expectedAmount) {
                     return `Amount for ${data.tier} tier should be ${expectedAmount}`;
