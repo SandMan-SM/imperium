@@ -18,10 +18,11 @@ interface EmailData {
 
 class GmailService {
     private auth: any;
-    private gmail: gmail_v1.Gmail;
+    private gmail: gmail_v1.Gmail | null = null;
+    private isInitialized = false;
 
     constructor() {
-        this.initializeAuth();
+        // Don't initialize auth in constructor to avoid build-time errors
     }
 
     private initializeAuth() {
@@ -60,8 +61,16 @@ class GmailService {
         };
     }
 
+    private async ensureInitialized(): Promise<void> {
+        if (!this.isInitialized) {
+            this.initializeAuth();
+            this.isInitialized = true;
+        }
+    }
+
     private async ensureAccessToken(): Promise<void> {
         try {
+            await this.ensureInitialized();
             const tokenInfo = await this.auth.getAccessToken();
             if (!tokenInfo.token) {
                 throw new Error('Failed to get access token');
@@ -103,6 +112,10 @@ class GmailService {
     async sendEmail(data: EmailData): Promise<boolean> {
         try {
             await this.ensureAccessToken();
+
+            if (!this.gmail) {
+                throw new Error('Gmail service not initialized');
+            }
 
             const rawMessage = this.createEmailMessage(data);
 
@@ -182,7 +195,7 @@ class GmailService {
             return { success: successCount, failed: failedCount };
         } catch (error) {
             console.error('Newsletter dispatch error:', error);
-            return { success: 0, failed: subscribers?.length || 0 };
+            return { success: 0, failed: 0 };
         }
     }
 

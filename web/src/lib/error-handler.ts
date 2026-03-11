@@ -384,15 +384,15 @@ class ErrorHandler {
         });
 
         // Common recommendations based on error patterns
-        if (errorTypes.get('NetworkError') > 10) {
+        if ((errorTypes.get('NetworkError') || 0) > 10) {
             recommendations.push('Consider implementing better network error handling and retry logic');
         }
 
-        if (errorTypes.get('ValidationError') > 5) {
+        if ((errorTypes.get('ValidationError') || 0) > 5) {
             recommendations.push('Review data validation logic to prevent invalid data from reaching the system');
         }
 
-        if (errorTypes.get('TimeoutError') > 5) {
+        if ((errorTypes.get('TimeoutError') || 0) > 5) {
             recommendations.push('Review system performance and consider increasing timeout thresholds');
         }
 
