@@ -1,10 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+export const dynamic = 'force-static';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2026-02-25.clover",
-});
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { getStripe } from "@/lib/stripe-helper";
 
 // Use the runtime-friendly admin client from lib/supabase which supports multiple env var names
 import { supabaseAdmin as _supabaseAdmin } from '@/lib/supabase';
@@ -35,11 +33,11 @@ export async function POST(req: NextRequest) {
                 if (!stripeProductId && product.stripe_url) {
                     try {
                         // list payment links and find matching url (fall back to scanning recent links)
-                        const list = await stripe.paymentLinks.list({ limit: 100 });
+                        const list = await getStripe().paymentLinks.list({ limit: 100 });
                         const match = list.data.find((pl: any) => pl.url === product.stripe_url || pl.url === product.payment_link_url);
                         if (match) {
                             // retrieve full payment link to access line items
-                            const full = await stripe.paymentLinks.retrieve(match.id, { expand: ['line_items'] });
+                            const full = await getStripe().paymentLinks.retrieve(match.id, { expand: ['line_items'] });
                             const li = (full as any).line_items?.data?.[0];
                             if (li) {
                                 stripePriceId = (li.price as any)?.id ?? (li.price as any)?.id;
@@ -89,7 +87,7 @@ export async function POST(req: NextRequest) {
                 }
 
                 if (!stripeProductId) {
-                    const stripeProduct = await stripe.products.create({
+                    const stripeProduct = await getStripe().products.create({
                         name: product.name,
                         description: product.description || "",
                         images,
@@ -102,10 +100,10 @@ export async function POST(req: NextRequest) {
                     // If a Stripe product already exists, ensure it has images set (Stripe only accepts absolute URLs)
                     try {
                         if (images && images.length > 0) {
-                            const existing = await stripe.products.retrieve(String(stripeProductId));
+                            const existing = await getStripe().products.retrieve(String(stripeProductId));
                             const existingImages = Array.isArray((existing as any).images) ? (existing as any).images : [];
                             if (existingImages.length === 0) {
-                                await stripe.products.update(String(stripeProductId), { images });
+                                await getStripe().products.update(String(stripeProductId), { images });
                             }
                         }
                     } catch (err) {
@@ -115,7 +113,7 @@ export async function POST(req: NextRequest) {
                 }
 
                 if (!stripePriceId) {
-                    const stripePrice = await stripe.prices.create({
+                    const stripePrice = await getStripe().prices.create({
                         product: stripeProductId,
                         unit_amount: Math.round(priceNum * 100),
                         currency: "usd",
@@ -123,7 +121,7 @@ export async function POST(req: NextRequest) {
                     stripePriceId = stripePrice.id;
                 }
 
-                const stripePaymentLink = await stripe.paymentLinks.create({
+                const stripePaymentLink = await getStripe().paymentLinks.create({
                     line_items: [
                         {
                             price: stripePriceId,
@@ -167,7 +165,7 @@ export async function POST(req: NextRequest) {
                 // Retrieve the Stripe product to return images for immediate verification
                 let stripeProductRecord: any = null;
                 try {
-                    stripeProductRecord = await stripe.products.retrieve(String(stripeProductId));
+                    stripeProductRecord = await getStripe().products.retrieve(String(stripeProductId));
                 } catch (err) {
                     console.warn(`Failed to retrieve stripe product ${stripeProductId} after creation:`, err);
                 }

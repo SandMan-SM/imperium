@@ -28,3 +28,7 @@ web/.vercel/
 
 # Local-only admin preview helper (dev-only)
 /web/public/local/admin-preview.js
+
+# Vercel/OpenNext build output
+web/.open-next
+web/.next

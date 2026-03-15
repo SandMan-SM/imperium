@@ -1,20 +1,15 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "package.json",
-            "use": "@vercel/next"
-        }
-    ],
-    "functions": {
-        "src/pages/api/**/*.ts": {
-            "maxDuration": 30
-        }
-    },
     "env": {
         "NODE_VERSION": "20.x"
     },
     "regions": [
         "iad1"
+    ],
+    "crons": [
+        {
+            "path": "/api/newsletter/cron",
+            "schedule": "0 11 * * *"
+        }
     ]
 }

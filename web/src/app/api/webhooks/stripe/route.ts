@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { supabaseAdmin } from '@/lib/supabase';
+export const dynamic = 'force-static';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2026-02-25.clover' });
+import { NextResponse } from 'next/server';
+import type { Stripe } from 'stripe';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getStripe } from '@/lib/stripe-helper';
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 async function upsertProfileByEmail(email: string | null, stripeCustomerId?: string) {
@@ -31,7 +33,7 @@ export async function POST(req: Request) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err: any) {
     console.error('Stripe webhook signature verification failed:', err.message);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         // Fetch line items
-        const lineItems = await stripe.checkout.sessions.listLineItems(session.id as string, { limit: 100 });
+        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id as string, { limit: 100 });
 
         // Find or create profile
         const email = session.customer_details?.email ?? session.customer_email ?? null;

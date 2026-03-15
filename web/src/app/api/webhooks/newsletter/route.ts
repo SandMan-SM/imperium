@@ -1,3 +1,5 @@
+export const dynamic = 'force-static';
+
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { gmailService } from '@/lib/gmail-service';

@@ -103,27 +103,26 @@ export function Hero() {
                     transition={{ duration: 0.6, delay: 0.9 }}
                     className="container mx-auto px-4 max-w-4xl mt-6 z-10"
                 >
-                    <div className="grid grid-cols-3 gap-px bg-imperium-border rounded-2xl overflow-hidden">
+                    <div className="grid grid-cols-3 gap-1 sm:gap-px bg-imperium-border rounded-xl sm:rounded-2xl overflow-hidden">
                         {[
-                            { value: "2,400+", label: "Subscribers" },
-                            { value: "98%", label: "Efficiency" },
                             { value: "∞", label: "ROI" },
+                            { value: "2,800+", label: "Subscribers" },
+                            { value: "98%", label: "Efficiency" },
                         ].map((stat, i) => (
                             <div
                                 key={i}
-                                className="bg-white/5 backdrop-blur-sm border border-white/[0.04] px-6 py-8 text-center group hover:bg-white/10 transition-colors duration-300"
+                                className="bg-white/5 backdrop-blur-sm border border-white/[0.04] px-1 sm:px-6 py-4 sm:py-8 text-center group hover:bg-white/10 transition-colors duration-300"
                             >
-                                <div className="flex items-center justify-center h-16 md:h-20 mb-1">
+                                <div className="flex items-center justify-center h-10 sm:h-16 md:h-20 mb-0 sm:mb-1">
                                     {stat.value === '∞' ? (
-                                        // filled infinity using a normal text glyph but larger and with normal weight
-                                        <div className="text-6xl md:text-7xl font-normal text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">∞</div>
+                                        <div className="text-3xl sm:text-5xl md:text-7xl font-normal text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">∞</div>
                                     ) : (
-                                        <div className="text-3xl md:text-4xl font-bold text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">
+                                        <div className="text-lg sm:text-2xl md:text-4xl font-bold text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">
                                             {stat.value}
                                         </div>
                                     )}
                                 </div>
-                                <div className="text-xs text-gray-500 uppercase tracking-[0.15em] font-bold mt-1">
+                                <div className="text-[8px] sm:text-xs text-gray-500 uppercase tracking-[0.1em] sm:tracking-[0.15em] font-bold mt-0 sm:mt-1">
                                     {stat.label === 'ROI' ? 'LIFETIME ROI' : stat.label}
                                 </div>
                             </div>

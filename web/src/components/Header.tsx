@@ -127,7 +127,7 @@ export function Header() {
                             <div className="relative">
                                 <button
                                     onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
-                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors surface-card"
+                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
                                     aria-label="View options"
                                     aria-expanded={viewDropdownOpen}
                                 >
@@ -135,6 +135,12 @@ export function Header() {
                                 </button>
                                 {viewDropdownOpen && (
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
+                                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
+                                            <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
+                                            <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                         <button
                                             onClick={async () => {
                                                 try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
@@ -234,7 +240,7 @@ export function Header() {
                         {/* Cart Button */}
                         <button
                             onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-white/40 hover:text-white transition-colors surface-card"
+                            className="relative p-2 text-white/40 hover:text-white transition-colors"
                             aria-label="Cart"
                         >
                             <ShoppingBag className="w-5 h-5" />
@@ -282,6 +288,12 @@ export function Header() {
                                 </button>
                                 {viewDropdownOpen && (
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
+                                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
+                                            <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
+                                            <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                         <button
                                             onClick={async () => {
                                                 try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
@@ -389,7 +401,7 @@ export function Header() {
                                     key={l.href}
                                     href={l.href}
                                     onClick={() => setOpen(false)}
-                                    className="py-3.5 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors surface-card"
+                                    className="py-3.5 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors"
                                 >
                                     {l.label}
                                 </Link>
@@ -402,7 +414,7 @@ export function Header() {
                                     <Link
                                         href="/portal"
                                         onClick={() => setOpen(false)}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors surface-card"
+                                        className="flex items-center justify-center gap-2 w-full py-3.5 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors"
                                     >
                                         <User className="w-4 h-4" />
                                         Portal
@@ -412,7 +424,7 @@ export function Header() {
                                             handleSignOut();
                                             setOpen(false);
                                         }}
-                                        className="block w-full text-center py-3.5 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors surface-card"
+                                        className="block w-full text-center py-3.5 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors"
                                     >
                                         Sign Out
                                     </button>

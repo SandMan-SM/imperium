@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import { Users, Package, Mail, Search, PlusCircle, ShieldCheck, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, Menu, X, ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { Users, Package, Mail, Search, PlusCircle, ShieldCheck, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, Menu, X, ChevronLeft, ChevronRight, Settings, Send, RefreshCw, Check, AlertCircle, Eye, MousePointer } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -119,16 +119,24 @@ export default function AdminDashboard() {
         { id: "analytics" as AdminTab, label: "Analytics", icon: TrendingUp },
         { id: "crm" as AdminTab, label: "Client CRM", icon: Users },
         { id: "inventory" as AdminTab, label: "Inventory", icon: Package },
-        { id: "comms" as AdminTab, label: "Comms Studio", icon: Mail },
+        { id: "comms" as AdminTab, label: "Newsletter Studio", icon: Mail },
     ];
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex">
-            {/* Left Sidebar - always fixed */}
+            {/* Backdrop for mobile when expanded */}
+            {!collapsed && (
+                <div
+                    className="md:hidden fixed inset-0 bg-black/40 z-40"
+                    onClick={() => setCollapsed(true)}
+                    aria-hidden={true}
+                />
+            )}
+
+            {/* Left Sidebar - on mobile: fixed when expanded (overlay), part of flow when collapsed */}
             <aside className={`
-                ${collapsed ? 'w-16' : 'w-56'}
-                border-r border-imperium-gold/20 bg-gradient-to-b from-gray-900 to-gray-800 flex-shrink-0 flex flex-col 
-                fixed left-0 top-[72px] bottom-0 z-90 
+                ${collapsed ? 'w-16 relative z-0 md:fixed md:left-0 md:top-[72px] md:bottom-0 md:z-90' : 'w-56 fixed left-0 top-[72px] bottom-0 z-90'}
+                border-r border-imperium-gold/20 bg-gradient-to-b from-gray-900 to-gray-800 flex-shrink-0 flex flex-col transition-all
             `}>
                 <div className="p-2 sm:p-4 border-b border-imperium-gold/20 flex items-center min-h-[57px] relative">
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight absolute left-2 sm:left-4 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Command Center</h1>
@@ -185,9 +193,9 @@ export default function AdminDashboard() {
                 </div>
             </aside>
 
-            {/* Main Content - margin on mobile for sidebar */}
+            {/* Main Content - no margin on mobile (overlaps), margin on desktop */}
             <main className="flex-1 overflow-auto">
-                <div className={`p-4 sm:p-6 lg:p-8 ${collapsed ? 'ml-16' : 'ml-56'}`}>
+                <div className={`p-4 sm:p-6 lg:p-8 ${collapsed ? 'ml-16 md:ml-16' : 'ml-0 md:ml-56'}`}>
                     {activeTab === "analytics" && <AnalyticsView metrics={metrics} stats={stats} />}
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
@@ -257,26 +265,100 @@ export default function AdminDashboard() {
 
 // Analytics View Component
 function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { profiles: number; products: number; subs: number } }) {
+    const [loading, setLoading] = useState(false);
+    const [revenueData, setRevenueData] = useState<any>(null);
+
+    useEffect(() => {
+        loadRevenueData();
+    }, []);
+
+    const loadRevenueData = async () => {
+        // Try to load from revenue_analytics table
+        const { data } = await supabase
+            .from("revenue_analytics")
+            .select("*")
+            .order("date", { ascending: false })
+            .limit(30);
+        
+        if (data && data.length > 0) {
+            setRevenueData(data);
+        }
+    };
+
+    const refreshMetrics = async () => {
+        setLoading(true);
+        try {
+            await fetch('/api/admin/refresh-metrics', { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to refresh metrics:', e);
+        }
+        setLoading(false);
+    };
+
     return (
         <div>
-            <h2 className="text-lg sm:text-xl font-light text-white mb-4 sm:mb-6">Analytics</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-light text-white">Analytics</h2>
+                <button
+                    onClick={refreshMetrics}
+                    disabled={loading}
+                    className="flex items-center gap-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-imperium-gold/10 transition-all disabled:opacity-50"
+                >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    Refresh
+                </button>
+            </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total Users</span>
-                    <div className="text-2xl font-light text-white mt-1">{metrics?.total_users || stats.profiles}</div>
+                    <div className="text-2xl font-light text-white mt-1">{metrics?.total_users || stats.profiles || 0}</div>
+                    <div className="text-xs text-white/20 mt-1">Registered accounts</div>
                 </div>
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
-                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Premium</span>
-                    <div className="text-2xl font-light text-white mt-1">{metrics?.premium_subscribers || 0}</div>
+                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Premium Clients</span>
+                    <div className="text-2xl font-light text-imperium-gold mt-1">{metrics?.premium_subscribers || 0}</div>
+                    <div className="text-xs text-white/20 mt-1">Active subscriptions</div>
                 </div>
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
-                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Revenue</span>
+                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total Revenue</span>
                     <div className="text-2xl font-light text-white mt-1">${(metrics?.total_network_revenue || 0).toLocaleString()}</div>
+                    <div className="text-xs text-white/20 mt-1">All time</div>
                 </div>
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Active (30d)</span>
-                    <div className="text-2xl font-light text-white mt-1">{metrics?.active_30d_users || 0}</div>
+                    <div className="text-2xl font-light text-green-400 mt-1">{metrics?.active_30d_users || 0}</div>
+                    <div className="text-xs text-white/20 mt-1">Active users</div>
+                </div>
+            </div>
+
+            {/* Quick Stats Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
+                    <div className="flex items-center gap-2 text-white/30 text-xs uppercase tracking-wider mb-2">
+                        <ShoppingBag className="w-3 h-3" /> Products
+                    </div>
+                    <div className="text-xl font-light text-white">{stats.products || 0}</div>
+                </div>
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
+                    <div className="flex items-center gap-2 text-white/30 text-xs uppercase tracking-wider mb-2">
+                        <Mail className="w-3 h-3" /> Newsletter
+                    </div>
+                    <div className="text-xl font-light text-white">{stats.subs || 0}</div>
+                </div>
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
+                    <div className="flex items-center gap-2 text-white/30 text-xs uppercase tracking-wider mb-2">
+                        <TrendingUp className="w-3 h-3" /> Avg Orders
+                    </div>
+                    <div className="text-xl font-light text-white">{metrics?.avg_purchases_per_user?.toFixed(1) || '0.0'}</div>
+                </div>
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
+                    <div className="flex items-center gap-2 text-white/30 text-xs uppercase tracking-wider mb-2">
+                        <Crown className="w-3 h-3" /> LTV
+                    </div>
+                    <div className="text-xl font-light text-imperium-gold">
+                        ${((metrics?.total_network_revenue || 0) / Math.max(metrics?.premium_subscribers || 1, 1)).toFixed(0)}
+                    </div>
                 </div>
             </div>
 
@@ -313,20 +395,211 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
     );
 }
 
-// CRM View Component
+// CRM View Component with Smart Lists
 function CRMView() {
     const [leads, setLeads] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [activeList, setActiveList] = useState<'free' | 'subscribers' | 'clients' | 'nurture' | 'health'>('clients');
+    const [clientHealth, setClientHealth] = useState<any[]>([]);
 
     useEffect(() => {
-        supabase.from("profiles").select("*").order("created_at", { ascending: false }).then(({ data }) => setLeads(data || []));
-    }, []);
+        loadCRMData();
+    }, [activeList]);
 
-    const filteredLeads = leads.filter(l =>
-        l.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const loadCRMData = async () => {
+        // Load profiles
+        const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("*")
+            .order("created_at", { ascending: false });
+        
+        setLeads(profilesData || []);
+
+        // Load client health for premium users
+        if (activeList === 'health' || activeList === 'clients') {
+            const { data: healthData } = await supabase
+                .from("client_health")
+                .select("*")
+                .order("health_score", { ascending: true });
+            setClientHealth(healthData || []);
+        }
+    };
+
+    // Filter leads based on active smart list
+    // CRITICAL: Premium users (clients) are EXCLUDED from free, subscriber, and nurture lists
+    const getFilteredLeads = () => {
+        let filtered = leads;
+
+        // Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(l =>
+                l.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                l.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                l.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Apply smart list filter
+        switch (activeList) {
+            case 'free':
+                // Free users: NOT premium, NOT subscribed, NO purchases
+                filtered = filtered.filter(l => 
+                    !l.is_premium && 
+                    l.subscription_status !== 'active' && 
+                    (l.purchase_count === 0 || !l.purchase_count)
+                );
+                break;
+            case 'subscribers':
+                // Subscribers: subscribed but NOT premium (newsletter subscribers)
+                filtered = filtered.filter(l => 
+                    l.is_subscribed && 
+                    !l.is_premium && 
+                    l.subscription_status !== 'active'
+                );
+                break;
+            case 'clients':
+                // Clients (Premium Users): Active premium or subscription
+                filtered = filtered.filter(l => 
+                    l.is_premium || 
+                    l.subscription_status === 'active'
+                );
+                break;
+            case 'nurture':
+                // Nurture: Free users with email but no purchase, not premium
+                filtered = filtered.filter(l => 
+                    !l.is_premium && 
+                    l.subscription_status !== 'active' &&
+                    l.email &&
+                    (l.purchase_count === 0 || !l.purchase_count || l.total_spent === 0)
+                );
+                break;
+            case 'health':
+                filtered = [];
+                break;
+        }
+
+        return filtered;
+    };
+
+    const filteredLeads = getFilteredLeads();
+
+    // Get health data for a profile
+    const getHealthForProfile = (profileId: string) => {
+        return clientHealth.find(h => h.profile_id === profileId);
+    };
+
+    // Get health color based on score
+    const getHealthColor = (score: number) => {
+        if (score >= 70) return 'text-green-400';
+        if (score >= 40) return 'text-yellow-400';
+        return 'text-red-400';
+    };
+
+    // Stats for current list
+    const getListStats = () => {
+        const total = filteredLeads.length;
+        const premium = filteredLeads.filter(l => l.is_premium || l.subscription_status === 'active').length;
+        return { total, premium };
+    };
+
+    const listTabs = [
+        { id: 'clients' as const, label: 'Clients', icon: Crown, count: leads.filter(l => l.is_premium || l.subscription_status === 'active').length },
+        { id: 'free' as const, label: 'Free Users', icon: Users, count: leads.filter(l => !l.is_premium && l.subscription_status !== 'active' && (l.purchase_count === 0 || !l.purchase_count)).length },
+        { id: 'subscribers' as const, label: 'Subscribers', icon: Mail, count: leads.filter(l => l.is_subscribed && !l.is_premium && l.subscription_status !== 'active').length },
+        { id: 'nurture' as const, label: 'Nurture', icon: BookOpen, count: leads.filter(l => !l.is_premium && l.subscription_status !== 'active' && l.email && (l.purchase_count === 0 || !l.purchase_count)).length },
+        { id: 'health' as const, label: 'Client Health', icon: TrendingUp, count: clientHealth.length },
+    ];
+
+    const stats = getListStats();
+
+    // Client Health View
+    if (activeList === 'health') {
+        return (
+            <div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-xl font-light text-white">Client Health</h2>
+                    <div className="flex items-center gap-3">
+                        <span className="text-xs text-white/40">{clientHealth.length} clients tracked</span>
+                    </div>
+                </div>
+
+                {clientHealth.length === 0 ? (
+                    <div className="text-center py-12 sm:py-16 text-white/20 text-sm border border-dashed border-white/5 rounded-2xl">
+                        No client health data yet. Client health is tracked for premium members.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                        <table className="w-full text-left min-w-[600px]">
+                            <thead>
+                                <tr className="text-[10px] text-white/20 uppercase tracking-wider font-bold border-b border-white/[0.06]">
+                                    <th className="pb-3 font-bold">Client</th>
+                                    <th className="pb-3 font-bold">Health Score</th>
+                                    <th className="pb-3 font-bold">Trend</th>
+                                    <th className="pb-3 font-bold">30d Opens</th>
+                                    <th className="pb-3 font-bold">30d Clicks</th>
+                                    <th className="pb-3 font-bold">Purchases</th>
+                                    <th className="pb-3 font-bold">Last Active</th>
+                                    <th className="pb-3 font-bold">At Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/[0.03]">
+                                {clientHealth.map((h: any) => {
+                                    const profile = leads.find(l => l.id === h.profile_id);
+                                    return (
+                                        <tr key={h.id} className="group hover:bg-white/[0.02] text-sm text-white/50">
+                                            <td className="py-3 sm:py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-imperium-gold/10 flex items-center justify-center">
+                                                        <Crown className="w-4 h-4 text-imperium-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white/80 font-medium">
+                                                            {profile?.first_name || profile?.last_name ? 
+                                                                `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 
+                                                                profile?.email || '—'}
+                                                        </div>
+                                                        <div className="text-white/20 text-xs">{profile?.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-3 sm:py-4">
+                                                <div className={`text-lg font-bold ${getHealthColor(h.health_score || 50)}`}>
+                                                    {h.health_score || 50}
+                                                </div>
+                                            </td>
+                                            <td className="py-3 sm:py-4">
+                                                <span className={`text-xs uppercase tracking-wider ${
+                                                    h.engagement_trend === 'growing' ? 'text-green-400' :
+                                                    h.engagement_trend === 'declining' ? 'text-red-400' : 'text-yellow-400'
+                                                }`}>
+                                                    {h.engagement_trend || 'stable'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 sm:py-4">{h.email_opens_30d || 0}</td>
+                                            <td className="py-3 sm:py-4">{h.email_clicks_30d || 0}</td>
+                                            <td className="py-3 sm:py-4">{h.purchases_30d || 0}</td>
+                                            <td className="py-3 sm:py-4 text-xs">
+                                                {h.last_activity_at ? new Date(h.last_activity_at).toLocaleDateString() : '—'}
+                                            </td>
+                                            <td className="py-3 sm:py-4">
+                                                {(h.at_risk_score || 0) > 50 ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500/10 text-red-400 text-[10px] uppercase tracking-wider rounded-full">
+                                                        At Risk
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-white/20 text-xs">Healthy</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -344,36 +617,98 @@ function CRMView() {
                 </div>
             </div>
 
+            {/* Smart List Tabs */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                {listTabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveList(tab.id)}
+                        className={`
+                            flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-medium tracking-wider uppercase whitespace-nowrap
+                            ${activeList === tab.id
+                                ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
+                                : "text-white/40 hover:text-white hover:bg-white/[0.02] border border-transparent"}
+                        `}
+                    >
+                        <tab.icon className="w-4 h-4" />
+                        <span>{tab.label}</span>
+                        <span className="ml-1 px-1.5 py-0.5 bg-white/5 rounded text-white/30">{tab.count}</span>
+                    </button>
+                ))}
+            </div>
+
+            {/* List Info */}
+            <div className="mb-4 flex items-center gap-4 text-xs text-white/30">
+                <span>Showing {filteredLeads.length} {activeList === 'clients' ? 'clients' : 'users'}</span>
+                {activeList === 'clients' && (
+                    <span className="text-imperium-gold">Premium members only</span>
+                )}
+                {(activeList === 'free' || activeList === 'subscribers' || activeList === 'nurture') && (
+                    <span className="text-white/20">Excludes premium clients</span>
+                )}
+            </div>
+
             {filteredLeads.length === 0 ? (
-                <div className="text-center py-12 sm:py-16 text-white/20 text-sm border border-dashed border-white/5 rounded-2xl">No users found.</div>
+                <div className="text-center py-12 sm:py-16 text-white/20 text-sm border border-dashed border-white/5 rounded-2xl">
+                    No {activeList === 'clients' ? 'clients' : 'users'} found in this list.
+                </div>
             ) : (
                 <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-                    <table className="w-full text-left min-w-[400px]">
+                    <table className="w-full text-left min-w-[500px]">
                         <thead>
                             <tr className="text-[10px] text-white/20 uppercase tracking-wider font-bold border-b border-white/[0.06]">
                                 <th className="pb-3 font-bold">Name</th>
                                 <th className="pb-3 font-bold">Email</th>
                                 <th className="pb-3 font-bold">Status</th>
+                                <th className="pb-3 font-bold">Spent</th>
+                                <th className="pb-3 font-bold">Orders</th>
                                 <th className="pb-3 font-bold">Joined</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.03]">
-                            {filteredLeads.map((l: any) => (
-                                <tr key={l.id} className="group hover:bg-white/[0.02] text-sm text-white/50">
-                                    <td className="py-3 sm:py-4 font-medium text-white/80">{l.first_name || l.last_name ? `${l.first_name || ''} ${l.last_name || ''}`.trim() : '—'}</td>
-                                    <td className="py-3 sm:py-4">{l.email || '—'}</td>
-                                    <td className="py-3 sm:py-4">
-                                        {l.is_premium ? (
-                                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-imperium-gold/10 text-imperium-gold text-[10px] uppercase tracking-wider rounded-full">
-                                                <Crown className="w-3 h-3" /> Premium
-                                            </span>
-                                        ) : (
-                                            <span className="text-white/20 text-[10px] uppercase tracking-wider">Free</span>
-                                        )}
-                                    </td>
-                                    <td className="py-3 sm:py-4 text-xs text-white/20">{l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}</td>
-                                </tr>
-                            ))}
+                            {filteredLeads.map((l: any) => {
+                                const health = getHealthForProfile(l.id);
+                                return (
+                                    <tr key={l.id} className="group hover:bg-white/[0.02] text-sm text-white/50">
+                                        <td className="py-3 sm:py-4">
+                                            <div className="flex items-center gap-2">
+                                                {l.is_premium || l.subscription_status === 'active' ? (
+                                                    <Crown className="w-4 h-4 text-imperium-gold" />
+                                                ) : null}
+                                                <span className="font-medium text-white/80">
+                                                    {l.first_name || l.last_name ? 
+                                                        `${l.first_name || ''} ${l.last_name || ''}`.trim() : 
+                                                        '—'}
+                                                </span>
+                                                {health && activeList === 'clients' && (
+                                                    <span className={`text-xs ${getHealthColor(health.health_score)}`}>
+                                                        [{health.health_score}]
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="py-3 sm:py-4">{l.email || '—'}</td>
+                                        <td className="py-3 sm:py-4">
+                                            {l.is_premium || l.subscription_status === 'active' ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-imperium-gold/10 text-imperium-gold text-[10px] uppercase tracking-wider rounded-full">
+                                                    <Crown className="w-3 h-3" /> Premium
+                                                </span>
+                                            ) : l.is_subscribed ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-400 text-[10px] uppercase tracking-wider rounded-full">
+                                                    <Mail className="w-3 h-3" /> Subscriber
+                                                </span>
+                                            ) : (
+                                                <span className="text-white/20 text-[10px] uppercase tracking-wider">Free</span>
+                                            )}
+                                        </td>
+                                        <td className="py-3 sm:py-4">${l.total_spent || 0}</td>
+                                        <td className="py-3 sm:py-4">{l.purchase_count || 0}</td>
+                                        <td className="py-3 sm:py-4 text-xs text-white/20">
+                                            {l.created_at ? new Date(l.created_at).toLocaleDateString() : '—'}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -555,11 +890,34 @@ function NewsletterStudio() {
     const [content, setContent] = useState("");
     const [isPublic, setIsPublic] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [sendingTest, setSendingTest] = useState(false);
+    const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [selectedNewsletter, setSelectedNewsletter] = useState<any>(null);
+    const [stats, setStats] = useState<{ free: number; premium: number; total: number }>({ free: 0, premium: 0, total: 0 });
 
     useEffect(() => {
-        supabase.from("profiles").select("*").eq("is_subscribed", true).order("created_at", { ascending: false }).then(({ data }) => setSubscribers(data || []));
-        supabase.from("newsletters").select("*").order("created_at", { ascending: false }).then(({ data }) => setNewsletters(data || []));
+        loadData();
     }, []);
+
+    const loadData = async () => {
+        const [{ data: profiles }, { data: newslettersData }] = await Promise.all([
+            supabase.from("profiles").select("is_premium, is_subscribed").eq("is_subscribed", true),
+            supabase.from("newsletters").select("*").order("created_at", { ascending: false })
+        ]);
+
+        const subs = profiles || [];
+        const free = subs.filter((s: any) => !s.is_premium).length;
+        const premium = subs.filter((s: any) => s.is_premium).length;
+        setStats({ free, premium, total: subs.length });
+        setSubscribers(subs);
+        setNewsletters(newslettersData || []);
+    };
+
+    const showToast = (type: 'success' | 'error', message: string) => {
+        setToast({ type, message });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     const handleSave = async () => {
         if (!title.trim()) return;
@@ -576,20 +934,110 @@ function NewsletterStudio() {
         setTitle("");
         setContent("");
         setIsPublic(false);
-        supabase.from("newsletters").select("*").order("created_at", { ascending: false }).then(({ data }) => setNewsletters(data || []));
+        await loadData();
         setSaving(false);
+        showToast('success', 'Newsletter saved as draft');
+    };
+
+    const handleSend = async (newsletterId: string) => {
+        setSending(true);
+        try {
+            const response = await fetch('/api/newsletter/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newsletterId })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('success', `Sent to ${result.recipientCount} subscribers`);
+                await loadData();
+            } else {
+                showToast('error', result.error || 'Failed to send');
+            }
+        } catch (error: any) {
+            showToast('error', error.message || 'Failed to send newsletter');
+        }
+        setSending(false);
+    };
+
+    const handleSendTest = async () => {
+        if (!selectedNewsletter || !title.trim()) return;
+        
+        const testEmail = 'sitanim8@gmail.com';
+
+        setSendingTest(true);
+        try {
+            const response = await fetch('/api/newsletter/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    newsletterId: selectedNewsletter.id,
+                    testMode: true,
+                    testEmail 
+                })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('success', `Test sent to ${testEmail}`);
+            } else {
+                showToast('error', result.error || 'Failed to send test');
+            }
+        } catch (error: any) {
+            showToast('error', error.message || 'Failed to send test');
+        }
+        setSendingTest(false);
     };
 
     const handlePublish = async (id: string) => {
         await supabase.from("newsletters").update({ published: true }).eq("id", id);
-        supabase.from("newsletters").select("*").order("created_at", { ascending: false }).then(({ data }) => setNewsletters(data || []));
+        await loadData();
+    };
+
+    const handleSelectNewsletter = (nl: any) => {
+        setSelectedNewsletter(nl);
+        setTitle(nl.title);
+        setContent(nl.content || '');
+        setIsPublic(nl.is_public || false);
     };
 
     return (
-        <div>
+        <div className="relative">
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg ${
+                    toast.type === 'success' ? 'bg-green-900/90 border border-green-500' : 'bg-red-900/90 border border-red-500'
+                }`}>
+                    {toast.type === 'success' ? <Check className="w-4 h-4 text-green-400" /> : <AlertCircle className="w-4 h-4 text-red-400" />}
+                    <span className="text-white text-sm">{toast.message}</span>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-light text-white">Comms Studio</h2>
-                <div className="text-sm text-white/40">{subscribers.length} subscribers</div>
+                <h2 className="text-lg sm:text-xl font-light text-white">Newsletter Studio</h2>
+                <div className="flex items-center gap-4">
+                    <div className="text-xs text-white/40 flex items-center gap-3">
+                        <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {stats.total}</span>
+                        <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-imperium-gold" /> {stats.premium}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Subscriber Stats */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total</span>
+                    <div className="text-xl font-light text-white mt-1">{stats.total}</div>
+                </div>
+                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+                    <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Free</span>
+                    <div className="text-xl font-light text-white mt-1">{stats.free}</div>
+                </div>
+                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+                    <span className="text-imperium-gold/60 text-[9px] uppercase tracking-wider font-bold">Premium</span>
+                    <div className="text-xl font-light text-imperium-gold mt-1">{stats.premium}</div>
+                </div>
             </div>
 
             <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
@@ -618,41 +1066,116 @@ function NewsletterStudio() {
                     onChange={(e) => setContent(e.target.value)}
                 />
 
-                <div className="flex justify-end gap-3">
-                    <button
-                        onClick={handleSave}
-                        disabled={saving || !title.trim()}
-                        className="px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30 hover:text-white transition-colors disabled:opacity-30"
-                    >
-                        Save Draft
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={saving || !title.trim()}
-                        className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50"
-                    >
-                        Publish
-                    </button>
+                <div className="flex justify-between items-center">
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving || !title.trim()}
+                            className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/30 hover:text-white transition-colors disabled:opacity-30"
+                        >
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Draft'}
+                        </button>
+                        {selectedNewsletter && !selectedNewsletter.sent_at && (
+                            <button
+                                onClick={handleSendTest}
+                                disabled={sendingTest || !title.trim()}
+                                className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white/40 hover:text-white transition-colors disabled:opacity-30 flex items-center gap-1"
+                            >
+                                {sendingTest ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+                                Test
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        {selectedNewsletter && !selectedNewsletter.sent_at ? (
+                            <button
+                                onClick={() => handleSend(selectedNewsletter.id)}
+                                disabled={sending || !title.trim()}
+                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                Send Now
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleSave}
+                                disabled={saving || !title.trim()}
+                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50"
+                            >
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publish'}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Newsletter Stats Panel */}
+            {selectedNewsletter?.sent_at && (
+                <div className="mb-6 p-4 bg-[#0f131a] border border-imperium-gold/20 rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-bold uppercase text-imperium-gold tracking-wider">Sent Statistics</h4>
+                        <button onClick={() => { setSelectedNewsletter(null); setTitle(''); setContent(''); setIsPublic(false); }} className="text-white/30 hover:text-white text-xs">
+                            Clear
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div>
+                            <span className="text-white/30 text-[9px] uppercase tracking-wider">Recipients</span>
+                            <div className="text-white text-lg font-light">{selectedNewsletter.recipient_count || 0}</div>
+                        </div>
+                        <div>
+                            <span className="text-white/30 text-[9px] uppercase tracking-wider flex items-center gap-1"><Eye className="w-3 h-3" /> Opens</span>
+                            <div className="text-white text-lg font-light">—</div>
+                        </div>
+                        <div>
+                            <span className="text-white/30 text-[9px] uppercase tracking-wider flex items-center gap-1"><MousePointer className="w-3 h-3" /> Clicks</span>
+                            <div className="text-white text-lg font-light">—</div>
+                        </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-white/5 text-xs text-white/30">
+                        Sent {selectedNewsletter.sent_at ? new Date(selectedNewsletter.sent_at).toLocaleString() : 'N/A'}
+                    </div>
+                </div>
+            )}
 
             {newsletters.length > 0 && (
                 <div>
                     <h4 className="text-sm font-light tracking-wide uppercase text-white/40 mb-3 sm:mb-4">Archives</h4>
                     <div className="space-y-2">
                         {newsletters.map((nl) => (
-                            <div key={nl.id} className="flex items-center justify-between bg-black/20 border border-white/5 p-3 rounded-lg">
+                            <div 
+                                key={nl.id} 
+                                onClick={() => handleSelectNewsletter(nl)}
+                                className={`flex items-center justify-between bg-black/20 border p-3 rounded-lg cursor-pointer transition-all ${
+                                    selectedNewsletter?.id === nl.id 
+                                        ? 'border-imperium-gold/50 bg-imperium-gold/5' 
+                                        : 'border-white/5 hover:border-white/10'
+                                }`}
+                            >
                                 <div className="flex-1 min-w-0 pr-3">
                                     <div className="text-white text-sm truncate">{nl.title}</div>
-                                    <div className="text-white/30 text-xs">{nl.created_at ? new Date(nl.created_at).toLocaleDateString() : ''}</div>
+                                    <div className="text-white/30 text-xs flex items-center gap-2">
+                                        {nl.created_at ? new Date(nl.created_at).toLocaleDateString() : ''}
+                                        {nl.sent_at && <span className="text-green-400">• Sent</span>}
+                                        {nl.sent_at && <span className="text-white/20">{nl.recipient_count} recipients</span>}
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    {nl.published ? (
-                                        <span className="text-[10px] text-green-500 uppercase">Published</span>
+                                    {nl.sent_at ? (
+                                        <span className="text-[10px] text-green-500 uppercase flex items-center gap-1">
+                                            <Send className="w-3 h-3" /> Sent
+                                        </span>
+                                    ) : nl.published ? (
+                                        <span className="text-[10px] text-yellow-500 uppercase">Published</span>
                                     ) : (
                                         <>
                                             <span className="text-[10px] text-white/30 uppercase">Draft</span>
-                                            <button onClick={() => handlePublish(nl.id)} className="text-[10px] text-imperium-gold uppercase hover:underline">Publish</button>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handlePublish(nl.id); }} 
+                                                className="text-[10px] text-imperium-gold uppercase hover:underline"
+                                            >
+                                                Publish
+                                            </button>
                                         </>
                                     )}
                                 </div>
@@ -664,6 +1187,3 @@ function NewsletterStudio() {
         </div>
     );
 }
-
-
-

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+export const dynamic = 'force-static';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummykey', {
-    apiVersion: '2026-02-25.clover',
-});
+import { NextResponse } from 'next/server';
+import type { Stripe } from 'stripe';
+import { getStripe } from '@/lib/stripe-helper';
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
         let event;
         try {
-            event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+            event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
         } catch (err: any) {
             console.error(`Webhook Error: ${err.message}`);
             return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });

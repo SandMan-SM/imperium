@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Plus, Check } from "lucide-react";
@@ -9,6 +10,7 @@ import { useCart } from "@/lib/cart-context";
 type Product = {
     id: string;
     name: string;
+    slug?: string;
     category: string;
     description: string;
     price: number;
@@ -44,6 +46,7 @@ const CATALOG: Product[] = [
 ];
 
 export function ProductShowcase() {
+    const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All");
@@ -90,6 +93,7 @@ export function ProductShowcase() {
             name: product.name,
             price: Number(product.price),
             image_url: product.image_url,
+            quantity: 1,
         });
         setAddedProduct(product.id);
         setTimeout(() => setAddedProduct(null), 2000);
@@ -136,7 +140,8 @@ export function ProductShowcase() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                                className="group glass-card rounded-2xl overflow-hidden flex flex-col hover:border-imperium-gold/25 hover:shadow-[0_8px_40px_-8px_rgba(212,175,55,0.12)] transition-all duration-500"
+                                className="group glass-card rounded-2xl overflow-hidden flex flex-col hover:border-imperium-gold/25 hover:shadow-[0_8px_40px_-8px_rgba(212,175,55,0.12)] transition-all duration-500 cursor-pointer"
+                                onClick={() => router.push(`/shop/${product.slug || product.id}`)}
                             >
                                 {/* Image */}
                                 <div className="relative aspect-[4/5] overflow-hidden bg-imperium-surface">

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
+export const dynamic = 'force-static';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2026-02-25.clover' });
+import { NextRequest, NextResponse } from 'next/server';
+import { getStripe } from '@/lib/stripe-helper';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       // If DB provided a payment_link_id, try that first
       if (maybeId) {
         try {
-          const pl = await stripe.paymentLinks.retrieve(maybeId);
+          const pl = await getStripe().paymentLinks.retrieve(maybeId);
           return pl;
         } catch (err) {
           // fall through to try parsing the URL
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
           const id = m[1].split('?')[0];
           // try retrieve
           try {
-            const pl = await stripe.paymentLinks.retrieve(id);
+            const pl = await getStripe().paymentLinks.retrieve(id);
             return pl;
           } catch (err) {
             // fallthrough to listing
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get a page of payment links to match by URL (fallback)
-    const list = await stripe.paymentLinks.list({ limit: 100 });
+    const list = await getStripe().paymentLinks.list({ limit: 100 });
 
     const results = [] as any[];
     for (const p of products) {

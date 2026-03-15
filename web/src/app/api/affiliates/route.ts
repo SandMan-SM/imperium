@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: "2026-02-25.clover",
-});
+
+export const dynamic = 'force-static';
+
+import { NextResponse } from "next/server";
+
+import { createClient } from "@supabase/supabase-js";
+import { getStripe } from "@/lib/stripe-helper";
 
 export async function POST(request: Request) {
     try {

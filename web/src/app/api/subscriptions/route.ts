@@ -1,10 +1,9 @@
+
+export const dynamic = 'force-static';
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: "2026-02-25.clover",
-});
+import { getStripe } from "@/lib/stripe-helper";
 
 export async function POST(request: Request) {
     try {
@@ -25,11 +24,11 @@ export async function POST(request: Request) {
         }
 
         // Get or create Stripe customer
-        let customer = await stripe.customers.list({ email, limit: 1 });
+        let customer = await getStripe().customers.list({ email, limit: 1 });
         let customerId = customer.data[0]?.id;
 
         if (!customerId) {
-            const newCustomer = await stripe.customers.create({
+            const newCustomer = await getStripe().customers.create({
                 email,
                 name: firstName && lastName ? `${firstName} ${lastName}` : undefined,
                 metadata: { user_id: user.id }
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
         }
 
         // Create subscription
-        const subscription = await stripe.subscriptions.create({
+        const subscription = await getStripe().subscriptions.create({
             customer: customerId,
             items: [{ price: priceId }],
             payment_behavior: 'default_incomplete',

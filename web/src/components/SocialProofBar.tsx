@@ -130,9 +130,9 @@ function MetricCard({ metric, delay }: { metric: any; delay: number }) {
     );
 }
 
-function StaticClockIcon() {
+function StaticClockIcon({ className = "" }: { className?: string }) {
     return (
-        <div className="w-4 h-4">
+        <div className={`w-4 h-4 ${className}`}>
             <Clock className="w-full h-full text-imperium-gold" />
         </div>
     );
@@ -140,15 +140,33 @@ function StaticClockIcon() {
 
 export function UrgencyBanner() {
     const [timeLeft, setTimeLeft] = useState({
-        hours: 23,
-        minutes: 59,
-        seconds: 59
+        hours: 0,
+        minutes: 0,
+        seconds: 0
     });
     const [isClient, setIsClient] = useState(false);
     const [isScrolling, setIsScrolling] = useState(false);
 
+    const getTimeUntilNext11AM = () => {
+        const now = new Date();
+        const target = new Date(now);
+        target.setHours(11, 0, 0, 0);
+        
+        if (now >= target) {
+            target.setDate(target.getDate() + 1);
+        }
+        
+        const diff = target.getTime() - now.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        return { hours, minutes, seconds };
+    };
+
     useEffect(() => {
         setIsClient(true);
+        setTimeLeft(getTimeUntilNext11AM());
 
         const timer = setInterval(() => {
             setTimeLeft(prev => {
@@ -159,8 +177,8 @@ export function UrgencyBanner() {
                 } else if (prev.hours > 0) {
                     return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
                 } else {
-                    // Reset timer to 24 hours when it reaches zero
-                    return { hours: 23, minutes: 59, seconds: 59 };
+                    // Reset timer to 24 hours until next 11 AM
+                    return getTimeUntilNext11AM();
                 }
             });
         }, 1000);
@@ -194,18 +212,19 @@ export function UrgencyBanner() {
     }
 
     return (
-        <div className={`fixed top-[72px] left-0 right-0 glass-card border backdrop-blur-sm z-40 shadow-lg transition-all duration-300 ${isScrolling
-            ? 'border-gray-400/[0.05] bg-black/40' // Almost transparent when scrolling
-            : 'border-gray-400/[0.3] hover:border-imperium-gold/60 bg-black/50 hover:bg-black/60' // Greyish when not scrolling, gold on hover
+        <div className={`fixed top-[72px] left-0 right-0 backdrop-blur-sm z-40 shadow-lg transition-all duration-300 ${isScrolling
+            ? 'bg-black/40'
+            : 'bg-black/50 hover:bg-black/60'
             }`}>
-            <div className="container mx-auto px-4 py-2">
-                <div className="flex items-center justify-center gap-3 text-xs text-imperium-gold font-bold tracking-wider uppercase">
-                    <div className="flex items-center gap-2">
-                        <StaticClockIcon />
-                        <span className="text-imperium-gold">New update in:</span>
+            <div className="container mx-auto px-2 sm:px-4 py-1.5 sm:py-2">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-[9px] sm:text-xs text-imperium-gold font-bold tracking-wider uppercase">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <StaticClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="text-imperium-gold hidden sm:inline">New update in:</span>
+                        <span className="text-imperium-gold sm:hidden">Update in:</span>
                     </div>
-                    <div className="bg-imperium-gold/10 border border-imperium-gold/30 rounded px-2 py-1">
-                        <div className="text-imperium-gold font-mono text-xs tracking-wider font-bold">
+                    <div className="bg-imperium-gold/10 border border-imperium-gold/30 rounded px-1.5 sm:px-2 py-0.5 sm:py-1">
+                        <div className="text-imperium-gold font-mono text-[10px] sm:text-xs tracking-wider font-bold">
                             {formatTime(timeLeft.hours, timeLeft.minutes, timeLeft.seconds)}
                         </div>
                     </div>

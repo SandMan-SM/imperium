@@ -21,8 +21,7 @@ export default function Home() {
       {/* 3. The 28 Principles — teaser with paywall */}
       <PrinciplesTeaser />
 
-      {/* Updated Social Proof Stats with Metrics */}
-      <SocialProofBar />
+      {/* Metrics removed - now in Hero */}
 
       {/* 4. Testimonials — dual marquee */}
       <Testimonials />
@@ -45,18 +44,15 @@ export default function Home() {
               <div className="text-xl font-bold tracking-[0.3em] text-imperium-gold uppercase mb-1">Imperium</div>
               <p className="text-xs text-white/40 uppercase tracking-widest">Powered by Omni AI</p>
             </div>
-            <p className="text-xs text-white/40 max-w-md text-center leading-relaxed uppercase tracking-wide">
-              Imperium exists to develop disciplined, strategic, and self-led individuals through structured principles of advanced human development.
-            </p>
-            <div className="flex flex-col items-end gap-2 text-xs text-white/40 uppercase tracking-widest">
-              <a href="/28principles" className="hover:text-white transition-colors surface-card">28 Principles</a>
-              <a href="/shop" className="hover:text-white transition-colors surface-card">Arsenal Shop</a>
-              <a href="/#newsletter" className="hover:text-white transition-colors surface-card">Intelligence</a>
+            <nav className="flex flex-col items-center gap-3 text-xs text-white/40 uppercase tracking-widest">
+              <a href="/28principles" className="hover:text-white transition-colors">28 Principles</a>
+              <a href="/shop" className="hover:text-white transition-colors">Arsenal Shop</a>
+              <a href="/#newsletter" className="hover:text-white transition-colors">Intelligence</a>
               <div className="flex gap-4 mt-2">
-                <a href="/terms" className="hover:text-white transition-colors surface-card">Terms</a>
-                <a href="/privacy" className="hover:text-white transition-colors surface-card">Privacy</a>
+                <a href="/terms" className="hover:text-white transition-colors">Terms</a>
+                <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
               </div>
-            </div>
+            </nav>
           </div>
         </div>
       </footer>
