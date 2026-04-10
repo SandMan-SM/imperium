@@ -1,4 +1,4 @@
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import type { Stripe } from 'stripe';
@@ -115,6 +115,21 @@ export async function POST(req: Request) {
         if (profile) {
           const isPremium = status === 'active' || status === 'trialing';
           await supabaseAdmin.from('profiles').update({ is_premium: isPremium, subscription_status: status, updated_at: new Date().toISOString() }).eq('id', profile.id);
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+        const { data: profiles } = await supabaseAdmin.from('profiles').select('*').eq('stripe_customer_id', customerId).limit(1);
+        const profile = profiles?.[0];
+        if (profile) {
+          // Mark subscription as past_due on payment failure
+          await supabaseAdmin.from('profiles').update({
+            subscription_status: 'past_due',
+            updated_at: new Date().toISOString()
+          }).eq('id', profile.id);
         }
         break;
       }

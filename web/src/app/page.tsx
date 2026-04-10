@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Hero } from "@/components/Hero";
 import { WhyImperium } from "@/components/WhyImperium";
 import { PrinciplesTeaser } from "@/components/PrinciplesTeaser";
@@ -5,6 +6,22 @@ import { Testimonials } from "@/components/Testimonials";
 import { FeaturedProduct } from "@/components/FeaturedProduct";
 import { NewsletterOptin } from "@/components/NewsletterOptin";
 import { SocialProofBar, UrgencyBanner, SocialProofStats } from "@/components/SocialProofBar";
+
+export const metadata: Metadata = {
+  title: "Imperium Elite — Build the Mind. Command the Future.",
+  description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+  openGraph: {
+    title: "Imperium Elite — Build the Mind. Command the Future.",
+    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+    type: "website",
+    url: "https://imperium-green.vercel.app",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Imperium Elite — Build the Mind. Command the Future.",
+    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox.",
+  },
+};
 
 export default function Home() {
   return (

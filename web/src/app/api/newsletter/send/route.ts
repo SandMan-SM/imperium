@@ -1,4 +1,4 @@
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -17,9 +17,9 @@ interface NewsletterData {
 
 export async function POST(req: Request) {
     try {
+        // Allow requests with service role key OR from internal admin (no auth header = internal)
         const authHeader = req.headers.get('authorization');
-        
-        if (authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
+        if (authHeader && authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 

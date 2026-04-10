@@ -5,6 +5,16 @@ import { NewsletterOptin } from "@/components/NewsletterOptin";
 export const metadata: Metadata = {
     title: "The Arsenal — Imperium Elite",
     description: "Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.",
+    openGraph: {
+        title: "The Arsenal — Imperium Elite",
+        description: "Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "The Arsenal — Imperium Elite",
+        description: "Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.",
+    },
 };
 
 export default function ShopPage() {

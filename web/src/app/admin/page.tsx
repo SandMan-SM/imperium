@@ -724,6 +724,10 @@ function ProductManager() {
     const [syncResult, setSyncResult] = useState<any | null>(null);
     const [syncError, setSyncError] = useState<string | null>(null);
     const [linkStatuses, setLinkStatuses] = useState<Record<string, { active: boolean; found: boolean; url: string | null }> | null>(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [editProduct, setEditProduct] = useState<any | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [form, setForm] = useState({ name: '', category: '', description: '', price: '', image_url: '', stripe_url: '', in_stock: true });
 
     useEffect(() => {
         supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts(data || []));
@@ -789,8 +793,161 @@ function ProductManager() {
         setSyncing(false);
     };
 
+    const openAdd = () => {
+        setEditProduct(null);
+        setForm({ name: '', category: '', description: '', price: '', image_url: '', stripe_url: '', in_stock: true });
+        setShowAddModal(true);
+    };
+
+    const openEdit = (product: any) => {
+        setEditProduct(product);
+        setForm({
+            name: product.name || '',
+            category: product.category || '',
+            description: product.description || '',
+            price: String(product.price || ''),
+            image_url: product.image_url || '',
+            stripe_url: product.stripe_url || '',
+            in_stock: product.in_stock !== false,
+        });
+        setShowAddModal(true);
+    };
+
+    const handleSaveProduct = async () => {
+        if (!form.name.trim() || !form.price) return;
+        setSaving(true);
+        const payload = {
+            name: form.name.trim(),
+            category: form.category.trim() || 'general',
+            description: form.description.trim(),
+            price: parseFloat(form.price),
+            image_url: form.image_url.trim() || null,
+            stripe_url: form.stripe_url.trim() || null,
+            in_stock: form.in_stock,
+            updated_at: new Date().toISOString(),
+        };
+
+        if (editProduct) {
+            await supabase.from('products').update(payload).eq('id', editProduct.id);
+        } else {
+            await supabase.from('products').insert([{ ...payload, created_at: new Date().toISOString() }]);
+        }
+
+        const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+        setProducts(refreshed || []);
+        setShowAddModal(false);
+        setSaving(false);
+    };
+
+    const handleDeleteProduct = async (id: string) => {
+        if (!confirm('Delete this product?')) return;
+        await supabase.from('products').delete().eq('id', id);
+        setProducts(prev => prev.filter(p => p.id !== id));
+    };
+
     return (
         <div>
+            {/* Add/Edit Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
+                    <div className="relative bg-gray-900 border border-imperium-gold/20 rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-white font-light text-lg mb-6 uppercase tracking-wider">
+                            {editProduct ? 'Edit Product' : 'Add Product'}
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Name *</label>
+                                <input
+                                    type="text"
+                                    value={form.name}
+                                    onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                                    className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50"
+                                    placeholder="Product name"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Category</label>
+                                    <input
+                                        type="text"
+                                        value={form.category}
+                                        onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
+                                        className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50"
+                                        placeholder="shirts, hoodies..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Price *</label>
+                                    <input
+                                        type="number"
+                                        value={form.price}
+                                        onChange={(e) => setForm(f => ({ ...f, price: e.target.value }))}
+                                        className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50"
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Description</label>
+                                <textarea
+                                    value={form.description}
+                                    onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
+                                    className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50 resize-none h-20"
+                                    placeholder="Product description"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Image URL</label>
+                                <input
+                                    type="text"
+                                    value={form.image_url}
+                                    onChange={(e) => setForm(f => ({ ...f, image_url: e.target.value }))}
+                                    className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50"
+                                    placeholder="/products/image.jpg or https://..."
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs text-white/40 uppercase tracking-wider block mb-1">Stripe Payment URL</label>
+                                <input
+                                    type="text"
+                                    value={form.stripe_url}
+                                    onChange={(e) => setForm(f => ({ ...f, stripe_url: e.target.value }))}
+                                    className="w-full bg-black/40 border border-white/10 text-white text-sm px-4 py-3 rounded-lg focus:outline-none focus:border-imperium-gold/50"
+                                    placeholder="https://buy.stripe.com/..."
+                                />
+                            </div>
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={form.in_stock}
+                                    onChange={(e) => setForm(f => ({ ...f, in_stock: e.target.checked }))}
+                                    className="rounded border-white/10 bg-black/40"
+                                />
+                                <span className="text-xs text-white/40 uppercase tracking-wider">In Stock</span>
+                            </label>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={handleSaveProduct}
+                                disabled={saving || !form.name.trim() || !form.price}
+                                className="flex-1 py-3 bg-imperium-gold text-black text-xs font-bold tracking-widest uppercase rounded-lg hover:bg-white transition-all disabled:opacity-50"
+                            >
+                                {saving ? 'Saving...' : (editProduct ? 'Update' : 'Create')}
+                            </button>
+                            <button
+                                onClick={() => setShowAddModal(false)}
+                                className="px-6 py-3 border border-white/10 text-white/40 text-xs font-bold tracking-widest uppercase rounded-lg hover:text-white transition-all"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Inventory</h2>
                 <div className="flex gap-2 w-full sm:w-auto">
@@ -801,7 +958,10 @@ function ProductManager() {
                     >
                         {syncing ? "Syncing..." : "Sync Stripe"}
                     </button>
-                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-imperium-gold text-imperium-bg text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-white transition-all">
+                    <button
+                        onClick={openAdd}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-imperium-gold text-imperium-bg text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-white transition-all"
+                    >
                         <PlusCircle className="w-4 h-4" /> Add
                     </button>
                 </div>
@@ -812,7 +972,7 @@ function ProductManager() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {products.map((product) => (
-                        <div key={product.id} className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
+                        <div key={product.id} className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl group">
                             <div className="flex justify-between items-start mb-2 sm:mb-3">
                                 <div className="flex-1 min-w-0 pr-3">
                                     <h4 className="text-white font-medium truncate">{product.name}</h4>
@@ -836,6 +996,20 @@ function ProductManager() {
                                 ) : (
                                     <span className="text-yellow-500">Not Connected</span>
                                 )}
+                            </div>
+                            <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => openEdit(product)}
+                                    className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white/40 hover:text-white rounded-lg transition-all"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                    className="py-1.5 px-3 text-[10px] font-bold uppercase tracking-wider border border-red-500/20 text-red-400/60 hover:text-red-400 rounded-lg transition-all"
+                                >
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     ))}
