@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Terms of Service — Imperium Elite",
+    description: "Terms and conditions for using Imperium Elite services and subscriptions.",
+};
 
 export default function TermsOfServicePage() {
     return (

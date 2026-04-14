@@ -265,15 +265,16 @@ export default function ProductDetailPage() {
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                   className={`p-4 rounded-full backdrop-blur-md transition-all ${
-                    isWishlisted 
-                      ? "bg-imperium-gold text-imperium-bg" 
+                    isWishlisted
+                      ? "bg-imperium-gold text-imperium-bg"
                       : "bg-black/40 text-white hover:bg-imperium-gold/20"
                   }`}
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
                 </button>
-                <button className="p-4 rounded-full bg-black/40 text-white hover:bg-imperium-gold/20 backdrop-blur-md transition-all">
+                <button aria-label="Share product" className="p-4 rounded-full bg-black/40 text-white hover:bg-imperium-gold/20 backdrop-blur-md transition-all">
                   <Share2 className="w-5 h-5" />
                 </button>
               </div>
@@ -282,12 +283,14 @@ export default function ProductDetailPage() {
               {productImages.length > 1 && (
                 <>
                   <button
+                    aria-label="Previous image"
                     onClick={() => setActiveImageIndex(prev => prev === 0 ? productImages.length - 1 : prev - 1)}
                     className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-imperium-gold/40 backdrop-blur-md transition-all"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
+                    aria-label="Next image"
                     onClick={() => setActiveImageIndex(prev => prev === productImages.length - 1 ? 0 : prev + 1)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-imperium-gold/40 backdrop-blur-md transition-all"
                   >

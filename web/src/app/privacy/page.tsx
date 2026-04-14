@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Privacy Policy — Imperium Elite",
+    description: "How Imperium Elite collects, uses, and protects your personal information.",
+};
 
 export default function PrivacyPolicyPage() {
     return (
