@@ -199,7 +199,7 @@ export default function AddressesPage() {
                 </span>
               )}
               
-              <div className="flex items-start gap-3 mb-4">
+              <div className="flex items-start gap-4 mb-4">
                 <MapPin className="w-5 h-5 text-imperium-gold flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-white font-bold">{address.name}</h3>
@@ -216,7 +216,7 @@ export default function AddressesPage() {
                 {address.phone && <p>{address.phone}</p>}
               </div>
               
-              <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+              <div className="flex items-center gap-4 pt-4 border-t border-white/10">
                 <button
                   onClick={() => handleEdit(address)}
                   className="flex items-center gap-1 text-white/60 hover:text-white text-sm transition-colors"
@@ -249,7 +249,7 @@ export default function AddressesPage() {
               onClick={() => setShowForm(true)}
               className="bg-white/5 rounded-2xl p-6 border-2 border-dashed border-white/10 hover:border-imperium-gold/30 transition-colors flex flex-col items-center justify-center min-h-[200px]"
             >
-              <Plus className="w-8 h-8 text-imperium-gold mb-3" />
+              <Plus className="w-8 h-8 text-imperium-gold mb-4" />
               <span className="text-white/60">Add new address</span>
             </button>
           )}
@@ -382,7 +382,7 @@ export default function AddressesPage() {
                   />
                 </div>
                 
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-4 cursor-pointer">
                   <input
                     type="checkbox"
                     name="is_default"
@@ -393,7 +393,7 @@ export default function AddressesPage() {
                   <span className="text-white/60 text-sm">Set as default address</span>
                 </label>
                 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-4 pt-4">
                   <button
                     type="button"
                     onClick={resetForm}

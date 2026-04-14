@@ -96,7 +96,7 @@ export function AnalyticsDashboard({
                                 {retentionMetrics?.total_users?.toLocaleString() || '0'}
                             </p>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-full">
+                        <div className="p-4 bg-blue-100 rounded-full">
                             <Users className="h-6 w-6 text-blue-600" />
                         </div>
                     </div>
@@ -115,7 +115,7 @@ export function AnalyticsDashboard({
                                 {retentionMetrics?.premium_subscribers?.toLocaleString() || '0'}
                             </p>
                         </div>
-                        <div className="p-3 bg-purple-100 rounded-full">
+                        <div className="p-4 bg-purple-100 rounded-full">
                             <DollarSign className="h-6 w-6 text-purple-600" />
                         </div>
                     </div>
@@ -133,7 +133,7 @@ export function AnalyticsDashboard({
                                 {totalNewsletterOpens.toLocaleString()}
                             </p>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-full">
+                        <div className="p-4 bg-green-100 rounded-full">
                             <Mail className="h-6 w-6 text-green-600" />
                         </div>
                     </div>
@@ -152,7 +152,7 @@ export function AnalyticsDashboard({
                                 ${totalRevenue.toLocaleString()}
                             </p>
                         </div>
-                        <div className="p-3 bg-orange-100 rounded-full">
+                        <div className="p-4 bg-orange-100 rounded-full">
                             <BarChart3 className="h-6 w-6 text-orange-600" />
                         </div>
                     </div>
@@ -168,35 +168,35 @@ export function AnalyticsDashboard({
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">User Interactions</h3>
                     <div className="space-y-3">
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded">
                             <div className="flex items-center">
                                 <Activity className="h-4 w-4 text-blue-600 mr-2" />
                                 <span>Page Views</span>
                             </div>
                             <span className="font-semibold">{interactionCounts.page_view || 0}</span>
                         </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded">
                             <div className="flex items-center">
                                 <Eye className="h-4 w-4 text-green-600 mr-2" />
                                 <span>Product Views</span>
                             </div>
                             <span className="font-semibold">{interactionCounts.product_view || 0}</span>
                         </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded">
                             <div className="flex items-center">
                                 <Mail className="h-4 w-4 text-red-600 mr-2" />
                                 <span>Newsletter Subs</span>
                             </div>
                             <span className="font-semibold">{interactionCounts.newsletter_subscribe || 0}</span>
                         </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded">
                             <div className="flex items-center">
                                 <ShoppingBag className="h-4 w-4 text-purple-600 mr-2" />
                                 <span>Purchases</span>
                             </div>
                             <span className="font-semibold">{interactionCounts.product_purchase || 0}</span>
                         </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div className="flex justify-between items-center p-4 bg-gray-50 rounded">
                             <div className="flex items-center">
                                 <Share2 className="h-4 w-4 text-yellow-600 mr-2" />
                                 <span>Affiliate Signups</span>
@@ -211,7 +211,7 @@ export function AnalyticsDashboard({
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products</h3>
                     <div className="space-y-4">
                         {productStats.slice(0, 5).map((product) => (
-                            <div key={product.id} className="flex justify-between items-center p-3 border border-gray-200 rounded">
+                            <div key={product.id} className="flex justify-between items-center p-4 border border-gray-200 rounded">
                                 <div>
                                     <p className="font-medium text-gray-900">{product.name}</p>
                                     <p className="text-sm text-gray-600">Views: {product.views_count || 0} • Sales: {product.purchase_count || 0}</p>
@@ -235,7 +235,7 @@ export function AnalyticsDashboard({
                         {newsletterStats.slice(0, 5).map((newsletter) => {
                             const engagement = newsletterEngagement.find(e => e.newsletter_id === newsletter.id);
                             return (
-                                <div key={newsletter.id} className="flex justify-between items-center p-3 border border-gray-200 rounded">
+                                <div key={newsletter.id} className="flex justify-between items-center p-4 border border-gray-200 rounded">
                                     <div>
                                         <p className="font-medium text-gray-900">{newsletter.title}</p>
                                         <p className="text-sm text-gray-600">
@@ -257,7 +257,7 @@ export function AnalyticsDashboard({
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Affiliate Performance</h3>
                     <div className="space-y-3">
                         {affiliateStats.slice(0, 5).map((affiliate) => (
-                            <div key={affiliate.id} className="flex justify-between items-center p-3 border border-gray-200 rounded">
+                            <div key={affiliate.id} className="flex justify-between items-center p-4 border border-gray-200 rounded">
                                 <div>
                                     <p className="font-medium text-gray-900">{affiliate.name}</p>
                                     <p className="text-sm text-gray-600">{affiliate.email}</p>

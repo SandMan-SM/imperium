@@ -85,7 +85,7 @@ export default function PrinciplesPage() {
                             <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">The Doctrine</span>
                         )}
                     </div>
-                    <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-3 sm:mb-4 px-2 sm:px-0" style={{ paddingTop: '6px' }}>
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-4 sm:mb-4 px-2 sm:px-0" style={{ paddingTop: '6px' }}>
                         The{" "}
                         <span
                             className="text-imperium-gold"
@@ -141,7 +141,7 @@ export default function PrinciplesPage() {
                             >
                                 {isLocked && (
                                     <div className="absolute inset-0 rounded-xl backdrop-blur-[1px] bg-gradient-to-br from-gray-900/80 to-black/80 flex items-center justify-center z-10">
-                                        <div className="flex items-center gap-3 text-gray-500">
+                                        <div className="flex items-center gap-4 text-gray-500">
                                             <Lock className="w-4 h-4" />
                                             <span className="text-xs uppercase tracking-[0.2em] font-bold">Subscribe to Unlock</span>
                                         </div>
@@ -213,7 +213,7 @@ export default function PrinciplesPage() {
                                 href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
+                                className="inline-flex items-center gap-4 px-8 sm:px-10 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
                             >
                                 <span>Subscribe — $20/month</span>
                                 <div className="w-2 h-2 bg-black rounded-full group-hover:bg-transparent transition-all" />

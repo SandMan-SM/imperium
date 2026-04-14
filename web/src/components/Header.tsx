@@ -121,7 +121,7 @@ export function Header() {
                     </nav>
 
                     {/* Desktop CTA */}
-                    <div className="hidden md:flex items-center gap-3 lg:gap-5">
+                    <div className="hidden md:flex items-center gap-4 lg:gap-6">
                         {/* Admin View Switcher */}
                         {isAdmin && (
                             <div className="relative">
@@ -254,7 +254,7 @@ export function Header() {
                         {loading ? (
                             <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
                         ) : user ? (
-                            <div className="flex items-center gap-3 lg:gap-4">
+                            <div className="flex items-center gap-4 lg:gap-4">
                                 <Link
                                     href="/portal"
                                     className="flex items-center gap-2 px-4 py-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-semibold tracking-[0.15em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all surface-card"
@@ -401,7 +401,7 @@ export function Header() {
                                     key={l.href}
                                     href={l.href}
                                     onClick={() => setOpen(false)}
-                                    className="py-3.5 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors"
+                                    className="py-4 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors"
                                 >
                                     {l.label}
                                 </Link>
@@ -414,7 +414,7 @@ export function Header() {
                                     <Link
                                         href="/portal"
                                         onClick={() => setOpen(false)}
-                                        className="flex items-center justify-center gap-2 w-full py-3.5 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors"
+                                        className="flex items-center justify-center gap-2 w-full py-4 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors"
                                     >
                                         <User className="w-4 h-4" />
                                         Portal
@@ -424,7 +424,7 @@ export function Header() {
                                             handleSignOut();
                                             setOpen(false);
                                         }}
-                                        className="block w-full text-center py-3.5 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors"
+                                        className="block w-full text-center py-4 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors"
                                     >
                                         Sign Out
                                     </button>
@@ -433,7 +433,7 @@ export function Header() {
                                 <Link
                                     href="/login"
                                     onClick={() => setOpen(false)}
-                                    className="block w-full text-center py-3.5 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-colors btn-primary"
+                                    className="block w-full text-center py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-colors btn-primary"
                                 >
                                     Sign In
                                 </Link>

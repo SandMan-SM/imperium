@@ -42,7 +42,7 @@ export function CartDrawer() {
                         className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0a0e14] border-l border-white/[0.08] z-[101] flex flex-col"
                     >
                         <div className="flex items-center justify-between p-6 border-b border-white/[0.08]">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                                 <ShoppingBag className="w-5 h-5 text-imperium-gold" />
                                 <h2 className="text-lg font-light text-white tracking-wide">Cart</h2>
                                 <span className="text-xs text-white/30">({items.length})</span>
@@ -111,7 +111,7 @@ export function CartDrawer() {
                                 </div>
                                 <button
                                     onClick={handleCheckout}
-                                    className="w-full py-3.5 bg-imperium-gold text-imperium-bg rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all"
+                                    className="w-full py-4 bg-imperium-gold text-imperium-bg rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all"
                                 >
                                     Checkout
                                 </button>

@@ -167,7 +167,7 @@ export default function AdminDashboard() {
                                 }}
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
-                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-3'} 
+                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-4'} 
                                     ${activeTab === tab.id
                                         ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
                                         : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
@@ -227,7 +227,7 @@ export default function AdminDashboard() {
                                         setMenuOpen(false);
                                     }}
                                     className={`
-                                        flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3
+                                        flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-4
                                         ${activeTab === tab.id
                                             ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
                                             : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
                             <Link
                                 href="/account"
                                 onClick={() => setMenuOpen(false)}
-                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-4 text-white/40 hover:text-white hover:bg-white/[0.02]"
                             >
                                 <ShoppingBag className="w-4 h-4" />
                                 Settings
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
                                     handleSignOut();
                                     setMenuOpen(false);
                                 }}
-                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-3 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                                className="flex items-center w-full px-4 py-3 text-[11px] font-medium tracking-wider uppercase rounded-lg gap-4 text-white/40 hover:text-white hover:bg-white/[0.02]"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -297,7 +297,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
 
     return (
         <div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-4 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Analytics</h2>
                 <button
                     onClick={refreshMetrics}
@@ -309,23 +309,23 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
+            <div className="grid grid-cols-2 gap-4 sm:gap-4 mb-6 sm:mb-8">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-6 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total Users</span>
                     <div className="text-2xl font-light text-white mt-1">{metrics?.total_users || stats.profiles || 0}</div>
                     <div className="text-xs text-white/20 mt-1">Registered accounts</div>
                 </div>
-                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-6 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Premium Clients</span>
                     <div className="text-2xl font-light text-imperium-gold mt-1">{metrics?.premium_subscribers || 0}</div>
                     <div className="text-xs text-white/20 mt-1">Active subscriptions</div>
                 </div>
-                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-6 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total Revenue</span>
                     <div className="text-2xl font-light text-white mt-1">${(metrics?.total_network_revenue || 0).toLocaleString()}</div>
                     <div className="text-xs text-white/20 mt-1">All time</div>
                 </div>
-                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-6 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Active (30d)</span>
                     <div className="text-2xl font-light text-green-400 mt-1">{metrics?.active_30d_users || 0}</div>
                     <div className="text-xs text-white/20 mt-1">Active users</div>
@@ -333,7 +333,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
             </div>
 
             {/* Quick Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4 mb-6 sm:mb-8">
                 <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
                     <div className="flex items-center gap-2 text-white/30 text-xs uppercase tracking-wider mb-2">
                         <ShoppingBag className="w-3 h-3" /> Products
@@ -363,7 +363,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div className="bg-[#0f131a] border border-white/[0.08] p-5 sm:p-6 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-6 sm:p-6 rounded-xl">
                     <h4 className="text-[10px] font-bold uppercase text-white/20 mb-4 tracking-wider">Newsletter</h4>
                     <div className="space-y-3">
                         <div className="flex justify-between">
@@ -377,7 +377,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
                     </div>
                 </div>
 
-                <div className="bg-[#0f131a] border border-white/[0.08] p-5 sm:p-6 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-6 sm:p-6 rounded-xl">
                     <h4 className="text-[10px] font-bold uppercase text-white/20 mb-4 tracking-wider">Revenue</h4>
                     <div className="space-y-3">
                         <div className="flex justify-between">
@@ -516,9 +516,9 @@ function CRMView() {
     if (activeList === 'health') {
         return (
             <div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-4 mb-4 sm:mb-6">
                     <h2 className="text-lg sm:text-xl font-light text-white">Client Health</h2>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                         <span className="text-xs text-white/40">{clientHealth.length} clients tracked</span>
                     </div>
                 </div>
@@ -603,7 +603,7 @@ function CRMView() {
 
     return (
         <div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-4 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Client CRM</h2>
                 <div className="relative w-full sm:w-auto">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
@@ -919,7 +919,7 @@ function ProductManager() {
                                     placeholder="https://buy.stripe.com/..."
                                 />
                             </div>
-                            <label className="flex items-center gap-3 cursor-pointer">
+                            <label className="flex items-center gap-4 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={form.in_stock}
@@ -929,7 +929,7 @@ function ProductManager() {
                                 <span className="text-xs text-white/40 uppercase tracking-wider">In Stock</span>
                             </label>
                         </div>
-                        <div className="flex gap-3 mt-6">
+                        <div className="flex gap-4 mt-6">
                             <button
                                 onClick={handleSaveProduct}
                                 disabled={saving || !form.name.trim() || !form.price}
@@ -948,7 +948,7 @@ function ProductManager() {
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-4 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Inventory</h2>
                 <div className="flex gap-2 w-full sm:w-auto">
                     <button
@@ -970,10 +970,10 @@ function ProductManager() {
             {products.length === 0 ? (
                 <div className="text-center py-12 sm:py-16 text-white/20 text-sm border border-dashed border-white/5 rounded-2xl">No products found.</div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
                     {products.map((product) => (
-                        <div key={product.id} className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-5 rounded-xl group">
-                            <div className="flex justify-between items-start mb-2 sm:mb-3">
+                        <div key={product.id} className="bg-[#0f131a] border border-white/[0.08] p-4 sm:p-6 rounded-xl group">
+                            <div className="flex justify-between items-start mb-2 sm:mb-4">
                                 <div className="flex-1 min-w-0 pr-3">
                                     <h4 className="text-white font-medium truncate">{product.name}</h4>
                                     <p className="text-white/40 text-xs">{product.category || 'Uncategorized'}</p>
@@ -981,7 +981,7 @@ function ProductManager() {
                                 <span className="text-imperium-gold font-light text-sm flex-shrink-0">${product.price || 0}</span>
                             </div>
                             <div className="flex justify-between items-center text-xs text-white/30">
-                                <div className="flex gap-3">
+                                <div className="flex gap-4">
                                     <span>Sold: {product.sold_count || 0}</span>
                                     <span>Stock: {product.available_stock || 0}</span>
                                 </div>
@@ -1191,7 +1191,7 @@ function NewsletterStudio() {
             <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-light text-white">Newsletter Studio</h2>
                 <div className="flex items-center gap-4">
-                    <div className="text-xs text-white/40 flex items-center gap-3">
+                    <div className="text-xs text-white/40 flex items-center gap-4">
                         <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {stats.total}</span>
                         <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-imperium-gold" /> {stats.premium}</span>
                     </div>
@@ -1199,16 +1199,16 @@ function NewsletterStudio() {
             </div>
 
             {/* Subscriber Stats */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Total</span>
                     <div className="text-xl font-light text-white mt-1">{stats.total}</div>
                 </div>
-                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
                     <span className="text-white/30 text-[9px] uppercase tracking-wider font-bold">Free</span>
                     <div className="text-xl font-light text-white mt-1">{stats.free}</div>
                 </div>
-                <div className="bg-[#0f131a] border border-white/[0.08] p-3 rounded-xl">
+                <div className="bg-[#0f131a] border border-white/[0.08] p-4 rounded-xl">
                     <span className="text-imperium-gold/60 text-[9px] uppercase tracking-wider font-bold">Premium</span>
                     <div className="text-xl font-light text-imperium-gold mt-1">{stats.premium}</div>
                 </div>
@@ -1286,7 +1286,7 @@ function NewsletterStudio() {
             {/* Newsletter Stats Panel */}
             {selectedNewsletter?.sent_at && (
                 <div className="mb-6 p-4 bg-[#0f131a] border border-imperium-gold/20 rounded-xl">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-4">
                         <h4 className="text-xs font-bold uppercase text-imperium-gold tracking-wider">Sent Statistics</h4>
                         <button onClick={() => { setSelectedNewsletter(null); setTitle(''); setContent(''); setIsPublic(false); }} className="text-white/30 hover:text-white text-xs">
                             Clear
@@ -1314,13 +1314,13 @@ function NewsletterStudio() {
 
             {newsletters.length > 0 && (
                 <div>
-                    <h4 className="text-sm font-light tracking-wide uppercase text-white/40 mb-3 sm:mb-4">Archives</h4>
+                    <h4 className="text-sm font-light tracking-wide uppercase text-white/40 mb-4 sm:mb-4">Archives</h4>
                     <div className="space-y-2">
                         {newsletters.map((nl) => (
                             <div 
                                 key={nl.id} 
                                 onClick={() => handleSelectNewsletter(nl)}
-                                className={`flex items-center justify-between bg-black/20 border p-3 rounded-lg cursor-pointer transition-all ${
+                                className={`flex items-center justify-between bg-black/20 border p-4 rounded-lg cursor-pointer transition-all ${
                                     selectedNewsletter?.id === nl.id 
                                         ? 'border-imperium-gold/50 bg-imperium-gold/5' 
                                         : 'border-white/5 hover:border-white/10'

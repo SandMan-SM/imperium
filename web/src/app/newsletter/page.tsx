@@ -65,7 +65,7 @@ export default function NewsletterPage() {
                         {isPremium && isLoggedIn ? "Premium Brief" : "Intelligence Brief"}
                     </h1>
 
-                    <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-3 sm:mb-4 px-2 sm:px-0">
+                    <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-4 sm:mb-4 px-2 sm:px-0">
                         {isPremium && isLoggedIn
                             ? "Exclusive premium intelligence. No marketing, no noise — just pure strategic value delivered to your inbox."
                             : "A daily dose of raw tactical intellect for the disciplined sovereign. No noise, no motivation platitudes — just precision frameworks from the world's most formidable strategic minds."
@@ -83,7 +83,7 @@ export default function NewsletterPage() {
                 <div className="border-b border-imperium-gold/20 py-16 md:py-20">
                     <div className="container mx-auto px-6 max-w-5xl">
                         <div className="text-center mb-12 md:mb-14">
-                            <h2 className="text-2xl md:text-3xl text-white mb-3">Unlock Premium Intelligence</h2>
+                            <h2 className="text-2xl md:text-3xl text-white mb-4">Unlock Premium Intelligence</h2>
                             <p className="text-white/35 font-light text-sm">Enter your email to join the free intelligence network.</p>
                         </div>
 
@@ -108,7 +108,7 @@ export default function NewsletterPage() {
                         <div className="space-y-6">
                             <div className="bg-imperium-gold/5 border border-imperium-gold/20 rounded-2xl p-8">
                                 <Crown className="w-12 h-12 text-imperium-gold mx-auto mb-4" />
-                                <h3 className="text-xl text-white mb-3">Premium Access Active</h3>
+                                <h3 className="text-xl text-white mb-4">Premium Access Active</h3>
                                 <p className="text-white/40 font-light mb-6">You have full access to premium intelligence briefs and the 28 Principles.</p>
                                 <Link href="/28principles" className="inline-flex items-center gap-2 px-6 py-3 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary">
                                     <Lock className="w-4 h-4" /> Access 28 Principles
@@ -118,7 +118,7 @@ export default function NewsletterPage() {
                     ) : isLoggedIn ? (
                         <div className="space-y-6">
                             <div className="bg-imperium-gold/5 border border-imperium-gold/20 rounded-2xl p-8">
-                                <h3 className="text-xl text-white mb-3">Upgrade to Premium</h3>
+                                <h3 className="text-xl text-white mb-4">Upgrade to Premium</h3>
                                 <p className="text-white/40 font-light mb-6">Get exclusive briefs without marketing and full access to 28 Principles.</p>
                                 <a
                                     href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
@@ -132,7 +132,7 @@ export default function NewsletterPage() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl text-white mb-3">Subscribe Now</h2>
+                            <h2 className="text-2xl md:text-3xl text-white mb-4">Subscribe Now</h2>
                             <p className="text-white/40 font-light text-sm">Enter your email below or go straight to checkout.</p>
 
                             <NewsletterEmailForm />
@@ -194,7 +194,7 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
     if (newsletters.length === 0) {
         return (
             <div className="text-center">
-                <h2 className="text-2xl text-white mb-3">
+                <h2 className="text-2xl text-white mb-4">
                     {isPremium ? "Latest Premium Brief" : "Sample Intelligence Brief"}
                 </h2>
                 <p className="text-white/35 font-light text-sm mb-10">
@@ -210,7 +210,7 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
     return (
         <div className="space-y-8">
             <div className="text-center">
-                <h2 className="text-2xl text-white mb-3">
+                <h2 className="text-2xl text-white mb-4">
                     Latest Intelligence Brief
                 </h2>
                 <p className="text-white/35 font-light text-sm">
@@ -252,7 +252,7 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
                     {/* Access Indicator */}
                     <div className="mt-8 pt-6 border-t border-imperium-border">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                                 {nl.is_public ? (
                                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
                                         <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>

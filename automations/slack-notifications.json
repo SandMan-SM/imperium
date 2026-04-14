@@ -1,0 +1,89 @@
+{
+  "name": "Imperium CEO Slack Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Hourly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "channel": "imperium",
+        "text": "🛍️ *Imperium CEO Update*\n\nHourly check complete. System operational.",
+        "additionalFields": {}
+      },
+      "id": "send_imperium",
+      "name": "Send to Imperium",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 3,
+      "position": [500, 200]
+    },
+    {
+      "parameters": {
+        "channel": "omni-ai-ceo",
+        "text": "🤖 *Omni AI CEO Update*\n\nHourly check complete.",
+        "additionalFields": {}
+      },
+      "id": "send_omni",
+      "name": "Send to Omni AI",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 3,
+      "position": [500, 400]
+    },
+    {
+      "parameters": {
+        "channel": "alira-ceo",
+        "text": "✨ *Alira CEO Update*\n\nHourly check complete.",
+        "additionalFields": {}
+      },
+      "id": "send_alira",
+      "name": "Send to Alira",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 3,
+      "position": [500, 600]
+    }
+  ],
+  "connections": {
+    "Hourly Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send to Imperium",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send to Omni AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send to Alira",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["imperium", "ceo", "slack"],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-13T17:00:00.000Z",
+  "versionId": "1"
+}

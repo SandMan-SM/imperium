@@ -225,14 +225,14 @@ export function EmailCaptureWidget() {
             animate={{ opacity: 1, y: 0 }}
             className="fixed bottom-6 right-6 bg-imperium-bg border border-white/[0.1] rounded-lg p-4 shadow-2xl max-w-sm"
         >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-imperium-gold/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <Mail className="w-5 h-5 text-imperium-gold" />
                 </div>
 
                 <div className="flex-1">
                     <h3 className="text-sm font-bold text-white mb-1">Get Free Access</h3>
-                    <p className="text-xs text-gray-400 mb-3">Sign up for Principle #1 and weekly insights</p>
+                    <p className="text-xs text-gray-400 mb-4">Sign up for Principle #1 and weekly insights</p>
 
                     {!submitted ? (
                         <form onSubmit={handleSubmit} className="space-y-2">

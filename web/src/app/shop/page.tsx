@@ -30,12 +30,12 @@ export default function ShopPage() {
                 </div>
 
                 <div className="relative container mx-auto px-4 sm:px-6">
-                    <div className="inline-flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-5 px-3 sm:px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
+                    <div className="inline-flex items-center gap-2 sm:gap-2.5 mb-4 sm:mb-6 px-3 sm:px-4 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
                         <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
                         <span className="text-imperium-gold text-[9px] sm:text-[10px] font-bold tracking-widest uppercase">Limited Production Run</span>
                     </div>
 
-                    <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-3 sm:mb-4 leading-tight" style={{ paddingTop: '6px' }}>
+                    <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-4 leading-tight" style={{ paddingTop: '6px' }}>
                         The <span className="font-display italic text-gold-gradient">Arsenal</span>
                     </h1>
                     <p className="text-white/40 font-light max-w-sm mx-auto text-xs sm:text-sm leading-relaxed px-2 sm:px-0">

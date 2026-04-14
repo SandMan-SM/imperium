@@ -61,7 +61,7 @@ export default function Home() {
               <div className="text-xl font-bold tracking-[0.3em] text-imperium-gold uppercase mb-1">Imperium</div>
               <p className="text-xs text-white/40 uppercase tracking-widest">Powered by Omni AI</p>
             </div>
-            <nav className="flex flex-col items-center gap-3 text-xs text-white/40 uppercase tracking-widest">
+            <nav className="flex flex-col items-center gap-4 text-xs text-white/40 uppercase tracking-widest">
               <a href="/28principles" className="hover:text-white transition-colors">28 Principles</a>
               <a href="/shop" className="hover:text-white transition-colors">Arsenal Shop</a>
               <a href="/#newsletter" className="hover:text-white transition-colors">Intelligence</a>

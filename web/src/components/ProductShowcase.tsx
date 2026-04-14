@@ -107,7 +107,7 @@ export function ProductShowcase() {
         <section className="py-12 sm:py-20">
             {/* Categories */}
             <div className="flex justify-center mb-10 sm:mb-16 px-4">
-                <div className="flex items-center gap-2 sm:gap-3 p-1 border border-imperium-gold/20 bg-imperium-gold/5 rounded-full overflow-x-auto max-w-full">
+                <div className="flex items-center gap-2 sm:gap-4 p-1 border border-imperium-gold/20 bg-imperium-gold/5 rounded-full overflow-x-auto max-w-full">
                     {categories.map((cat) => (
                         <button
                             key={cat}
@@ -163,8 +163,8 @@ export function ProductShowcase() {
                                 </div>
 
                                 {/* Info */}
-                                <div className="p-5 sm:p-6 flex flex-col flex-1">
-                                    <div className="flex items-start justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
+                                <div className="p-6 sm:p-6 flex flex-col flex-1">
+                                    <div className="flex items-start justify-between gap-4 sm:gap-4 mb-2 sm:mb-4">
                                         <h3 className="text-base font-medium text-white leading-snug">{product.name}</h3>
                                         <span className="text-imperium-gold font-bold text-sm flex-shrink-0">${Number(product.price).toFixed(2)}</span>
                                     </div>

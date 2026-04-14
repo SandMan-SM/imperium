@@ -265,7 +265,7 @@ export default function ProductDetailPage() {
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`p-3 rounded-full backdrop-blur-md transition-all ${
+                  className={`p-4 rounded-full backdrop-blur-md transition-all ${
                     isWishlisted 
                       ? "bg-imperium-gold text-imperium-bg" 
                       : "bg-black/40 text-white hover:bg-imperium-gold/20"
@@ -273,7 +273,7 @@ export default function ProductDetailPage() {
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
                 </button>
-                <button className="p-3 rounded-full bg-black/40 text-white hover:bg-imperium-gold/20 backdrop-blur-md transition-all">
+                <button className="p-4 rounded-full bg-black/40 text-white hover:bg-imperium-gold/20 backdrop-blur-md transition-all">
                   <Share2 className="w-5 h-5" />
                 </button>
               </div>
@@ -299,7 +299,7 @@ export default function ProductDetailPage() {
 
             {/* Thumbnail Strip */}
             {productImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-4 overflow-x-auto pb-2">
                 {productImages.map((img, idx) => (
                   <button
                     key={idx}
@@ -335,7 +335,7 @@ export default function ProductDetailPage() {
               </h1>
 
               {/* Price */}
-              <div className="flex items-baseline gap-3 mb-6">
+              <div className="flex items-baseline gap-4 mb-6">
                 <span className="text-3xl text-imperium-gold font-bold">
                   ${Number(product.price).toFixed(2)}
                 </span>
@@ -379,7 +379,7 @@ export default function ProductDetailPage() {
 
               {/* Size Selector */}
               <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <label className="text-white font-medium">Size</label>
                   <button
                     onClick={() => setShowSizeGuide(true)}
@@ -408,8 +408,8 @@ export default function ProductDetailPage() {
               {/* Color Selector */}
               {product.colors && product.colors.length > 0 && (
                 <div className="mb-6">
-                  <label className="text-white font-medium mb-3 block">Color</label>
-                  <div className="flex flex-wrap gap-3">
+                  <label className="text-white font-medium mb-4 block">Color</label>
+                  <div className="flex flex-wrap gap-4">
                     {product.colors.map((color) => (
                       <button
                         key={color.name}
@@ -433,8 +433,8 @@ export default function ProductDetailPage() {
 
               {/* Quantity */}
               <div className="mb-8">
-                <label className="text-white font-medium mb-3 block">Quantity</label>
-                <div className="flex items-center gap-3">
+                <label className="text-white font-medium mb-4 block">Quantity</label>
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="w-10 h-10 rounded-lg bg-white/5 text-white hover:bg-white/10 flex items-center justify-center transition-all"
@@ -452,7 +452,7 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <button
                   onClick={handleAddToCart}
                   disabled={addedToCart || !product.in_stock}
@@ -487,7 +487,7 @@ export default function ProductDetailPage() {
 
               {/* Features */}
               {product.features && product.features.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-8">
                   {product.features.map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-white/60 text-sm">
                       <Check className="w-4 h-4 text-imperium-gold" />

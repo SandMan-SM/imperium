@@ -217,7 +217,7 @@ export function UrgencyBanner() {
             : 'bg-black/50 hover:bg-black/60'
             }`}>
             <div className="container mx-auto px-2 sm:px-4 py-1.5 sm:py-2">
-                <div className="flex items-center justify-center gap-1.5 sm:gap-3 text-[9px] sm:text-xs text-imperium-gold font-bold tracking-wider uppercase">
+                <div className="flex items-center justify-center gap-1.5 sm:gap-4 text-[9px] sm:text-xs text-imperium-gold font-bold tracking-wider uppercase">
                     <div className="flex items-center gap-1 sm:gap-2">
                         <StaticClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="text-imperium-gold hidden sm:inline">New update in:</span>

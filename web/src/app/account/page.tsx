@@ -124,7 +124,7 @@ export default function AccountPage() {
                     href={item.href}
                     className="flex items-center justify-between px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <item.icon className="w-5 h-5" />
                       <span>{item.label}</span>
                     </div>
@@ -144,17 +144,17 @@ export default function AccountPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white/5 rounded-2xl p-6">
-                <Package className="w-6 h-6 text-imperium-gold mb-3" />
+                <Package className="w-6 h-6 text-imperium-gold mb-4" />
                 <p className="text-2xl text-white font-bold">{orders.length}</p>
                 <p className="text-white/40 text-sm">Total Orders</p>
               </div>
               <div className="bg-white/5 rounded-2xl p-6">
-                <Heart className="w-6 h-6 text-imperium-gold mb-3" />
+                <Heart className="w-6 h-6 text-imperium-gold mb-4" />
                 <p className="text-2xl text-white font-bold">0</p>
                 <p className="text-white/40 text-sm">Wishlist Items</p>
               </div>
               <div className="bg-white/5 rounded-2xl p-6">
-                <Clock className="w-6 h-6 text-imperium-gold mb-3" />
+                <Clock className="w-6 h-6 text-imperium-gold mb-4" />
                 <p className="text-2xl text-white font-bold">
                   {orders.filter(o => o.status === "shipped").length}
                 </p>
@@ -173,7 +173,7 @@ export default function AccountPage() {
 
               {orders.length === 0 ? (
                 <div className="text-center py-8">
-                  <ShoppingBag className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <ShoppingBag className="w-12 h-12 text-white/20 mx-auto mb-4" />
                   <p className="text-white/40">No orders yet</p>
                   <Link href="/shop" className="text-imperium-gold text-sm hover:underline mt-2 inline-block">
                     Start Shopping
@@ -211,7 +211,7 @@ export default function AccountPage() {
                 href="/shop"
                 className="p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors group"
               >
-                <ShoppingBag className="w-8 h-8 text-imperium-gold mb-3 group-hover:scale-110 transition-transform" />
+                <ShoppingBag className="w-8 h-8 text-imperium-gold mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="text-white font-bold mb-1">Shop Again</h3>
                 <p className="text-white/40 text-sm">Browse our latest collection</p>
               </Link>
@@ -219,7 +219,7 @@ export default function AccountPage() {
                 href="/account/wishlist"
                 className="p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors group"
               >
-                <Heart className="w-8 h-8 text-imperium-gold mb-3 group-hover:scale-110 transition-transform" />
+                <Heart className="w-8 h-8 text-imperium-gold mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="text-white font-bold mb-1">Your Wishlist</h3>
                 <p className="text-white/40 text-sm">Items saved for later</p>
               </Link>

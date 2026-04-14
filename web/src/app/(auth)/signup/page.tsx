@@ -95,7 +95,7 @@ export default function SignupPage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Your first name"
-                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
+                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
                 />
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
+                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
                   required
                 />
               </div>
@@ -128,7 +128,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a password"
-                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-3.5 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
+                  className="w-full bg-black/40 border border-imperium-gold/20 text-white pl-11 pr-4 py-4 rounded-xl focus:outline-none focus:border-imperium-gold/50 transition-colors text-sm"
                   required
                   minLength={6}
                 />
@@ -144,7 +144,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-imperium-gold text-imperium-bg py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
+              className="w-full bg-imperium-gold text-imperium-bg py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-[0_0_30px_rgba(212,175,55,0.3)]"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

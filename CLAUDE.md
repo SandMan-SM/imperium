@@ -1,75 +1,59 @@
-# CLAUDE.md
+# CLAUDE.md — Imperium
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## What This Project Is
+Imperium is a premium e-commerce and content platform delivering "28 Principles" educational content. It has a Next.js storefront, Supabase auth/database, Stripe subscriptions, Resend email, and a Telegram bot for content delivery. Target revenue: $50,000/month.
 
-## Project Overview
+## Stack
+- **Framework**: Next.js 16 (App Router), React 19, TypeScript
+- **Styling**: Tailwind CSS 4, Framer Motion
+- **Backend**: Supabase (auth + database + storage), Postgres
+- **Payments**: Stripe (subscriptions + webhooks)
+- **Email**: Resend + react-email
+- **Bot**: Python Telegram bot (telegram-bot/)
+- **Deploy**: Vercel (web/), Docker (telegram-bot/)
 
-Imperium is an e-commerce platform with a Telegram bot for delivering "28 Principles" content. It consists of multiple components:
-
-- **Next.js Web App** (`web/`) - E-commerce storefront with auth, shop, newsletter, and admin
-- **Telegram Bot** (`telegram-bot/`) - Python bot for delivering educational content
-- **n8n Automations** (`automations/`) - Workflows for inventory sync and daily newsletters
-- **Supabase** - Backend database (PostgreSQL)
-
-## Commands
-
-### Web App (Next.js)
-```bash
-cd web
-npm run dev      # Start development server
-npm run build   # Production build
-npm run start   # Start production server
-npm run lint    # Run ESLint
+## Directory Layout
+```
+web/          → Next.js app — MAIN FOCUS
+telegram-bot/ → Python Telegram bot
+automations/  → n8n workflows
+supabase/     → Database migrations
+docs/         → Documentation
 ```
 
-### Telegram Bot (Python)
+## Commands
 ```bash
+# Web app
+cd web
+npm run dev
+npm run build
+npm run lint
+
+# Telegram bot
 cd telegram-bot
-pip install -r requirements.txt
+source venv/bin/activate
 python bot.py
 ```
 
-### Environment Setup
-Copy `.env.example` to `.env` and configure:
-- `TELEGRAM_BOT_TOKEN` - BotFather token
-- `SUPABASE_URL` / `SUPABASE_KEY` - Supabase credentials
-- `PRINTIFY_API_KEY` - Printify API for product sync
+## Agent Priorities (in order)
+1. **Fix build** — `cd web && npm run build`, fix all TypeScript + lint errors
+2. **Complete admin dashboard** — `web/src/app/admin/` — ensure all CRUD operations work: user management, product management, newsletter sending, analytics
+3. **Stripe webhooks** — verify `web/src/app/api/webhooks/stripe/` handles: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`
+4. **Subscription gating** — ensure `/28principles` pages check subscription status from Supabase before rendering content
+5. **Newsletter system** — verify newsletter sign-up form saves to Supabase and triggers Resend email
+6. **Shop page** — ensure `/shop` loads products from Supabase correctly, add to cart works, checkout flows to Stripe
+7. **SEO** — add metadata to all pages, especially `/28principles`, `/shop`
+8. **Mobile polish** — full responsive pass at 375px / 768px / 1440px
+9. **Error boundaries** — wrap all async components in Suspense + error.tsx
 
-### Database
-Run SQL in `docs/SQL.md` in Supabase SQL Editor to create tables: `products`, `newsletters`, `daily_quotes`.
+## Design System
+- Dark: `from-gray-900 via-gray-800 to-black`
+- Gold accent: `text-imperium-gold` (defined in tailwind config)
+- Typography: uppercase tracking for headings
+- All colors from Tailwind config — no hardcoded hex
 
-## Architecture
-
-### Web App Structure (`web/src/`)
-- `app/` - Next.js App Router pages:
-  - `(auth)/` - Login/signup pages
-  - `admin/` - Admin dashboard
-  - `shop/` - Product listing
-  - `newsletter/` - Newsletter archive
-  - `28principles/` - Educational content
-  - `portal/` - User portal
-  - `api/` - API routes and webhooks (Stripe, Supabase)
-- `components/` - Reusable UI components (Header, CartDrawer, ProductShowcase, etc.)
-- `lib/` - Utilities: auth-context.tsx, supabase.ts, cart-context.tsx
-
-### Key Dependencies
-- Next.js 16, React 19, TypeScript
-- Tailwind CSS 4, Framer Motion (animations)
-- Supabase (auth, database)
-- Stripe (payments)
-- lucide-react (icons)
-
-### Telegram Bot Structure (`telegram-bot/`)
-- `bot.py` - Main entry point
-- `handlers/` - Message handlers (start, navigation, progress)
-- `content/phases.py` - 28 Principles content
-- `database.py` - SQLite for user progress tracking
-
-### n8n Workflows
-- `n8n-workflow-printify-sync.json` - Hourly inventory sync from Printify to Supabase
-- `n8n-workflow-daily-newsletter.json` - Daily AI-generated newsletter with ComfyUI images
-
-### Database Schema
-- `products` - Synced from Printify (id, name, category, price, image_url, in_stock)
-- `newsletters` - Generated daily content (title, content, image_url, published)
-- `daily_quotes` - AI-generated quotes paired with newsletters
+## Do NOT Touch
+- `.env` / `.env.local`
+- `supabase/migrations/` — don't run migrations
+- `telegram-bot/venv/`
+- `node_modules/`

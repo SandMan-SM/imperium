@@ -136,7 +136,7 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3"
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-4"
           >
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-red-400 text-sm">{error}</p>
@@ -147,7 +147,7 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3"
+            className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-4"
           >
             <Check className="w-5 h-5 text-green-400" />
             <p className="text-green-400 text-sm">Settings updated successfully!</p>
@@ -157,7 +157,7 @@ export default function ProfilePage() {
         <div className="space-y-8">
           {/* Profile Information */}
           <div className="bg-white/5 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-4 mb-6">
               <User className="w-5 h-5 text-imperium-gold" />
               <h2 className="text-xl text-white font-bold">Profile Information</h2>
             </div>
@@ -229,7 +229,7 @@ export default function ProfilePage() {
 
           {/* Change Password */}
           <div className="bg-white/5 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-4 mb-6">
               <Lock className="w-5 h-5 text-imperium-gold" />
               <h2 className="text-xl text-white font-bold">Change Password</h2>
             </div>
@@ -282,7 +282,7 @@ export default function ProfilePage() {
 
           {/* Email Preferences */}
           <div className="bg-white/5 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-4 mb-6">
               <Bell className="w-5 h-5 text-imperium-gold" />
               <h2 className="text-xl text-white font-bold">Email Preferences</h2>
             </div>

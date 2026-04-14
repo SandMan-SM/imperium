@@ -141,13 +141,13 @@ export default function WishlistPage() {
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <button
                       onClick={() => addToCart(item)}
-                      className="p-3 bg-imperium-gold rounded-full hover:bg-imperium-gold/80 transition-colors"
+                      className="p-4 bg-imperium-gold rounded-full hover:bg-imperium-gold/80 transition-colors"
                     >
                       <ShoppingBag className="w-5 h-5 text-imperium-bg" />
                     </button>
                     <button
                       onClick={() => removeFromWishlist(item.id)}
-                      className="p-3 bg-white/10 rounded-full hover:bg-red-500/20 transition-colors"
+                      className="p-4 bg-white/10 rounded-full hover:bg-red-500/20 transition-colors"
                     >
                       <Trash2 className="w-5 h-5 text-white" />
                     </button>

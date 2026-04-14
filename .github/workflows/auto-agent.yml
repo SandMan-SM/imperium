@@ -1,0 +1,47 @@
+name: Imperium — Auto-Agent
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # 3 AM UTC nightly
+  workflow_dispatch:
+
+jobs:
+  auto-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git
+        run: |
+          git config --global user.email "agent@omni-ai.com"
+          git config --global user.name "Omni Auto-Agent"
+
+      - name: Run Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd ..
+          claude --print --dangerously-skip-permissions \
+            "Read CLAUDE.md and complete all Agent Priorities. Run 'cd web && npm run build' to verify. Commit with prefix 'agent:'. Never touch .env files."
+
+      - name: Push changes
+        run: git push origin HEAD || echo "No changes to push"

@@ -69,19 +69,19 @@ export function Hero() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.45 }}
-                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center mx-auto"
+                    className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center mx-auto"
                 >
                     <a
                         href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 sm:px-6 py-3.5 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
                     >
                         Join for $20 / month
                     </a>
                     <Link
                         href="/shop"
-                        className="px-3 sm:px-5 py-3 sm:py-3.5 border border-white/20 text-white/60 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:border-white/40 hover:text-white transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        className="px-3 sm:px-5 py-3 sm:py-4 border border-white/20 text-white/60 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:border-white/40 hover:text-white transition-all duration-200 text-center whitespace-nowrap inline-block"
                     >
                         View the Arsenal
                     </Link>

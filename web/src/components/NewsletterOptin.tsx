@@ -16,7 +16,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl sm:text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-3 sm:mb-4">
+        <h2 className="text-xl sm:text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-4 sm:mb-4">
           Daily Intelligence
         </h2>
         <p className="text-gray-400 font-light max-w-xl mx-auto text-sm sm:text-base px-2 sm:px-0">
@@ -70,7 +70,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
 
       {!isLoggedIn && (
         <div className="mt-8 bg-imperium-gold/5 border border-imperium-gold/20 rounded-2xl p-6 text-center">
-          <Mail className="w-8 h-8 text-imperium-gold mx-auto mb-3" />
+          <Mail className="w-8 h-8 text-imperium-gold mx-auto mb-4" />
           <h4 className="text-white font-semibold mb-2">Unlock Premium Intelligence</h4>
           <p className="text-white/40 text-sm mb-4">Get daily intelligence delivered straight to your inbox</p>
           <div className="max-w-md mx-auto">
@@ -81,7 +81,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
 
       {isLoggedIn && !isPremium && (
         <div className="mt-8 bg-imperium-gold/5 border border-imperium-gold/20 rounded-2xl p-6 text-center">
-          <Crown className="w-8 h-8 text-imperium-gold mx-auto mb-3" />
+          <Crown className="w-8 h-8 text-imperium-gold mx-auto mb-4" />
           <h4 className="text-white font-semibold mb-2">Unlock Premium Intelligence</h4>
           <p className="text-white/40 text-sm mb-4">Get access to exclusive briefs without marketing, plus full access to 28 Principles</p>
           <a
@@ -107,7 +107,7 @@ function PremiumNewsletterContent() {
           <Crown className="w-4 h-4 text-imperium-gold" />
           <span className="text-[10px] font-bold tracking-widest uppercase text-imperium-gold">Premium Intelligence</span>
         </div>
-        <h2 className="text-xl sm:text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-3 sm:mb-4">
+        <h2 className="text-xl sm:text-2xl md:text-4xl font-light text-white tracking-wide uppercase mb-4 sm:mb-4">
           Exclusive Briefs
         </h2>
         <p className="text-gray-400 font-light max-w-xl mx-auto text-sm sm:text-base px-2 sm:px-0">

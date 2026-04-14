@@ -219,7 +219,7 @@ function CheckoutContent() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3"
+                className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-4"
               >
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <p className="text-red-400 text-sm">{error}</p>
@@ -337,7 +337,7 @@ function CheckoutContent() {
                           : "border-white/10 hover:border-white/20"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <input
                           type="radio"
                           name="shipping"
@@ -415,7 +415,7 @@ function CheckoutContent() {
                       placeholder="Card number"
                       className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-white/30"
                     />
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <input
                         type="text"
                         placeholder="MM / YY"
@@ -468,7 +468,7 @@ function CheckoutContent() {
               {/* Items */}
               <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
+                  <div key={item.id} className="flex gap-4">
                     <div className="w-16 h-16 bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
                       {item.image_url && (
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />

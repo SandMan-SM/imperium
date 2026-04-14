@@ -101,7 +101,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
                 "{t.quote}"
             </p>
 
-            <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/[0.06]">
+            <div className="flex items-center gap-4 mt-auto pt-4 border-t border-white/[0.06]">
                 {/* Avatar placeholder with initials */}
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-imperium-gold/30 to-imperium-gold/5 border border-imperium-gold/20 flex items-center justify-center text-xs font-bold text-imperium-gold flex-shrink-0">
                     {t.name.split(" ").map(n => n[0]).join("")}
@@ -119,7 +119,7 @@ function MarqueeRow({ cards, reverse = false }: { cards: Testimonial[]; reverse?
     return (
         <div className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
             <motion.div
-                className="flex gap-5 pr-5"
+                className="flex gap-6 pr-5"
                 animate={{ x: reverse ? ["0%", "50%"] : ["0%", "-50%"] }}
                 transition={{
                     duration: 35,
@@ -156,7 +156,7 @@ export function Testimonials() {
                         <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">Live Intelligence Network</span>
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-[0.08em] text-white uppercase mb-3 sm:mb-4 px-2 sm:px-0">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-[0.08em] text-white uppercase mb-4 sm:mb-4 px-2 sm:px-0">
                         Proof of <span className="text-imperium-gold font-bold">Concept</span>
                     </h2>
                     <p className="text-gray-400 font-light max-w-lg mx-auto text-sm sm:text-base px-4 sm:px-0">

@@ -38,21 +38,45 @@ CREATE POLICY "Anyone can update products" ON products FOR UPDATE USING (true);
 CREATE TABLE IF NOT EXISTS newsletters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
+    content TEXT,
     image_url TEXT,
-    image_path TEXT, -- Local path to generated image
+    image_path TEXT,
     product_id UUID REFERENCES products(id),
+    is_public BOOLEAN DEFAULT false,
     published BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    sent_at TIMESTAMP WITH TIME ZONE,
+    resend_batch_id TEXT,
+    recipient_count INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable RLS
 ALTER TABLE newsletters ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for newsletters
-CREATE POLICY "Anyone can read newsletters" ON newsletters FOR SELECT USING (true);
-CREATE POLICY "Anyone can insert newsletters" ON newsletters FOR INSERT WITH CHECK (true);
-CREATE POLICY "Anyone can update newsletters" ON newsletters FOR UPDATE USING (true);
+CREATE POLICY "Anyone can view published newsletters" ON newsletters FOR SELECT USING (published = true);
+CREATE POLICY "Anyone can view public newsletters" ON newsletters FOR SELECT USING (is_public = true);
+CREATE POLICY "Service role can manage newsletters" ON newsletters FOR ALL USING (true);
+
+-- ==========================================
+-- NEWSLETTER ENGAGEMENT TABLE
+-- Tracks opens and clicks for newsletters (Resend integration)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS newsletter_engagement (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    newsletter_id UUID REFERENCES newsletters(id) ON DELETE CASCADE,
+    opened_at TIMESTAMP WITH TIME ZONE,
+    read_duration_seconds INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE newsletter_engagement ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Anyone can insert engagement" ON newsletter_engagement FOR INSERT WITH CHECK (true);
 
 -- ==========================================
 -- DAILY QUOTES TABLE

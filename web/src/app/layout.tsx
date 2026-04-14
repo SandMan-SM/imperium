@@ -16,7 +16,19 @@ export const metadata: Metadata = {
   description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
   verification: {
     google: "YOUR_GOOGLE_VERIFICATION_CODE"
-  }
+  },
+  openGraph: {
+    title: "Imperium Elite — Build the Mind. Command the Future.",
+    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+    url: "https://imperiumelite.com",
+    siteName: "Imperium Elite",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Imperium Elite — Build the Mind. Command the Future.",
+    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+  },
 };
 
 export default function RootLayout({

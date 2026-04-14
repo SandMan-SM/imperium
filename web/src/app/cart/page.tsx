@@ -139,7 +139,7 @@ export default function CartPage() {
 
                     <div className="flex items-center justify-between mt-4">
                       {/* Quantity */}
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-lg bg-white/5 text-white flex items-center justify-center hover:bg-white/10 transition-colors"

@@ -66,7 +66,7 @@ export function FeaturedProduct() {
                                 ))}
                             </ul>
 
-                            <div className="flex flex-col items-center gap-3 mx-auto">
+                            <div className="flex flex-col items-center gap-4 mx-auto">
                                 <a
                                     href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                                     target="_blank"
@@ -93,7 +93,7 @@ export function FeaturedProduct() {
                         >
                             <div className="relative rounded-2xl sm:rounded-[2rem] overflow-hidden bg-black border border-white/[0.08] p-6 sm:p-8 md:p-14 shadow-2xl">
                                 <div className="text-center mb-6 sm:mb-8 md:mb-12">
-                                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white uppercase tracking-[0.35em] mb-2 sm:mb-3">Imperium Elite</h3>
+                                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white uppercase tracking-[0.35em] mb-2 sm:mb-4">Imperium Elite</h3>
                                     <p className="text-[9px] sm:text-[9px] md:text-[10px] text-white/20 uppercase tracking-[0.4em] font-bold">Credential Protocol</p>
                                 </div>
 

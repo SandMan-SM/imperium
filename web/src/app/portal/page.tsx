@@ -51,10 +51,10 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                         <p className="text-white/40 text-sm">You have premium access to all content.</p>
                     </div>
 
-                    <div className="grid gap-3 sm:gap-4">
+                    <div className="grid gap-4 sm:gap-4">
                         <button
                             onClick={() => setActiveTab("principles")}
-                            className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                            className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
                         >
                             <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                                 <BookOpen className="text-imperium-gold w-5 h-6" />
@@ -67,7 +67,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                         <button
                             onClick={() => setActiveTab("newsletter")}
-                            className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                            className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
                         >
                             <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                                 <Mail className="text-imperium-gold w-5 h-6" />
@@ -80,7 +80,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                         <button
                             onClick={() => setActiveTab("community")}
-                            className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                            className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
                         >
                             <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                                 <Users className="text-imperium-gold w-5 h-6" />
@@ -93,7 +93,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                         <button
                             onClick={() => setActiveTab("call")}
-                            className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                            className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
                         >
                             <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                                 <Video className="text-imperium-gold w-5 h-6" />
@@ -128,8 +128,8 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                     <p className="text-white/40 text-sm">Upgrade to premium for full access to all content.</p>
                 </div>
 
-                <div className="grid gap-3 sm:gap-4">
-                    <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
+                <div className="grid gap-4 sm:gap-4">
+                    <Link href="/28principles" className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
                         <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                             <BookOpen className="text-imperium-gold w-5 h-6" />
                         </div>
@@ -139,7 +139,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                         </div>
                     </Link>
 
-                    <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
+                    <Link href="/newsletter" className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group">
                         <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                             <Mail className="text-imperium-gold w-5 h-6" />
                         </div>
@@ -151,7 +151,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                     <button
                         onClick={() => setActiveTab("affiliate")}
-                        className="flex items-center gap-4 p-4 sm:p-5 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                        className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
                     >
                         <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
                             <LinkIcon className="text-imperium-gold w-5 h-6" />
@@ -166,7 +166,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                         href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 sm:p-5 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
+                        className="flex items-center gap-4 p-4 sm:p-6 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"
                     >
                         <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold flex items-center justify-center flex-shrink-0">
                             <Crown className="text-imperium-bg w-5 h-6" />
@@ -180,7 +180,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
 
                 {activeTab === "affiliate" && (
                     <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
-                        <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+                        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
                             <Gift className="w-5 h-5 text-imperium-gold" />
                             Affiliate Program
                         </h3>
@@ -188,7 +188,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                             Share Imperium with your network and earn 30% commission on every referral.
                         </p>
                         <div className="space-y-3">
-                            <div className="p-3 bg-black/30 rounded-lg">
+                            <div className="p-4 bg-black/30 rounded-lg">
                                 <p className="text-white/30 text-xs uppercase tracking-wider mb-1">Your Referral Link</p>
                                 <p className="text-white text-sm font-mono">imperium.com/ref/{profile?.id?.slice(0, 8) || 'user123'}</p>
                             </div>

@@ -250,7 +250,7 @@ export default function OrdersPage() {
                   </div>
 
                   {/* Order Actions */}
-                  <div className="p-4 sm:p-6 bg-black/20 flex justify-end gap-3">
+                  <div className="p-4 sm:p-6 bg-black/20 flex justify-end gap-4">
                     <button
                       onClick={() => setSelectedOrder(order)}
                       className="px-4 py-2 border border-white/10 text-white/60 hover:text-white hover:border-white/20 rounded-lg transition-colors text-sm"
