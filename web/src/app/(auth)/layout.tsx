@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Admin — Imperium",
-    description: "Imperium admin dashboard.",
+    title: "Sign In — Imperium",
+    description: "Sign in or create your Imperium account to access the 28 Principles and premium intelligence.",
     robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default function AuthLayout({
     children,
 }: {
     children: React.ReactNode;

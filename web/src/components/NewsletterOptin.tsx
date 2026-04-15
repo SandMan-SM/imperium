@@ -181,6 +181,13 @@ export function NewsletterEmailForm() {
         throw error;
       }
 
+      // Send welcome email via API (fire-and-forget; don't block on failure)
+      fetch("/api/newsletter/welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase() }),
+      }).catch(() => {});
+
       setStatus("success");
       setMessage("Directive Received. Welcome to the network.");
       setEmail("");
