@@ -1,28 +1,115 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { Lock, Crown, Loader2, CheckCircle2, ChevronDown } from "lucide-react";
+import { CheckCircle2, ChevronDown, Circle, Crown, Loader2, Lock, Square, SquareCheck } from "lucide-react";
 import { CURRICULUM, FREE_PHASE_ID, TOTAL_UNITS, type SubPoint } from "@/lib/curriculum";
+import {
+    isSubPointChecked,
+    isUnitComplete,
+    lastUnit,
+    overallProgress,
+    phaseProgress,
+    useProgress,
+} from "@/lib/progress";
 
-function SubPointList({ items, depth = 0 }: { items: SubPoint[]; depth?: number }) {
+function SubPointChecklist({
+    items,
+    unitId,
+    parentPath = "",
+    locked,
+    state,
+    onToggle,
+    depth = 0,
+}: {
+    items: SubPoint[];
+    unitId: number;
+    parentPath?: string;
+    locked: boolean;
+    state: ReturnType<typeof useProgress>["state"];
+    onToggle: (path: string) => void;
+    depth?: number;
+}) {
     return (
-        <ul className={`space-y-2 ${depth === 0 ? "mt-3" : "mt-2 ml-4"}`}>
-            {items.map((sp, i) => (
-                <li key={i} className="text-sm sm:text-[15px] text-gray-300 leading-relaxed flex gap-3">
-                    <span className="text-imperium-gold/60 select-none mt-[7px]">
-                        {depth === 0 ? "—" : "·"}
-                    </span>
-                    <div className="flex-1">
-                        <span>{sp.text}</span>
+        <ul className={`space-y-2 ${depth === 0 ? "mt-3" : "mt-2 ml-6"}`}>
+            {items.map((sp, i) => {
+                const path = parentPath === "" ? `${i}` : `${parentPath}.${i}`;
+                const checked = isSubPointChecked(state, unitId, path);
+                return (
+                    <li key={path} className="text-sm sm:text-[15px] leading-relaxed">
+                        <button
+                            type="button"
+                            onClick={() => !locked && onToggle(path)}
+                            disabled={locked}
+                            aria-pressed={checked}
+                            className={`group flex gap-3 w-full text-left rounded-md py-1 pr-2 transition-colors ${
+                                locked
+                                    ? "cursor-not-allowed text-gray-600"
+                                    : "cursor-pointer hover:bg-imperium-gold/[0.04]"
+                            }`}
+                        >
+                            <span className="mt-[2px] shrink-0">
+                                {checked ? (
+                                    <SquareCheck className="w-4 h-4 text-imperium-gold" />
+                                ) : (
+                                    <Square
+                                        className={`w-4 h-4 ${
+                                            locked
+                                                ? "text-gray-700"
+                                                : "text-gray-500 group-hover:text-imperium-gold/70"
+                                        }`}
+                                    />
+                                )}
+                            </span>
+                            <span
+                                className={`flex-1 ${
+                                    checked && !locked
+                                        ? "text-gray-500 line-through decoration-imperium-gold/40"
+                                        : locked
+                                          ? ""
+                                          : "text-gray-300"
+                                }`}
+                            >
+                                {sp.text}
+                            </span>
+                        </button>
                         {sp.children && sp.children.length > 0 && (
-                            <SubPointList items={sp.children} depth={depth + 1} />
+                            <SubPointChecklist
+                                items={sp.children}
+                                unitId={unitId}
+                                parentPath={path}
+                                locked={locked}
+                                state={state}
+                                onToggle={onToggle}
+                                depth={depth + 1}
+                            />
                         )}
-                    </div>
-                </li>
-            ))}
+                    </li>
+                );
+            })}
         </ul>
+    );
+}
+
+function ProgressBar({ completed, total }: { completed: number; total: number }) {
+    const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
+    return (
+        <div className="w-full">
+            <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                <div
+                    className="h-full bg-gradient-to-r from-imperium-gold to-imperium-gold/70 transition-all duration-700"
+                    style={{ width: `${pct}%` }}
+                    aria-hidden="true"
+                />
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                <span>
+                    {completed} / {total} complete
+                </span>
+                <span className="text-imperium-gold/80">{pct}%</span>
+            </div>
+        </div>
     );
 }
 
@@ -30,6 +117,7 @@ export default function PrinciplesPage() {
     const { user, profile, checkPremiumStatus, loading } = useAuth();
     const [isPremium, setIsPremium] = useState(false);
     const [openUnits, setOpenUnits] = useState<Record<number, boolean>>({});
+    const { state, hydrated, markUnit, toggleSubPoint } = useProgress();
 
     useEffect(() => {
         async function checkPremium() {
@@ -46,6 +134,9 @@ export default function PrinciplesPage() {
         checkPremium();
     }, [user, profile, checkPremiumStatus]);
 
+    const overall = useMemo(() => overallProgress(state), [state]);
+    const resume = useMemo(() => lastUnit(state), [state]);
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
@@ -61,20 +152,33 @@ export default function PrinciplesPage() {
         setOpenUnits((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
+    const scrollToUnit = (unitId: number) => {
+        setOpenUnits((prev) => ({ ...prev, [unitId]: true }));
+        // wait a tick for DOM
+        setTimeout(() => {
+            const el = document.getElementById(`unit-${unitId}`);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 50);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
             {/* Hero */}
-            <div className="relative border-b border-imperium-gold/20 pt-[84px] pb-12 sm:pb-16 md:pb-24 text-center overflow-hidden">
+            <div className="relative border-b border-imperium-gold/20 pt-[84px] pb-12 sm:pb-16 md:pb-20 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative container mx-auto px-4">
                     <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
                         {isPremium ? (
                             <>
                                 <Crown className="w-3 h-3 text-imperium-gold" />
-                                <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">Elite Member</span>
+                                <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">
+                                    Elite Member
+                                </span>
                             </>
                         ) : (
-                            <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">The Doctrine</span>
+                            <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">
+                                The Doctrine
+                            </span>
                         )}
                     </div>
                     <h1
@@ -91,9 +195,25 @@ export default function PrinciplesPage() {
                     </h1>
                     <p className="text-gray-400 max-w-xl mx-auto font-light leading-relaxed text-sm sm:text-base px-2 sm:px-0">
                         {isPremium
-                            ? `${TOTAL_UNITS} units across 5 phases. The complete Imperium operating system, fully unlocked.`
+                            ? `${TOTAL_UNITS} units across 5 phases. Track your progress through the complete Imperium operating system.`
                             : `${TOTAL_UNITS} units across 5 phases — designed to guide individuals into an advanced state of human development.`}
                     </p>
+
+                    {/* Overall progress (only when there's any) */}
+                    {hydrated && overall.completed > 0 && (
+                        <div className="mt-8 max-w-md mx-auto">
+                            <ProgressBar completed={overall.completed} total={overall.total} />
+                            {resume && (
+                                <button
+                                    type="button"
+                                    onClick={() => scrollToUnit(resume.unit.id)}
+                                    className="mt-4 inline-flex items-center gap-2 px-5 py-2 border border-imperium-gold/30 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase text-imperium-gold hover:bg-imperium-gold/10 transition-colors"
+                                >
+                                    Resume → Unit {resume.unit.id}: {resume.unit.title}
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     {isPremium ? (
                         <div className="mt-6 flex items-center justify-center gap-2 text-imperium-gold">
@@ -117,6 +237,7 @@ export default function PrinciplesPage() {
             <div className="container mx-auto px-3 sm:px-4 max-w-4xl py-12 sm:py-16">
                 {CURRICULUM.map((phase, phaseIdx) => {
                     const phaseLocked = !isPremium && phase.id !== FREE_PHASE_ID;
+                    const pp = phaseProgress(state, phase.id);
                     return (
                         <section
                             key={phase.id}
@@ -146,6 +267,11 @@ export default function PrinciplesPage() {
                                 <p className="mt-2 text-sm text-gray-500 italic font-light max-w-md mx-auto">
                                     {phase.tagline}
                                 </p>
+                                {!phaseLocked && hydrated && (
+                                    <div className="mt-4 max-w-xs mx-auto">
+                                        <ProgressBar completed={pp.completed} total={pp.total} />
+                                    </div>
+                                )}
                             </header>
 
                             {/* Units */}
@@ -153,14 +279,18 @@ export default function PrinciplesPage() {
                                 {phase.units.map((unit) => {
                                     const isOpen = !!openUnits[unit.id];
                                     const unitLocked = phaseLocked;
+                                    const completed = isUnitComplete(state, unit.id);
                                     const num = unit.id.toString().padStart(2, "0");
                                     return (
                                         <div
                                             key={unit.id}
+                                            id={`unit-${unit.id}`}
                                             className={`group relative rounded-xl border transition-all duration-300 ${
                                                 unitLocked
                                                     ? "border-white/[0.04] bg-white/[0.01]"
-                                                    : "border-white/[0.07] bg-white/[0.02] hover:border-imperium-gold/25"
+                                                    : completed
+                                                      ? "border-imperium-gold/30 bg-imperium-gold/[0.04]"
+                                                      : "border-white/[0.07] bg-white/[0.02] hover:border-imperium-gold/25"
                                             }`}
                                         >
                                             <button
@@ -180,12 +310,18 @@ export default function PrinciplesPage() {
                                                         className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                                                             unitLocked
                                                                 ? "text-gray-600"
-                                                                : "text-imperium-gold group-hover:scale-105"
+                                                                : completed
+                                                                  ? "text-imperium-gold"
+                                                                  : "text-imperium-gold group-hover:scale-105"
                                                         }`}
                                                     >
-                                                        <span className="text-xl sm:text-2xl font-bold font-mono tracking-wider">
-                                                            {num}
-                                                        </span>
+                                                        {completed && !unitLocked ? (
+                                                            <CheckCircle2 className="w-9 h-9 sm:w-11 sm:h-11" />
+                                                        ) : (
+                                                            <span className="text-xl sm:text-2xl font-bold font-mono tracking-wider">
+                                                                {num}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
 
@@ -195,7 +331,9 @@ export default function PrinciplesPage() {
                                                         className={`text-base sm:text-lg font-semibold tracking-wide transition-colors ${
                                                             unitLocked
                                                                 ? "text-gray-600"
-                                                                : "text-white group-hover:text-imperium-gold"
+                                                                : completed
+                                                                  ? "text-imperium-gold"
+                                                                  : "text-white group-hover:text-imperium-gold"
                                                         }`}
                                                     >
                                                         {unit.title}
@@ -212,13 +350,45 @@ export default function PrinciplesPage() {
                                                 </div>
                                             </button>
 
-                                            {/* Sub-points */}
+                                            {/* Sub-points + complete control */}
                                             {!unitLocked && isOpen && (
                                                 <div
                                                     id={`unit-${unit.id}-body`}
                                                     className="px-6 sm:px-10 pb-5 -mt-2"
                                                 >
-                                                    <SubPointList items={unit.subPoints} />
+                                                    <SubPointChecklist
+                                                        items={unit.subPoints}
+                                                        unitId={unit.id}
+                                                        locked={false}
+                                                        state={state}
+                                                        onToggle={(path) => toggleSubPoint(unit.id, path)}
+                                                    />
+                                                    <div className="mt-5 pt-4 border-t border-white/[0.05] flex items-center justify-between gap-3">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => markUnit(unit.id, !completed)}
+                                                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold tracking-[0.2em] uppercase transition-all ${
+                                                                completed
+                                                                    ? "bg-imperium-gold text-[#030712] hover:bg-white"
+                                                                    : "border border-imperium-gold/40 text-imperium-gold hover:bg-imperium-gold/10"
+                                                            }`}
+                                                        >
+                                                            {completed ? (
+                                                                <>
+                                                                    <CheckCircle2 className="w-4 h-4" />
+                                                                    Completed
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Circle className="w-4 h-4" />
+                                                                    Mark Complete
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                        <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                                                            Unit {unit.id} of {TOTAL_UNITS}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

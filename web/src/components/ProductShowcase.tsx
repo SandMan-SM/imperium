@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +20,8 @@ type Product = {
 
 const CATALOG: Product[] = [
     {
-        id: "tee-01",
+        id: "fallback-tee-01",
+        slug: "imperium-command-tee",
         name: "Imperium Command Tee",
         category: "shirts",
         description: "Premium heavyweight cotton. Minimal Imperium insignia on chest. Structured drop-cut silhouette designed for the serious operator.",
@@ -28,7 +29,8 @@ const CATALOG: Product[] = [
         image_url: "/products/shirt.jpeg",
     },
     {
-        id: "hoodie-01",
+        id: "fallback-hoodie-01",
+        slug: "exclusive-imperium-hoodie",
         name: "Exclusive Imperium Hoodie",
         category: "hoodies",
         description: "400gsm heavyweight fleece. Boxy architectural fit with embossed Imperium emblem. Built to signal sovereignty in any room.",
@@ -36,7 +38,8 @@ const CATALOG: Product[] = [
         image_url: "/products/hoodie.jpeg",
     },
     {
-        id: "sweats-01",
+        id: "fallback-sweats-01",
+        slug: "imperium-stealth-sweats",
         name: "Imperium Stealth Sweats",
         category: "sweats",
         description: "French terry sweatpants. Tapered fit, minimal embroidery, zippered ankles. Built for recovery, remapped for command.",
@@ -52,7 +55,16 @@ export function ProductShowcase() {
     const [activeCategory, setActiveCategory] = useState("All");
     const [addedProduct, setAddedProduct] = useState<string | null>(null);
 
-    const categories = ["All", "Shirts", "Hoodies", "Sweats", "Hats", "Beanies"];
+    const presentCategories = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of products) {
+            if (p.category) set.add(p.category.toLowerCase());
+        }
+        return set;
+    }, [products]);
+
+    const ALL_CATEGORIES = ["Shirts", "Hoodies", "Sweats", "Hats", "Beanies"];
+    const categories = ["All", ...ALL_CATEGORIES.filter((c) => presentCategories.has(c.toLowerCase()))];
 
     const { addItem } = useCart();
 
@@ -87,7 +99,8 @@ export function ProductShowcase() {
         fetchProducts();
     }, []);
 
-    const handleAddToCart = (product: Product) => {
+    const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+        e.stopPropagation();
         addItem({
             id: product.id,
             name: product.name,
@@ -175,7 +188,7 @@ export function ProductShowcase() {
 
                                     <div className="pt-3 sm:pt-4 flex gap-2">
                                         <button
-                                            onClick={() => handleAddToCart(product)}
+                                            onClick={(e) => handleAddToCart(e, product)}
                                             disabled={addedProduct === product.id}
                                             className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all duration-300 ${addedProduct === product.id
                                                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
@@ -199,6 +212,8 @@ export function ProductShowcase() {
                                                 href={product.stripe_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                aria-label="Buy directly via Stripe"
                                                 className="flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-bold tracking-widest uppercase text-white/50 hover:text-white border border-imperium-gold/20 hover:border-imperium-gold/30 rounded-lg transition-colors"
                                             >
                                                 <ShoppingBag className="w-3.5 h-3.5" />
