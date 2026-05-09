@@ -38,9 +38,15 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
             </div>
           </div>
 
-          <h3 className="text-base md:text-lg font-semibold text-white mb-4">The Law of Deliberate Action</h3>
+          <h3 className="text-base md:text-lg font-semibold text-white mb-2">Unit 1 — The Power of Purpose</h3>
+          <blockquote
+            className="text-imperium-gold/90 mb-4 text-lg md:text-xl leading-snug"
+            style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
+          >
+            “A man without a why is dust in motion.”
+          </blockquote>
           <p className="text-white/50 font-light text-[13px] md:text-sm leading-relaxed mb-6">
-            Every move is calculated. The sovereign does not react — he responds from a position of preparation and clarity. Reactivity is the signature of the amateur. This brief breaks down three tactical frameworks used by the most effective operators in history to eliminate reactive decision-making from their behavioral stack.
+            Phase I — Ignition. The opening unit of the doctrine: the 5 Faces of Purpose, finding your “why,” and writing the purpose statement that anchors every decision that follows. Free for all members of the doctrine.
           </p>
 
           <div className="text-center pt-4 border-t border-imperium-border">

@@ -120,8 +120,14 @@ export function ExitIntentPopup() {
                             </h2>
 
                             <p className="text-gray-400 mb-6 leading-relaxed">
-                                Get <span className="text-imperium-gold font-bold">FREE access</span> to Principle #1:
-                                <span className="text-white block mt-2">"The Law of Deliberate Action"</span>
+                                Get <span className="text-imperium-gold font-bold">FREE access</span> to Unit 1 of the doctrine:
+                                <span className="text-white block mt-2 font-semibold">The Power of Purpose</span>
+                                <span
+                                    className="block mt-2 text-imperium-gold/90 text-lg"
+                                    style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
+                                >
+                                    “A man without a why is dust in motion.”
+                                </span>
                             </p>
 
                             {!submitted ? (
