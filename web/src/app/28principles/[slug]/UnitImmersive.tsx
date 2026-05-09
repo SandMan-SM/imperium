@@ -9,7 +9,6 @@ import {
     CheckCircle2,
     ChevronRight,
     Crown,
-    Loader2,
     Lock,
     Square,
     SquareCheck,
@@ -129,7 +128,7 @@ export function UnitImmersive({
     next: Unit | null;
 }) {
     const router = useRouter();
-    const { user, profile, checkPremiumStatus, loading } = useAuth();
+    const { user, profile, checkPremiumStatus } = useAuth();
     const [isPremium, setIsPremium] = useState(false);
     const { state, hydrated, markUnit, toggleSubPoint } = useProgress();
     const [entered, setEntered] = useState(false);
@@ -161,18 +160,7 @@ export function UnitImmersive({
     }, []);
 
     const completed = useMemo(() => isUnitComplete(state, unit.id), [state, unit.id]);
-    const phaseLocked = !isPremium && phase.id !== FREE_PHASE_ID;
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-imperium-gold animate-spin mx-auto mb-4" />
-                    <p className="text-gray-400">Initializing Imperium Protocol...</p>
-                </div>
-            </div>
-        );
-    }
+    const phaseLocked = phase.id !== FREE_PHASE_ID && !isPremium;
 
     if (phaseLocked) {
         return (

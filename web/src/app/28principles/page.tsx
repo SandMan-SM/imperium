@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowRight, CheckCircle2, Crown, Loader2, Lock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Crown, Lock } from "lucide-react";
 import {
     CURRICULUM,
     FREE_PHASE_ID,
@@ -40,7 +40,7 @@ function ProgressBar({ completed, total }: { completed: number; total: number })
 }
 
 export default function PrinciplesPage() {
-    const { user, profile, checkPremiumStatus, loading } = useAuth();
+    const { user, profile, checkPremiumStatus } = useAuth();
     const [isPremium, setIsPremium] = useState(false);
     const { state, hydrated } = useProgress();
 
@@ -61,17 +61,6 @@ export default function PrinciplesPage() {
 
     const overall = useMemo(() => overallProgress(state), [state]);
     const resume = useMemo(() => lastUnit(state), [state]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-imperium-gold animate-spin mx-auto mb-4" />
-                    <p className="text-gray-400">Initializing Imperium Protocol...</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
