@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { CURRICULUM, FREE_PHASE_ID, TIME_WORKS_BACKWARDS, TOTAL_UNITS } from "@/lib/curriculum";
+import { CURRICULUM, FREE_PHASE_ID, TOTAL_UNITS } from "@/lib/curriculum";
 
 export function PrinciplesTeaser() {
-    const { profile } = useAuth();
+    const { user, profile } = useAuth();
     const isPremium = !!(profile?.is_premium || profile?.subscription_status === "active");
 
     // Show the first 5 real units across Phase I and the start of Phase II as the teaser.
@@ -39,22 +39,6 @@ export function PrinciplesTeaser() {
                     <p className="text-gray-400 max-w-xl mx-auto font-light">
                         {TOTAL_UNITS} immersive units across 5 phases. Click any unit to enter.
                     </p>
-                </div>
-
-                {/* Time Works Backwards — meta-principle teaser */}
-                <div className="mb-12 max-w-3xl mx-auto text-center px-2">
-                    <p className="text-[10px] font-bold tracking-[0.4em] text-imperium-gold/80 uppercase">
-                        The Foundation
-                    </p>
-                    <h3 className="mt-2 text-base sm:text-lg font-light text-white uppercase tracking-[0.18em]">
-                        {TIME_WORKS_BACKWARDS.name}
-                    </h3>
-                    <blockquote
-                        className="mt-4 text-imperium-gold leading-tight text-2xl sm:text-3xl md:text-4xl"
-                        style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
-                    >
-                        “{TIME_WORKS_BACKWARDS.quote}”
-                    </blockquote>
                 </div>
 
                 {/* Real unit teasers — first 5 units, all click into the immersive routes */}
@@ -145,14 +129,30 @@ export function PrinciplesTeaser() {
                 </div>
 
                 <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a
-                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
-                    >
-                        Join Now — $20/month
-                    </a>
+                    {isPremium ? (
+                        <Link
+                            href="/28principles"
+                            className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                        >
+                            Continue the Doctrine →
+                        </Link>
+                    ) : user ? (
+                        <Link
+                            href="/portal"
+                            className="px-6 sm:px-8 py-3 sm:py-4 border border-imperium-gold/40 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all duration-200"
+                        >
+                            Open Portal
+                        </Link>
+                    ) : (
+                        <a
+                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                        >
+                            Join Now — $20/month
+                        </a>
+                    )}
                     <Link
                         href="/28principles"
                         className="text-sm text-gray-500 hover:text-white transition-colors font-bold uppercase tracking-wider underline underline-offset-4"

@@ -30,17 +30,6 @@ export type Phase = {
     units: Unit[];
 };
 
-/**
- * Foundational meta-principle that frames the entire course.
- * Rendered as a fixed section between the hero and Phase I on the index page.
- */
-export const TIME_WORKS_BACKWARDS = {
-    name: "Time Works Backwards",
-    tagline: "Design the legacy. Reverse-engineer the man.",
-    quote: "Add structure to chaos and you get power.",
-    body: "The amateur lives forward — reacting, drifting, hoping. The sovereign lives backward — fixing the end state in the mind, then ordering every present moment until it points there. Take the chaos of a life and impose architecture on it. The architecture is the power.",
-};
-
 export const CURRICULUM: Phase[] = [
     {
         id: 1,
@@ -116,14 +105,16 @@ export const CURRICULUM: Phase[] = [
             },
             {
                 id: 5,
-                slug: "chaos-to-power",
-                title: "Chaos to Power",
-                quote: "Motivation is the spark. Discipline is the fuel. Habit is the engine that runs without you.",
-                invocation: "You will not feel like it. Do it anyway. The feeling arrives mid-action, never before.",
+                slug: "time-works-backwards",
+                title: "Time Works Backwards",
+                quote: "Add structure to chaos and you get power.",
+                invocation:
+                    "Design the legacy. Reverse-engineer the man. The amateur lives forward; the sovereign lives backward.",
                 subPoints: [
-                    { text: "Motivation → Discipline → Habit" },
-                    { text: "How this builds discipline" },
-                    { text: "The power of identity association" },
+                    { text: "Live backward — fix the end state in the mind, then order every present moment to point there" },
+                    { text: "Architecture beats willpower — schedule, ritual, non-negotiable scaffolds" },
+                    { text: "Motivation → Discipline → Habit (the engine that runs without you)" },
+                    { text: "Identity is the lever — decide who you are, and behavior conforms" },
                 ],
             },
             {

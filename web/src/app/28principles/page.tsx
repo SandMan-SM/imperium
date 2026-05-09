@@ -4,12 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { ArrowRight, CheckCircle2, Crown, Lock } from "lucide-react";
-import {
-    CURRICULUM,
-    FREE_PHASE_ID,
-    TIME_WORKS_BACKWARDS,
-    TOTAL_UNITS,
-} from "@/lib/curriculum";
+import { CURRICULUM, FREE_PHASE_ID, TOTAL_UNITS } from "@/lib/curriculum";
 import {
     isUnitComplete,
     lastUnit,
@@ -120,6 +115,13 @@ export default function PrinciplesPage() {
                             <CheckCircle2 className="w-5 h-5" />
                             <span className="text-sm font-semibold tracking-wider">Premium Member</span>
                         </div>
+                    ) : user ? (
+                        <Link
+                            href="/portal"
+                            className="mt-6 inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 border border-imperium-gold/40 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all duration-200"
+                        >
+                            Open Portal
+                        </Link>
                     ) : (
                         <a
                             href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
@@ -132,39 +134,6 @@ export default function PrinciplesPage() {
                     )}
                 </div>
             </div>
-
-            {/* Time Works Backwards — meta principle, frames the entire course */}
-            <section
-                className="relative border-b border-imperium-gold/15 py-20 sm:py-28 px-4 overflow-hidden"
-                aria-labelledby="time-works-backwards-heading"
-            >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-imperium-gold/[0.04] rounded-full blur-[140px] pointer-events-none" />
-                <div className="relative max-w-3xl mx-auto text-center">
-                    <p className="text-[10px] font-bold tracking-[0.4em] text-imperium-gold/80 uppercase">
-                        The Foundation
-                    </p>
-                    <h2
-                        id="time-works-backwards-heading"
-                        className="mt-4 text-2xl sm:text-3xl md:text-4xl font-light text-white uppercase tracking-[0.18em]"
-                    >
-                        {TIME_WORKS_BACKWARDS.name}
-                    </h2>
-                    <p className="mt-3 text-sm text-gray-500 italic font-light">
-                        {TIME_WORKS_BACKWARDS.tagline}
-                    </p>
-
-                    <blockquote
-                        className="mt-10 sm:mt-12 text-imperium-gold leading-[1.2] text-3xl sm:text-5xl md:text-6xl"
-                        style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
-                    >
-                        “{TIME_WORKS_BACKWARDS.quote}”
-                    </blockquote>
-
-                    <p className="mt-10 text-base sm:text-lg text-gray-300 font-light leading-relaxed max-w-2xl mx-auto">
-                        {TIME_WORKS_BACKWARDS.body}
-                    </p>
-                </div>
-            </section>
 
             {/* Phases */}
             <div className="container mx-auto px-3 sm:px-4 max-w-4xl py-16 sm:py-20">

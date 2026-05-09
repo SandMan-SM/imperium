@@ -2,8 +2,11 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 
 export function Hero() {
+    const { user, profile } = useAuth();
+    const isPremium = !!(profile?.is_premium || profile?.subscription_status === "active");
     return (
         <section className="relative w-full min-h-screen flex items-start md:items-center justify-center overflow-hidden">
             {/* Background image */}
@@ -71,14 +74,30 @@ export function Hero() {
                     transition={{ duration: 0.5, delay: 0.45 }}
                     className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center mx-auto"
                 >
-                    <a
-                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
-                    >
-                        Join for $20 / month
-                    </a>
+                    {isPremium ? (
+                        <Link
+                            href="/28principles"
+                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        >
+                            Continue the Doctrine
+                        </Link>
+                    ) : user ? (
+                        <Link
+                            href="/portal"
+                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        >
+                            Open Portal
+                        </Link>
+                    ) : (
+                        <a
+                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        >
+                            Join for $20 / month
+                        </a>
+                    )}
                     <Link
                         href="/shop"
                         className="px-3 sm:px-5 py-3 sm:py-4 border border-white/20 text-white/60 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:border-white/40 hover:text-white transition-all duration-200 text-center whitespace-nowrap inline-block"
@@ -87,14 +106,16 @@ export function Hero() {
                     </Link>
                 </motion.div>
 
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                    className="mt-5 text-[10px] font-bold tracking-[0.2em] uppercase text-white/20"
-                >
-                    Cancel anytime · No contracts
-                </motion.p>
+                {!user && (
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                        className="mt-5 text-[10px] font-bold tracking-[0.2em] uppercase text-white/20"
+                    >
+                        Cancel anytime · No contracts
+                    </motion.p>
+                )}
 
                 {/* Stat strip (mirrors the Testimonials stat strip) */}
                 <motion.div

@@ -70,9 +70,16 @@ const TESTIMONIALS: Testimonial[] = [
     },
 ];
 
-// Duplicate for seamless infinite loop
-const ROW_1 = [...TESTIMONIALS.slice(0, 4), ...TESTIMONIALS.slice(0, 4)];
-const ROW_2 = [...TESTIMONIALS.slice(4), ...TESTIMONIALS.slice(4)];
+// Each row uses ALL testimonials (offset between rows for visual variety),
+// duplicated so the marquee can loop seamlessly without ever showing a gap.
+// 16 cards per row × ~340px each ensures full density at any viewport width.
+const ROW_1 = [...TESTIMONIALS, ...TESTIMONIALS];
+const ROW_2 = [
+    ...TESTIMONIALS.slice(4),
+    ...TESTIMONIALS.slice(0, 4),
+    ...TESTIMONIALS.slice(4),
+    ...TESTIMONIALS.slice(0, 4),
+];
 
 function StarRating({ count }: { count: number }) {
     return (
