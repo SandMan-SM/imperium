@@ -241,9 +241,7 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
                     {/* Newsletter Content */}
                     <div className="space-y-6">
                         {nl.content ? (
-                            <div className="text-white/50 font-light text-[13px] md:text-sm leading-relaxed whitespace-pre-wrap">
-                                {nl.content}
-                            </div>
+                            <NewsletterBody content={nl.content} />
                         ) : (
                             <div className="text-white/40 font-light text-sm">No content available.</div>
                         )}
@@ -284,6 +282,93 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
                 </div>
             ))}
         </div>
+    );
+}
+
+// Lightweight markdown renderer for newsletter content.
+// Supports: ## Section heading, > Pull quote, **bold**, *italic*, paragraphs.
+function NewsletterBody({ content }: { content: string }) {
+    const blocks = content.split(/\n\s*\n+/).map((b) => b.trim()).filter(Boolean);
+
+    function renderInline(text: string, keyPrefix: string): React.ReactNode {
+        // Handle **bold** and *italic* — bold first so it doesn't get swallowed by italic
+        const parts: React.ReactNode[] = [];
+        const pattern = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+        let lastIdx = 0;
+        let match: RegExpExecArray | null;
+        let i = 0;
+        while ((match = pattern.exec(text)) !== null) {
+            if (match.index > lastIdx) parts.push(text.slice(lastIdx, match.index));
+            const token = match[0];
+            if (token.startsWith("**")) {
+                parts.push(
+                    <strong key={`${keyPrefix}-b-${i++}`} className="text-white font-semibold">
+                        {token.slice(2, -2)}
+                    </strong>,
+                );
+            } else {
+                parts.push(
+                    <em key={`${keyPrefix}-i-${i++}`} className="italic text-white/70">
+                        {token.slice(1, -1)}
+                    </em>,
+                );
+            }
+            lastIdx = match.index + token.length;
+        }
+        if (lastIdx < text.length) parts.push(text.slice(lastIdx));
+        return parts;
+    }
+
+    return (
+        <article className="space-y-6">
+            {blocks.map((block, idx) => {
+                if (block.startsWith("## ")) {
+                    return (
+                        <h3
+                            key={idx}
+                            className="text-base sm:text-lg font-semibold text-imperium-gold tracking-[0.05em] uppercase pt-4"
+                        >
+                            {block.slice(3).trim()}
+                        </h3>
+                    );
+                }
+                if (block.startsWith("> ")) {
+                    return (
+                        <blockquote
+                            key={idx}
+                            className="border-l-2 border-imperium-gold/60 pl-5 sm:pl-6 my-4 text-imperium-gold/90 text-lg sm:text-xl md:text-2xl leading-snug"
+                            style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
+                        >
+                            {block.slice(2).trim()}
+                        </blockquote>
+                    );
+                }
+                if (/^[—-]{3,}$/.test(block)) {
+                    return (
+                        <hr key={idx} className="my-6 border-t border-imperium-border" />
+                    );
+                }
+                // signature lines like "— from the field notes —"
+                if (block.startsWith("— ") && block.endsWith(" —")) {
+                    return (
+                        <p
+                            key={idx}
+                            className="text-center text-white/30 italic text-xs sm:text-sm tracking-wider pt-6"
+                        >
+                            {block}
+                        </p>
+                    );
+                }
+                return (
+                    <p
+                        key={idx}
+                        className="text-white/65 font-light text-[14px] md:text-[15px] leading-[1.85]"
+                    >
+                        {renderInline(block, `p-${idx}`)}
+                    </p>
+                );
+            })}
+        </article>
     );
 }
 
