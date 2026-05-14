@@ -68,23 +68,27 @@ export default function NewsletterPage() {
                     <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-4 sm:mb-4 px-2 sm:px-0">
                         {isPremium && isLoggedIn
                             ? "Exclusive premium intelligence. No marketing, no noise — just pure strategic value delivered to your inbox."
-                            : "A daily dose of raw tactical intellect for the disciplined sovereign. No noise, no motivation platitudes — just precision frameworks from the world's most formidable strategic minds."
+                            : "Tactical intellect for the disciplined sovereign. No noise, no motivation platitudes — just precision frameworks from history's most formidable minds. Free to read. Free to subscribe."
                         }
                     </p>
 
                     <p className="text-imperium-gold/60 text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-widest uppercase">
-                        {isPremium && isLoggedIn ? "Premium Access Active" : "2,400+ subscribers · $20 / month · Cancel anytime"}
+                        {isPremium && isLoggedIn ? "Premium Access Active" : "Free · 2,400+ subscribers · Read everything below"}
                     </p>
                 </div>
             </div>
 
-            {/* Unlock Premium Intelligence Section - Free Newsletter Signup */}
+            {/* Free email signup — optional, for future briefs */}
             {!isPremium && !isLoggedIn && (
-                <div className="border-b border-imperium-gold/20 py-16 md:py-20">
+                <div className="border-b border-imperium-gold/20 py-12 md:py-16">
                     <div className="container mx-auto px-6 max-w-5xl">
-                        <div className="text-center mb-12 md:mb-14">
-                            <h2 className="text-2xl md:text-3xl text-white mb-4">Unlock Premium Intelligence</h2>
-                            <p className="text-white/35 font-light text-sm">Enter your email to join the free intelligence network.</p>
+                        <div className="text-center mb-8 md:mb-10">
+                            <h2 className="text-xl md:text-2xl text-white mb-3 font-light">
+                                Get future briefs delivered
+                            </h2>
+                            <p className="text-white/35 font-light text-sm">
+                                Free. One field. We send each brief to your inbox when it drops.
+                            </p>
                         </div>
 
                         <div className="max-w-md mx-auto">
@@ -132,23 +136,26 @@ export default function NewsletterPage() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl text-white mb-4">Subscribe Now</h2>
-                            <p className="text-white/40 font-light text-sm">Enter your email below or go straight to checkout.</p>
+                            <h2 className="text-2xl md:text-3xl text-white mb-2 font-light">
+                                Want the next one in your inbox?
+                            </h2>
+                            <p className="text-white/40 font-light text-sm">
+                                Free. No contracts. Unsubscribe anytime.
+                            </p>
 
                             <NewsletterEmailForm />
 
-                            <div className="mt-8">
-                                <p className="text-white/25 text-sm font-light mb-4">Or subscribe directly via Stripe:</p>
-                                <a
-                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-gold !text-[11px] md:!text-[12px] w-full sm:w-auto"
-                                >
-                                    Join Imperium Elite — $20/month
-                                </a>
-                                <p className="mt-4 text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-white/20">No contracts. Cancel anytime.</p>
-                            </div>
+                            <p className="mt-6 text-[10px] md:text-[11px] font-bold tracking-[0.2em] uppercase text-white/25">
+                                The Imperium Elite tier · $20/month · adds private community, 1-on-1 access, and the full 28 Principles
+                            </p>
+                            <a
+                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block mt-2 text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold/70 hover:text-imperium-gold underline underline-offset-4 transition-colors"
+                            >
+                                Upgrade if you want it →
+                            </a>
                         </div>
                     )}
                 </div>
