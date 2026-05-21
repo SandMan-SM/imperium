@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function ShopPage() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="min-h-screen">
             {/* Hero */}
             <div className="relative border-b border-imperium-gold/20 pt-[84px] pb-10 sm:pb-14 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-imperium-gold/[0.04] rounded-full blur-[80px] pointer-events-none" />

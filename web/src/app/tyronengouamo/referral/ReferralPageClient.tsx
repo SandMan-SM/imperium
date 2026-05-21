@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Crown } from "lucide-react";
 import PageShareCard from "@/components/PageShareCard";
+import { GoldDivider, MagneticButton, Reveal, ScrambleText } from "@/components/fx";
 
 const REFERRAL_URL = "https://secretimperium.com/tyronengouamo/referral";
 const PROFILE_URL = "/tyronengouamo";
@@ -24,9 +25,9 @@ const APPLY_MAILTO =
 
 export default function ReferralPageClient() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="min-h-screen relative">
             {/* Hero */}
-            <section className="relative border-b border-imperium-gold/20 pt-[84px] pb-16 sm:pb-24 overflow-hidden">
+            <section className="relative pt-[84px] pb-16 sm:pb-24 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative container mx-auto px-4 sm:px-6 max-w-3xl text-center">
                     <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 border border-imperium-gold/25 rounded-full bg-imperium-gold/5">
@@ -36,7 +37,7 @@ export default function ReferralPageClient() {
                         </span>
                     </div>
                     <h1 className="text-3xl sm:text-4xl md:text-6xl font-light text-white leading-tight tracking-tight mb-4">
-                        Tyrone{" "}
+                        <ScrambleText text="Tyrone" />{" "}
                         <span
                             className="text-imperium-gold"
                             style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
@@ -49,13 +50,15 @@ export default function ReferralPageClient() {
                         and capital — with a profile of your own and a $25K asset built around your brand.
                     </p>
 
-                    <a
-                        href={APPLY_MAILTO}
-                        className="inline-flex items-center gap-3 px-7 sm:px-9 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
-                    >
-                        Apply for Inner Circle
-                        <ArrowRight className="w-4 h-4" />
-                    </a>
+                    <MagneticButton>
+                        <a
+                            href={APPLY_MAILTO}
+                            className="inline-flex items-center gap-3 px-7 sm:px-9 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                        >
+                            Apply for Inner Circle
+                            <ArrowRight className="w-4 h-4" />
+                        </a>
+                    </MagneticButton>
                     <p className="mt-4 text-[10px] font-bold tracking-[0.2em] uppercase text-white/25">
                         By referral · Curated tier
                     </p>
@@ -63,7 +66,7 @@ export default function ReferralPageClient() {
             </section>
 
             {/* Four pillars */}
-            <section className="py-16 sm:py-24 border-b border-imperium-gold/20">
+            <section className="py-16 sm:py-24">
                 <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
                     <div className="text-center mb-12">
                         <p className="text-imperium-gold/80 text-[10px] font-bold tracking-[0.4em] uppercase">
@@ -81,7 +84,7 @@ export default function ReferralPageClient() {
                     </div>
 
                     <ul className="space-y-6">
-                        <li className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6">
+                        <Reveal as="li" delay={0} className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6 hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-500">
                             <CheckCircle2 className="w-6 h-6 text-imperium-gold shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-white font-semibold text-base sm:text-lg">
@@ -93,9 +96,9 @@ export default function ReferralPageClient() {
                                     template Tyrone uses.
                                 </p>
                             </div>
-                        </li>
+                        </Reveal>
 
-                        <li className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6">
+                        <Reveal as="li" delay={0.08} className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6 hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-500">
                             <CheckCircle2 className="w-6 h-6 text-imperium-gold shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-white font-semibold text-base sm:text-lg">
@@ -106,9 +109,9 @@ export default function ReferralPageClient() {
                                     open once you walk through it.
                                 </p>
                             </div>
-                        </li>
+                        </Reveal>
 
-                        <li className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6">
+                        <Reveal as="li" delay={0.16} className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6 hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-500">
                             <CheckCircle2 className="w-6 h-6 text-imperium-gold shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-white font-semibold text-base sm:text-lg">
@@ -119,9 +122,9 @@ export default function ReferralPageClient() {
                                     your business, your personal brand, your edge.
                                 </p>
                             </div>
-                        </li>
+                        </Reveal>
 
-                        <li className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6">
+                        <Reveal as="li" delay={0.24} className="flex gap-4 sm:gap-5 rounded-2xl border border-imperium-gold/20 bg-imperium-surface p-5 sm:p-6 hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-500">
                             <CheckCircle2 className="w-6 h-6 text-imperium-gold shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-white font-semibold text-base sm:text-lg">
@@ -132,13 +135,13 @@ export default function ReferralPageClient() {
                                     federation.
                                 </p>
                             </div>
-                        </li>
+                        </Reveal>
                     </ul>
                 </div>
             </section>
 
             {/* Why Imperium */}
-            <section className="py-16 sm:py-20 border-b border-imperium-gold/20">
+            <section className="py-16 sm:py-20">
                 <div className="container mx-auto px-6 max-w-2xl text-center">
                     <p className="text-imperium-gold/80 text-[10px] font-bold tracking-[0.4em] uppercase mb-4">
                         Why Imperium
@@ -169,13 +172,15 @@ export default function ReferralPageClient() {
                             <p className="text-white/45 font-light text-sm sm:text-base mb-8 max-w-md mx-auto">
                                 Reach out. We review every application within 48 hours.
                             </p>
-                            <a
-                                href={APPLY_MAILTO}
-                                className="inline-flex items-center gap-3 px-7 sm:px-9 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
-                            >
-                                Apply for Inner Circle
-                                <ArrowRight className="w-4 h-4" />
-                            </a>
+                            <MagneticButton>
+                                <a
+                                    href={APPLY_MAILTO}
+                                    className="inline-flex items-center gap-3 px-7 sm:px-9 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                                >
+                                    Apply for Inner Circle
+                                    <ArrowRight className="w-4 h-4" />
+                                </a>
+                            </MagneticButton>
                             <p className="mt-4 text-[10px] font-bold tracking-[0.2em] uppercase text-white/25">
                                 Referred by Tyrone Ngouamo
                             </p>

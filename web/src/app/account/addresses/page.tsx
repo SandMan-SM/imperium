@@ -146,14 +146,14 @@ export default function AddressesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px] flex items-center justify-center">
+      <div className="min-h-screen pt-[84px] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-imperium-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px] pb-20">
+    <div className="min-h-screen pt-[84px] pb-20">
       {/* Header */}
       <div className="border-b border-white/10 py-4">
         <div className="container mx-auto px-4">

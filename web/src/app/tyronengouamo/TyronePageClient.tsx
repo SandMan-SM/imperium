@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import NewsletterEmailForm from "@/components/NewsletterEmailForm";
 import PageShareCard, { CardShareButton } from "@/components/PageShareCard";
+import { GoldDivider, MagneticButton, Reveal, ScrambleText } from "@/components/fx";
 
 export type ServiceRow = {
     id: string;
@@ -174,9 +175,9 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
     const mealPlanSectionId = "meal-plans";
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="min-h-screen relative">
             {/* Hero */}
-            <section className="relative border-b border-imperium-gold/20 pt-[84px] pb-16 sm:pb-24 overflow-hidden">
+            <section className="relative pt-[84px] pb-16 sm:pb-24 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
                 <div className="relative container mx-auto px-4 sm:px-6 max-w-5xl">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
@@ -188,7 +189,7 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                                 </span>
                             </div>
                             <h1 className="text-3xl sm:text-4xl md:text-5xl font-light text-white leading-tight tracking-tight mb-5">
-                                Tyrone{" "}
+                                <ScrambleText text="Tyrone" />{" "}
                                 <span
                                     className="text-imperium-gold"
                                     style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
@@ -202,15 +203,17 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                                 {primary?.stripe_url && (
-                                    <a
-                                        href={primary.stripe_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
-                                    >
-                                        Book a Session — $150
-                                        <ArrowRight className="w-4 h-4" />
-                                    </a>
+                                    <MagneticButton>
+                                        <a
+                                            href={primary.stripe_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                                        >
+                                            Book a Session — $150
+                                            <ArrowRight className="w-4 h-4" />
+                                        </a>
+                                    </MagneticButton>
                                 )}
                                 <a
                                     href={`#${mealPlanSectionId}`}
@@ -228,7 +231,7 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
             </section>
 
             {/* Services */}
-            <section id={mealPlanSectionId} className="py-16 sm:py-24 border-b border-imperium-gold/20">
+            <section id={mealPlanSectionId} className="py-16 sm:py-24">
                 <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
                     <div className="text-center mb-12 sm:mb-16">
                         <p className="text-imperium-gold/80 text-[10px] font-bold tracking-[0.4em] uppercase">
@@ -246,7 +249,7 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {ordered.map((s) => {
+                        {ordered.map((s, idx) => {
                             const tier = tierOf(s);
                             const bullets = tierBullets(tier);
                             const buyLabel =
@@ -256,9 +259,9 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                                       ? "Start the Payment Plan"
                                       : "Get the Plan";
                             return (
+                                <Reveal key={s.id} delay={idx * 0.1} variant="up">
                                 <article
-                                    key={s.id}
-                                    className="relative flex flex-col rounded-2xl border border-imperium-border bg-imperium-surface p-6 sm:p-7 hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-300 group"
+                                    className="relative flex flex-col rounded-2xl border border-imperium-border bg-imperium-surface p-6 sm:p-7 hover:border-imperium-gold/40 hover:bg-imperium-card hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(212,175,55,0.25)] transition-all duration-500 group"
                                 >
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-11 h-11 rounded-xl bg-imperium-gold/10 border border-imperium-gold/20 flex items-center justify-center text-imperium-gold shrink-0">
@@ -297,14 +300,17 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                                         </a>
                                     )}
                                 </article>
+                                </Reveal>
                             );
                         })}
                     </div>
                 </div>
             </section>
 
+            <GoldDivider />
+
             {/* Newsletter mid-funnel */}
-            <section className="py-16 sm:py-20 border-b border-imperium-gold/20">
+            <section className="py-16 sm:py-20">
                 <div className="container mx-auto px-6 max-w-3xl text-center">
                     <p className="text-imperium-gold/80 text-[10px] font-bold tracking-[0.4em] uppercase mb-3">
                         Read What Tyrone Reads
@@ -325,8 +331,10 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                 </div>
             </section>
 
+            <GoldDivider />
+
             {/* Testimonials */}
-            <section className="py-16 sm:py-24 border-b border-imperium-gold/20">
+            <section className="py-16 sm:py-24">
                 <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
                     <div className="text-center mb-12">
                         <p className="text-imperium-gold/80 text-[10px] font-bold tracking-[0.4em] uppercase">
@@ -379,6 +387,8 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                     </div>
                 </div>
             </section>
+
+            <GoldDivider />
 
             {/* Inner Circle */}
             <section className="py-20 sm:py-28">
@@ -461,13 +471,15 @@ export default function TyronePageClient({ services }: { services: ServiceRow[] 
                                 </li>
                             </ul>
 
-                            <Link
-                                href={REFERRAL_URL}
-                                className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
-                            >
-                                Apply for Inner Circle
-                                <ArrowRight className="w-4 h-4" />
-                            </Link>
+                            <MagneticButton>
+                                <Link
+                                    href={REFERRAL_URL}
+                                    className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                                >
+                                    Apply for Inner Circle
+                                    <ArrowRight className="w-4 h-4" />
+                                </Link>
+                            </MagneticButton>
                         </div>
                     </div>
                 </div>

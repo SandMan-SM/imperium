@@ -33,7 +33,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 py-20">
+      <div className="min-h-screen flex items-center justify-center px-4 py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 py-20">
+    <div className="min-h-screen flex items-center justify-center px-4 py-20">
       <div className="absolute top-0 right-0 w-96 h-96 bg-imperium-gold/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-imperium-gold/3 rounded-full blur-[80px] pointer-events-none" />
 

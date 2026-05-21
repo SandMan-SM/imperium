@@ -3,20 +3,21 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { MagneticButton, ScrambleText } from "@/components/fx";
 
 export function Hero() {
     const { user, profile } = useAuth();
     const isPremium = !!(profile?.is_premium || profile?.subscription_status === "active");
     return (
         <section className="relative w-full min-h-screen flex items-start md:items-center justify-center overflow-hidden">
-            {/* Background image */}
+            {/* Background image with parallax-feeling vignette */}
             <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: "url('/banner.jpg')" }}
             />
-            {/* Overlays */}
-            <div className="absolute inset-0 bg-black/65" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030712]/40 to-[#030712]" />
+            {/* Softer overlay so the global aurora bleeds through */}
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030712]/30 to-[#030712]" />
 
             {/* Content */}
             <div className="relative z-10 container mx-auto px-4 sm:px-6 pt-[84px] sm:pt-[84px] md:pt-0 flex flex-col items-center text-center max-w-4xl">
@@ -40,7 +41,7 @@ export function Hero() {
                     transition={{ duration: 0.7, delay: 0.15 }}
                     className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light text-white leading-tight tracking-tight mb-4 md:mb-6"
                 >
-                    Build the Mind.{" "}
+                    <ScrambleText text="Build the Mind." />{" "}
                     <em
                         className="not-italic"
                         style={{
@@ -75,28 +76,34 @@ export function Hero() {
                     className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center mx-auto"
                 >
                     {isPremium ? (
-                        <Link
-                            href="/28principles"
-                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
-                        >
-                            Continue the Doctrine
-                        </Link>
+                        <MagneticButton>
+                            <Link
+                                href="/28principles"
+                                className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 transition-all duration-200 text-center whitespace-nowrap inline-block shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)]"
+                            >
+                                Continue the Doctrine
+                            </Link>
+                        </MagneticButton>
                     ) : user ? (
-                        <Link
-                            href="/portal"
-                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
-                        >
-                            Open Portal
-                        </Link>
+                        <MagneticButton>
+                            <Link
+                                href="/portal"
+                                className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 transition-all duration-200 text-center whitespace-nowrap inline-block shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)]"
+                            >
+                                Open Portal
+                            </Link>
+                        </MagneticButton>
                     ) : (
-                        <a
-                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
-                        >
-                            Join for $20 / month
-                        </a>
+                        <MagneticButton>
+                            <a
+                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-[#030712] text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 transition-all duration-200 text-center whitespace-nowrap inline-block shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)]"
+                            >
+                                Join for $20 / month
+                            </a>
+                        </MagneticButton>
                     )}
                     <Link
                         href="/shop"

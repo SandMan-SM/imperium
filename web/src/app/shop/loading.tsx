@@ -1,6 +1,6 @@
 export default function ShopLoading() {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px]">
+        <div className="min-h-screen pt-[84px]">
             <div className="border-b border-imperium-gold/20 py-14 text-center">
                 <div className="h-6 w-32 bg-white/5 rounded-full mx-auto mb-4 animate-pulse" />
                 <div className="h-10 w-64 bg-white/5 rounded-lg mx-auto mb-4 animate-pulse" />

@@ -3,6 +3,13 @@ import { Header } from "@/components/Header";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
 import AdminPreviewDebug from "@/components/AdminPreviewDebug";
+import {
+  AuroraBackground,
+  LenisProvider,
+  NoiseOverlay,
+  RouteTransition,
+  ScrollGlow,
+} from "@/components/fx";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -39,16 +46,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <CartProvider>
-            <Header />
-            <AdminPreviewDebug />
-            {/* Offset main content by the fixed header height to avoid content being cut off */}
-            <main className="pt-[72px] min-h-screen bg-imperium-bg">
-              {children}
-            </main>
-          </CartProvider>
-        </AuthProvider>
+        {/* Global atmosphere — owned by the layout, every route inherits */}
+        <AuroraBackground />
+        <ScrollGlow />
+        <NoiseOverlay />
+
+        <LenisProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Header />
+              <AdminPreviewDebug />
+              {/* Offset main content by the fixed header height to avoid content being cut off */}
+              <main className="pt-[72px] min-h-screen">
+                <RouteTransition>{children}</RouteTransition>
+              </main>
+            </CartProvider>
+          </AuthProvider>
+        </LenisProvider>
       </body>
     </html>
   );

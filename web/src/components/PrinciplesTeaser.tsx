@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { CURRICULUM, FREE_PHASE_ID, TOTAL_UNITS } from "@/lib/curriculum";
+import { MagneticButton, Reveal } from "@/components/fx";
 
 export function PrinciplesTeaser() {
     const { user, profile } = useAuth();
@@ -14,12 +15,9 @@ export function PrinciplesTeaser() {
     const teaser = flat.slice(0, 5);
 
     return (
-        <section className="py-24 bg-imperium-bg relative overflow-hidden border-t border-imperium-border">
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[400px] h-[600px] bg-imperium-gold/[0.03] rounded-full blur-[120px]" />
-            </div>
-
+        <section className="py-24 relative overflow-hidden">
             <div className="container mx-auto px-4 max-w-5xl">
+                <Reveal>
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center gap-2 px-4 py-1 mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
                         <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
@@ -40,12 +38,14 @@ export function PrinciplesTeaser() {
                         {TOTAL_UNITS} immersive units across 5 phases. Click any unit to enter.
                     </p>
                 </div>
+                </Reveal>
 
                 {/* Real unit teasers — first 5 units, all click into the immersive routes */}
                 <div className="space-y-4 px-2 sm:px-0">
                     {teaser.map(({ phaseId, unit }, index) => {
                         const locked = !isPremium && phaseId !== FREE_PHASE_ID;
                         const num = unit.id.toString().padStart(2, "0");
+                        const stagger = index * 0.08;
 
                         const inner = (
                             <>
@@ -97,61 +97,60 @@ export function PrinciplesTeaser() {
                                 : "border-imperium-border bg-imperium-surface hover:border-imperium-gold/40 hover:bg-imperium-card hover:scale-[1.02] cursor-pointer"
                         }`;
 
-                        const cardStyle: React.CSSProperties = {
-                            animationDelay: `${index * 0.05}s`,
-                            animation: "fadeInUp 0.6s ease-out forwards",
-                            opacity: 0,
-                            transform: "translateY(20px)",
-                        };
-
-                        return locked ? (
-                            <div
-                                key={unit.id}
-                                className={cardClasses}
-                                style={cardStyle}
-                                aria-label={`Unit ${unit.id}: ${unit.title} (locked)`}
-                                aria-disabled="true"
-                            >
-                                {inner}
-                            </div>
-                        ) : (
-                            <Link
-                                key={unit.id}
-                                href={`/28principles/${unit.slug}`}
-                                className={cardClasses}
-                                style={cardStyle}
-                                aria-label={`Unit ${unit.id}: ${unit.title}`}
-                            >
-                                {inner}
-                            </Link>
+                        return (
+                            <Reveal key={unit.id} delay={stagger} variant="up">
+                                {locked ? (
+                                    <div
+                                        className={cardClasses}
+                                        aria-label={`Unit ${unit.id}: ${unit.title} (locked)`}
+                                        aria-disabled="true"
+                                    >
+                                        {inner}
+                                    </div>
+                                ) : (
+                                    <Link
+                                        href={`/28principles/${unit.slug}`}
+                                        className={cardClasses}
+                                        aria-label={`Unit ${unit.id}: ${unit.title}`}
+                                    >
+                                        {inner}
+                                    </Link>
+                                )}
+                            </Reveal>
                         );
                     })}
                 </div>
 
                 <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                     {isPremium ? (
-                        <Link
-                            href="/28principles"
-                            className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
-                        >
-                            Continue the Doctrine →
-                        </Link>
+                        <MagneticButton>
+                            <Link
+                                href="/28principles"
+                                className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                            >
+                                Continue the Doctrine →
+                            </Link>
+                        </MagneticButton>
                     ) : user ? (
-                        <Link
-                            href="/portal"
-                            className="px-6 sm:px-8 py-3 sm:py-4 border border-imperium-gold/40 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all duration-200"
-                        >
-                            Open Portal
-                        </Link>
+                        <MagneticButton>
+                            <Link
+                                href="/portal"
+                                className="px-6 sm:px-8 py-3 sm:py-4 border border-imperium-gold/40 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all duration-200"
+                            >
+                                Open Portal
+                            </Link>
+                        </MagneticButton>
                     ) : (
-                        <a
-                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
-                        >
-                            Join Now — $20/month
-                        </a>
+                        <MagneticButton>
+                            <a
+                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                            >
+                                Join Now — $20/month
+                            </a>
+                        </MagneticButton>
                     )}
                     <Link
                         href="/28principles"

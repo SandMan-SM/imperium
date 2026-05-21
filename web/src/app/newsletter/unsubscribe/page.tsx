@@ -7,7 +7,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
 
     if (!email) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
                     <h1 className="text-2xl font-light text-white mb-2">Invalid Request</h1>
@@ -25,7 +25,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
                     <h1 className="text-2xl font-light text-white mb-2">Error</h1>
@@ -39,7 +39,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="text-center max-w-md mx-auto px-6">
                 <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-6" />
                 <h1 className="text-3xl font-light text-white mb-4">Successfully Unsubscribed</h1>

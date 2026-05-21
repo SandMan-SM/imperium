@@ -34,7 +34,7 @@ export default function PortalPage() {
 
     if (loading || (user && profile === null)) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <Loader2 className="w-10 h-10 text-imperium-gold animate-spin mx-auto mb-4" />
                     <p className="text-gray-500 text-xs uppercase tracking-[0.3em]">
@@ -72,7 +72,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
     const totalPhases = CURRICULUM.length;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pb-20">
+        <div className="min-h-screen pb-20">
             {/* Status banner */}
             <div
                 className={`px-4 py-3 border-b ${

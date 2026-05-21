@@ -22,8 +22,9 @@
     box-sizing: border-box;
   }
 
+  /* Lenis owns scroll (mounted in layout). Native smooth-scroll would fight it. */
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
@@ -243,5 +244,43 @@
 
   .bg-imperium-gold {
     background-color: var(--color-imperium-gold) !important;
+  }
+
+  /* ============================================================
+     FX layer — aurora drift, glow pulse, shimmer
+     Used by web/src/components/fx/*
+     ============================================================ */
+
+  @keyframes fx-aurora-drift {
+    0%   { transform: translate3d(-6%, -4%, 0) rotate(0deg)  scale(1.05); }
+    50%  { transform: translate3d( 8%,  6%, 0) rotate(8deg)  scale(1.18); }
+    100% { transform: translate3d(-6%, -4%, 0) rotate(0deg)  scale(1.05); }
+  }
+
+  @keyframes fx-aurora-drift-rev {
+    0%   { transform: translate3d( 6%,  5%, 0) rotate(0deg)   scale(1.08); }
+    50%  { transform: translate3d(-7%, -5%, 0) rotate(-10deg) scale(1.22); }
+    100% { transform: translate3d( 6%,  5%, 0) rotate(0deg)   scale(1.08); }
+  }
+
+  @keyframes fx-aurora-pulse {
+    0%, 100% { opacity: 0.30; transform: scale(1); }
+    50%      { opacity: 0.55; transform: scale(1.12); }
+  }
+
+  .fx-aurora-drift     { animation: fx-aurora-drift     34s ease-in-out infinite; }
+  .fx-aurora-drift-rev { animation: fx-aurora-drift-rev 42s ease-in-out infinite; }
+  .fx-aurora-pulse     { animation: fx-aurora-pulse     16s ease-in-out infinite; }
+}
+
+/* Reduced-motion: freeze ambient animation. Honors OS-level preference. */
+@media (prefers-reduced-motion: reduce) {
+  .fx-aurora-drift,
+  .fx-aurora-drift-rev,
+  .fx-aurora-pulse {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto !important;
   }
 }

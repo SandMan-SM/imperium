@@ -71,7 +71,7 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px] flex items-center justify-center">
+      <div className="min-h-screen pt-[84px] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-imperium-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -94,7 +94,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px] pb-20">
+    <div className="min-h-screen pt-[84px] pb-20">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

@@ -15,7 +15,7 @@ export default function PrinciplesError({
     }, [error]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 pt-[84px]">
+        <div className="min-h-screen flex items-center justify-center px-4 pt-[84px]">
             <div className="text-center max-w-md">
                 <h2 className="text-xl font-light text-white uppercase tracking-widest mb-4">
                     Failed to load Principles

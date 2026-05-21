@@ -109,7 +109,7 @@ export default function AdminDashboard() {
 
     if (loading || userView === null) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-imperium-gold animate-spin" />
             </div>
         );
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex">
+        <div className="min-h-screen flex">
             {/* Backdrop for mobile when expanded */}
             {!collapsed && (
                 <div

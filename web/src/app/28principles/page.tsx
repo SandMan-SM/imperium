@@ -12,6 +12,7 @@ import {
     phaseProgress,
     useProgress,
 } from "@/lib/progress";
+import { GoldDivider, MagneticButton, Reveal, ScrambleText } from "@/components/fx";
 
 function ProgressBar({ completed, total }: { completed: number; total: number }) {
     const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
@@ -58,7 +59,7 @@ export default function PrinciplesPage() {
     const resume = useMemo(() => lastUnit(state), [state]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="min-h-screen relative">
             {/* Hero */}
             <div className="relative border-b border-imperium-gold/20 pt-[84px] pb-12 sm:pb-16 md:pb-20 text-center overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
@@ -81,7 +82,7 @@ export default function PrinciplesPage() {
                         className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-4 sm:mb-4 px-2 sm:px-0"
                         style={{ paddingTop: "6px" }}
                     >
-                        The{" "}
+                        <ScrambleText text="The" />{" "}
                         <span
                             className="text-imperium-gold"
                             style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
@@ -123,14 +124,16 @@ export default function PrinciplesPage() {
                             Open Portal
                         </Link>
                     ) : (
-                        <a
-                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-6 inline-block px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
-                        >
-                            Join Now — $20/month
-                        </a>
+                        <MagneticButton className="mt-6">
+                            <a
+                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                            >
+                                Join Now — $20/month
+                            </a>
+                        </MagneticButton>
                     )}
                 </div>
             </div>
@@ -317,14 +320,16 @@ export default function PrinciplesPage() {
                                     <span>Inner Circle Access</span>
                                 </div>
                             </div>
-                            <a
-                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-4 px-8 sm:px-10 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
-                            >
-                                <span>Subscribe — $20/month</span>
-                            </a>
+                            <MagneticButton>
+                                <a
+                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-4 px-8 sm:px-10 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
+                                >
+                                    <span>Subscribe — $20/month</span>
+                                </a>
+                            </MagneticButton>
                             <p className="mt-4 text-xs text-gray-600 uppercase tracking-widest">
                                 Cancel anytime. No questions asked.
                             </p>

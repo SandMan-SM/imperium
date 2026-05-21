@@ -22,6 +22,7 @@ import {
     type Unit,
 } from "@/lib/curriculum";
 import { isSubPointChecked, isUnitComplete, useProgress } from "@/lib/progress";
+import { GoldDivider, MagneticButton, Reveal, ScrambleText } from "@/components/fx";
 
 function ChapterChecklist({
     items,
@@ -164,7 +165,7 @@ export function UnitImmersive({
 
     if (phaseLocked) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 pt-[84px]">
+            <div className="min-h-screen relative flex items-center justify-center px-4 pt-[84px]">
                 <div className="max-w-md w-full text-center border border-imperium-gold/20 rounded-3xl bg-black/40 px-8 py-12">
                     <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 border border-imperium-gold/30 rounded-full">
                         <Lock className="w-3 h-3 text-imperium-gold" />
@@ -179,14 +180,16 @@ export function UnitImmersive({
                         Unit {unit.id}: <em className="text-imperium-gold/80">{unit.title}</em> lives
                         beyond Phase I. Subscribe to enter the immersive walkthrough.
                     </p>
-                    <a
-                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:bg-white transition-all"
-                    >
-                        Subscribe — $20/month
-                    </a>
+                    <MagneticButton className="mt-6">
+                        <a
+                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-3 px-6 py-3 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:bg-white transition-all btn-primary"
+                        >
+                            Subscribe — $20/month
+                        </a>
+                    </MagneticButton>
                     <div className="mt-6">
                         <Link
                             href="/28principles"

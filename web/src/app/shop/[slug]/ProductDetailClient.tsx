@@ -178,7 +178,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px]">
+      <div className="min-h-screen pt-[84px]">
         <div className="container mx-auto px-4 py-12">
           <div className="animate-pulse flex flex-col lg:flex-row gap-12">
             <div className="lg:w-1/2">
@@ -197,7 +197,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px] flex items-center justify-center">
+      <div className="min-h-screen pt-[84px] flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-imperium-gold mx-auto mb-4" />
           <h1 className="text-2xl text-white mb-2">Product Not Found</h1>
@@ -214,7 +214,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pt-[84px]">
+    <div className="min-h-screen pt-[84px]">
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center gap-2 text-sm text-white/40">

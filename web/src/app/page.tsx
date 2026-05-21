@@ -5,7 +5,9 @@ import { PrinciplesTeaser } from "@/components/PrinciplesTeaser";
 import { Testimonials } from "@/components/Testimonials";
 import { FeaturedProduct } from "@/components/FeaturedProduct";
 import { NewsletterOptin } from "@/components/NewsletterOptin";
-import { SocialProofBar, UrgencyBanner, SocialProofStats } from "@/components/SocialProofBar";
+import { UrgencyBanner } from "@/components/SocialProofBar";
+import { GoldDivider, MarqueeStrip } from "@/components/fx";
+import HomeStatsStrip from "@/components/HomeStatsStrip";
 
 export const metadata: Metadata = {
   title: "Imperium Elite — Build the Mind. Command the Future.",
@@ -25,28 +27,42 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+    <div className="flex flex-col min-h-screen relative">
       {/* Urgency Banner Only */}
       <UrgencyBanner />
 
       {/* 1. Hero — cinematic entry */}
       <Hero />
 
+      {/* Momentum strip — between hero and pillars */}
+      <MarqueeStrip
+        words={[
+          "BUILD THE MIND",
+          "COMMAND THE FUTURE",
+          "THE DOCTRINE",
+          "INTELLIGENCE NETWORK",
+          "INNER CIRCLE",
+        ]}
+      />
+
       {/* 2. Why Imperium — 3 pillars */}
       <WhyImperium />
+
+      <GoldDivider className="my-2" />
 
       {/* 3. The 28 Principles — teaser with paywall */}
       <PrinciplesTeaser />
 
-      {/* Metrics removed - now in Hero */}
+      {/* 4. Stats — animated count strip */}
+      <HomeStatsStrip />
 
-      {/* 4. Testimonials — dual marquee */}
+      {/* 5. Testimonials — dual marquee */}
       <Testimonials />
 
-      {/* 5. Featured Product — $20 subscription spotlight */}
+      {/* 6. Featured Product — $20 subscription spotlight */}
       <FeaturedProduct />
 
-      {/* 6. Newsletter optin */}
+      {/* 7. Newsletter optin */}
       <div id="newsletter">
         <NewsletterOptin />
       </div>
@@ -54,8 +70,9 @@ export default function Home() {
       {/* Add spacing above footer */}
       <div className="h-16"></div>
 
-      <footer className="py-10 border-t border-imperium-gold/20">
-        <div className="container mx-auto px-4 max-w-6xl">
+      <footer className="relative py-10">
+        <GoldDivider className="absolute top-0 inset-x-0" width="max-w-5xl" />
+        <div className="container mx-auto px-4 max-w-6xl pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <div className="text-xl font-bold tracking-[0.3em] text-imperium-gold uppercase mb-1">Imperium</div>

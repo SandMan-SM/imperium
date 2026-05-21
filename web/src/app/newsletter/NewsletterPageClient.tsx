@@ -43,7 +43,7 @@ export default function NewsletterPageClient({ newsletters }: { newsletters: New
     const showPremiumHero = isPremium && isLoggedIn;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="min-h-screen">
             {/* Hero */}
             <div className="relative border-b border-imperium-gold/20 pt-[84px] overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-imperium-gold/[0.05] rounded-full blur-[100px] pointer-events-none" />
