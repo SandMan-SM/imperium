@@ -1,6 +1,10 @@
 import { supabase } from '../../../lib/supabase';
 import { AnalyticsDashboard } from '../../../components/AnalyticsDashboard';
 
+// Force runtime rendering — this page makes 8 sequential Supabase queries
+// that exceed the 60s static-prerender budget on Vercel's build workers.
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
     title: 'Analytics - Imperium Admin',
     description: 'Comprehensive analytics and tracking dashboard',
