@@ -32,3 +32,4 @@ web/.vercel/
 # Vercel/OpenNext build output
 web/.open-next
 web/.next
+.vercel

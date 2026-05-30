@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import SponsorRotation from "@/components/federation-sponsors/SponsorRotation";
 
 export default function NewsletterPage() {
     const { user, profile, checkPremiumStatus } = useAuth();
@@ -151,6 +152,11 @@ export default function NewsletterPage() {
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Federation sponsor rotation. Synced from Omni AI Website canonical. */}
+                <div className="mt-12">
+                    <SponsorRotation host="imperium" />
                 </div>
             </div>
         </div>
