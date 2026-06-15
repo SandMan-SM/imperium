@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "env": {
+    "NODE_VERSION": "20.x"
+  },
+  "regions": [
+    "iad1"
+  ]
+}

@@ -3,21 +3,14 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-let _supabase: any = null;
-const getSupabase = () => {
-    if (!_supabase) {
-        _supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-    }
-    return _supabase;
-};
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
     try {
         // Get stats from profiles
-        const supabase = getSupabase();
         const { data: profiles, error: profilesError } = await supabase
             .from("profiles")
             .select("id, is_premium, subscription_status, total_spent, purchase_count, updated_at, created_at");
@@ -25,15 +18,15 @@ export async function POST(req: Request) {
         if (profilesError) throw profilesError;
 
         const totalUsers = profiles?.length || 0;
-        const premiumUsers = profiles?.filter((p: any) =>
+        const premiumUsers = profiles?.filter(p => 
             p.is_premium || p.subscription_status === 'active'
         ).length || 0;
-        const active30d = profiles?.filter((p: any) =>
+        const active30d = profiles?.filter(p => 
             p.updated_at && new Date(p.updated_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         ).length || 0;
-        const totalRevenue = profiles?.reduce((sum: number, p: any) => sum + (p.total_spent || 0), 0) || 0;
-        const avgPurchases = totalUsers > 0
-            ? (profiles?.reduce((sum: number, p: any) => sum + (p.purchase_count || 0), 0) || 0) / totalUsers
+        const totalRevenue = profiles?.reduce((sum, p) => sum + (p.total_spent || 0), 0) || 0;
+        const avgPurchases = totalUsers > 0 
+            ? (profiles?.reduce((sum, p) => sum + (p.purchase_count || 0), 0) || 0) / totalUsers 
             : 0;
 
         // Try to update live_retention_metrics
@@ -54,7 +47,7 @@ export async function POST(req: Request) {
         }
 
         // Update client_health for premium users
-        const premiumProfiles = profiles?.filter((p: any) =>
+        const premiumProfiles = profiles?.filter(p => 
             p.is_premium || p.subscription_status === 'active'
         ) || [];
 
