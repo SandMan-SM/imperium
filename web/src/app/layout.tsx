@@ -57,6 +57,34 @@ const orgJsonLd = {
   description:
     "Strategic intelligence platform. The 28-principle leadership framework. Daily dispatch.",
   founder: { "@type": "Person", name: "Sitani Mafi", url: "https://sitanimafi.live" },
+  sameAs: [
+    "https://twitter.com/imperium",
+    "https://www.instagram.com/imperium",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "support@secretimperium.com",
+    contactType: "customer support",
+  },
+};
+
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Imperium Elite",
+  url: SITE_URL,
+  description:
+    "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox.",
+  publisher: { "@id": `${SITE_URL}/#organization` },
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${SITE_URL}/shop?q={search_term_string}`,
+    },
+    queryInput: "required name=search_term_string",
+  },
 };
 
 export default function RootLayout({
@@ -72,6 +100,12 @@ export default function RootLayout({
           type="application/ld+json"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+        <Script
+          id="imperium-website-jsonld"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </head>
       <body>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -170,15 +169,16 @@ export function NewsletterEmailForm() {
     setStatus("loading");
 
     try {
-      const { error } = await supabase
-        .from("newsletter_subscribers")
-        .insert([{ email: email.toLowerCase(), status: "active" }]);
+      // Wire to /api/leads/capture for centralized lead management
+      const res = await fetch("/api/leads/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase(), source: "newsletter-optin" }),
+      });
+      const data = await res.json();
 
-      if (error) {
-        if (error.code === '23505') {
-          throw new Error("You are already subscribed to the intelligence brief.");
-        }
-        throw error;
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to establish connection. Try again.");
       }
 
       // Send welcome email via API (fire-and-forget; don't block on failure)

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { supabase } from '@/lib/supabase';
+
+export const metadata: Metadata = {
+  title: "Unsubscribe — Imperium Elite",
+  description: "Unsubscribe from the Imperium Intelligence Brief.",
+  robots: { index: false, follow: false },
+};
 import { redirect } from 'next/navigation';
 import { Mail, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
