@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: "%s · Imperium Elite",
   },
   description:
-    "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+    "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
   alternates: { canonical: SITE_URL },
   verification: {
     google: "YOUR_GOOGLE_VERIFICATION_CODE",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Imperium Elite — Build the Mind. Command the Future.",
     description:
-      "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+      "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
     url: SITE_URL,
     siteName: "Imperium Elite",
     type: "website",

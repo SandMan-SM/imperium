@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Lock, Eye } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const PRINCIPLES = [
     { num: "01", title: "The Law of Deliberate Action", desc: "Every move is calculated. The sovereign does not react — he responds from a position of preparation and clarity." },
@@ -77,7 +78,7 @@ export function PrinciplesTeaser() {
                         <span className="text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">The Complete Doctrine</span>
                     </div>
                     <h2 className="text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-4">
-                        The <span className="text-imperium-gold font-bold" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>28 Principles</span>
+                        The <span className="text-imperium-gold font-bold font-serif italic">28 Principles</span>
                     </h2>
                     <p className="text-gray-400 max-w-xl mx-auto font-light">
                         The complete Imperium operating system. Laws forged from the study of history's most formidable minds.
@@ -118,7 +119,7 @@ export function PrinciplesTeaser() {
 
                 <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a
-                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                        href={STRIPE_CHECKOUT_URL}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"

@@ -40,10 +40,10 @@ export function WhyImperium() {
                         <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">System Architecture</span>
                     </div>
                     <h2 className="text-2xl sm:text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-4 sm:mb-4">
-                        Why <span className="text-imperium-gold font-bold" style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Imperium?</span>
+                        Why <span className="text-imperium-gold font-bold font-serif italic">Imperium?</span>
                     </h2>
                     <p className="text-white/40 max-w-xl mx-auto font-light text-sm sm:text-base px-2 sm:px-0">
-                        A uncompromising approach to personal sovereignty and strategic intelligence.
+                        An uncompromising approach to personal sovereignty and strategic intelligence.
                     </p>
                 </motion.div>
 
@@ -59,7 +59,7 @@ export function WhyImperium() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.55, delay: i * 0.12 }}
-                            className="glass-card rounded-2xl p-8 flex flex-col relative overflow-hidden group hover:border-imperium-gold/20 transition-all duration-400"
+                            className="glass-card card-lift rounded-2xl p-8 flex flex-col relative overflow-hidden group"
                         >
                             <span className="text-[10px] font-bold tracking-widest uppercase text-imperium-gold/60 mb-2">{p.label}</span>
                             <h3 className="text-base font-semibold text-white mb-4">{p.title}</h3>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Lock, Crown, Loader2, CheckCircle2, Target } from "lucide-react";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const ALL_PRINCIPLES = [
     { num: "01", title: "The Law of Deliberate Action", desc: "Every move is calculated. The sovereign does not react — he responds from a position of preparation and clarity. Reactivity is the signature of the amateur." },
@@ -87,10 +88,7 @@ export default function PrinciplesPage() {
                     </div>
                     <h1 className="text-2xl sm:text-3xl md:text-6xl font-light text-white uppercase tracking-[0.15em] mb-4 sm:mb-4 px-2 sm:px-0" style={{ paddingTop: '6px' }}>
                         The{" "}
-                        <span
-                            className="text-imperium-gold"
-                            style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}
-                        >
+                        <span className="text-imperium-gold font-serif italic">
                             28 Principles
                         </span>
                     </h1>
@@ -108,7 +106,7 @@ export default function PrinciplesPage() {
                         </div>
                     ) : (
                         <a
-                            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                            href={STRIPE_CHECKOUT_URL}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-6 inline-block px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
@@ -210,7 +208,7 @@ export default function PrinciplesPage() {
                                 </div>
                             </div>
                             <a
-                                href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                href={STRIPE_CHECKOUT_URL}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-4 px-8 sm:px-10 py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200"
@@ -248,18 +246,6 @@ export default function PrinciplesPage() {
                 </div>
             </div>
 
-            <style jsx>{`
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-            `}</style>
         </div>
     );
 }
