@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 interface NewsletterContentProps {
   isPremium: boolean;
@@ -48,7 +49,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
               <div>
                 <p className="text-white/40 text-xs mb-2">Subscribe to read the full brief</p>
                 <a
-                  href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                  href={STRIPE_CHECKOUT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold hover:text-imperium-gold-bright transition-colors inline-block"
@@ -85,7 +86,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
           <h4 className="text-white font-semibold mb-2">Unlock Premium Intelligence</h4>
           <p className="text-white/40 text-sm mb-4">Get access to exclusive briefs without marketing, plus full access to 28 Principles</p>
           <a
-            href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+            href={STRIPE_CHECKOUT_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-imperium-gold text-imperium-bg px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all"

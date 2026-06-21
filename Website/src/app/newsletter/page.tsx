@@ -7,6 +7,7 @@ import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-re
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import SponsorRotation from "@/components/federation-sponsors/SponsorRotation";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 export default function NewsletterPage() {
     const { user, profile, checkPremiumStatus } = useAuth();
@@ -62,7 +63,7 @@ export default function NewsletterPage() {
 
                     <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-6 leading-tight px-2 sm:px-0" style={{ paddingTop: '6px' }}>
                         The{" "}
-                        <span className="font-display italic text-gold-gradient">Imperium</span>{" "}
+                        <span className="font-serif italic text-gradient-gold">Imperium</span>{" "}
                         {isPremium && isLoggedIn ? "Premium Brief" : "Intelligence Brief"}
                     </h1>
 
@@ -74,7 +75,7 @@ export default function NewsletterPage() {
                     </p>
 
                     <p className="text-imperium-gold/60 text-[9px] sm:text-[10px] md:text-[11px] font-bold tracking-widest uppercase">
-                        {isPremium && isLoggedIn ? "Premium Access Active" : "2,400+ subscribers · $20 / month · Cancel anytime"}
+                        {isPremium && isLoggedIn ? "Premium Access Active" : "2,800+ subscribers · $20 / month · Cancel anytime"}
                     </p>
                 </div>
             </div>
@@ -122,7 +123,7 @@ export default function NewsletterPage() {
                                 <h3 className="text-xl text-white mb-4">Upgrade to Premium</h3>
                                 <p className="text-white/40 font-light mb-6">Get exclusive briefs without marketing and full access to 28 Principles.</p>
                                 <a
-                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    href={STRIPE_CHECKOUT_URL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-block bg-imperium-gold text-imperium-bg px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white transition-all"
@@ -141,7 +142,7 @@ export default function NewsletterPage() {
                             <div className="mt-8">
                                 <p className="text-white/25 text-sm font-light mb-4">Or subscribe directly via Stripe:</p>
                                 <a
-                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    href={STRIPE_CHECKOUT_URL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn-gold !text-[11px] md:!text-[12px] w-full sm:w-auto"
@@ -277,7 +278,7 @@ function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLo
 
                             {!nl.is_public && !isPremium && isLoggedIn && (
                                 <a
-                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    href={STRIPE_CHECKOUT_URL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 bg-imperium-gold text-imperium-bg px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-white transition-all"

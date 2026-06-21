@@ -39,7 +39,7 @@ export function CartDrawer() {
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "tween", duration: 0.3 }}
-                        className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0a0e14] border-l border-white/[0.08] z-[101] flex flex-col"
+                        className="fixed right-0 top-0 h-full w-full max-w-md bg-imperium-deep border-l border-white/[0.08] z-[101] flex flex-col"
                     >
                         <div className="flex items-center justify-between p-6 border-b border-white/[0.08]">
                             <div className="flex items-center gap-4">

@@ -5,16 +5,17 @@ import { PrinciplesTeaser } from "@/components/PrinciplesTeaser";
 import { Testimonials } from "@/components/Testimonials";
 import { FeaturedProduct } from "@/components/FeaturedProduct";
 import { NewsletterOptin } from "@/components/NewsletterOptin";
+import { AssessmentsTeaser } from "@/components/AssessmentsTeaser";
 import { SocialProofBar, UrgencyBanner, SocialProofStats } from "@/components/SocialProofBar";
 
 export const metadata: Metadata = {
   title: "Imperium Elite — Build the Mind. Command the Future.",
-  description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+  description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
   openGraph: {
     title: "Imperium Elite — Build the Mind. Command the Future.",
-    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
     type: "website",
-    url: "https://imperium-green.vercel.app",
+    url: "https://secretimperium.com",
   },
   twitter: {
     card: "summary_large_image",
@@ -38,7 +39,8 @@ export default function Home() {
       {/* 3. The 28 Principles — teaser with paywall */}
       <PrinciplesTeaser />
 
-      {/* Metrics removed - now in Hero */}
+      {/* 3b. Assessments — lead-gen funnel */}
+      <AssessmentsTeaser />
 
       {/* 4. Testimonials — dual marquee */}
       <Testimonials />
@@ -63,6 +65,7 @@ export default function Home() {
             </div>
             <nav className="flex flex-col items-center gap-4 text-xs text-white/40 uppercase tracking-widest">
               <a href="/28principles" className="hover:text-white transition-colors">28 Principles</a>
+              <a href="/assessments" className="hover:text-white transition-colors">Assessments</a>
               <a href="/shop" className="hover:text-white transition-colors">Arsenal Shop</a>
               <a href="/#newsletter" className="hover:text-white transition-colors">Intelligence</a>
               <div className="flex gap-4 mt-2">

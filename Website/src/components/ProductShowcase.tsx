@@ -66,7 +66,7 @@ export function ProductShowcase() {
                     .order("created_at", { ascending: false });
 
                 if (error) {
-                    console.error("Supabase error:", error);
+                    console.warn("Products: using local catalog fallback —", error.message);
                     setProducts(CATALOG);
                     setLoading(false);
                     return;

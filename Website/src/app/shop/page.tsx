@@ -36,7 +36,7 @@ export default function ShopPage() {
                     </div>
 
                     <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-4 leading-tight" style={{ paddingTop: '6px' }}>
-                        The <span className="font-display italic text-gold-gradient">Arsenal</span>
+                        The <span className="font-serif italic text-gradient-gold">Arsenal</span>
                     </h1>
                     <p className="text-white/40 font-light max-w-sm mx-auto text-xs sm:text-sm leading-relaxed px-2 sm:px-0">
                         Physical manifestations of the Imperium directive. Wear the identity. Signal the doctrine.

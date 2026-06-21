@@ -87,6 +87,7 @@ export function Header() {
 
     const navLinks = [
         { label: "28 Principles", href: "/28principles" },
+        { label: "Assessments", href: "/assessments" },
         { label: "Newsletter", href: "/newsletter" },
         { label: "Arsenal", href: "/shop" },
     ];
@@ -134,7 +135,7 @@ export function Header() {
                                     <Eye className="w-5 h-5" />
                                 </button>
                                 {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-imperium-deep border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
                                         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
                                             <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
                                             <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">
@@ -287,7 +288,7 @@ export function Header() {
                                     <Eye className="w-5 h-5" />
                                 </button>
                                 {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-imperium-deep border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
                                         <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
                                             <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
                                             <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">

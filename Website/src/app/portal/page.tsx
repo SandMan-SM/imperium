@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import AdminDashboard from "../admin/page";
 import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, Gift, Loader2, LogOut } from "lucide-react";
 import Link from "next/link";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 export default function PortalPage() {
     const { user, profile, loading } = useAuth();
@@ -163,7 +164,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                     </button>
 
                     <a
-                        href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                        href={STRIPE_CHECKOUT_URL}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-4 p-4 sm:p-6 bg-imperium-gold/10 border border-imperium-gold/20 rounded-xl hover:bg-imperium-gold/20 transition-all group"

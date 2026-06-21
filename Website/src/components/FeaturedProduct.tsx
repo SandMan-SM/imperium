@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const BENEFITS = [
     "Daily strategic intelligence brief delivered to your inbox",
@@ -35,11 +36,10 @@ export function FeaturedProduct() {
 
                             <h2 className="text-4xl md:text-6xl text-white uppercase tracking-[0.05em] mb-4 leading-none font-light">
                                 Transform<br />
-                                Your <span className="text-gold-gradient font-display italic">Life.</span>
+                                Your <span className="text-gradient-gold font-serif italic">Life.</span>
                             </h2>
                             <div
-                                className="text-2xl md:text-4xl mb-6 md:mb-8 leading-tight opacity-90 font-light tracking-wide"
-                                style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", color: "#d4af37" }}
+                                className="text-2xl md:text-4xl mb-6 md:mb-8 leading-tight opacity-90 font-light tracking-wide font-serif italic text-imperium-gold"
                             >
                                 For $20 a month.
                             </div>
@@ -68,7 +68,7 @@ export function FeaturedProduct() {
 
                             <div className="flex flex-col items-center gap-4 mx-auto">
                                 <a
-                                    href="https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07"
+                                    href={STRIPE_CHECKOUT_URL}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group w-full sm:w-auto inline-flex items-center justify-center gap-4 px-10 md:px-12 py-4 md:py-5 bg-white text-black font-bold uppercase tracking-[0.25em] text-[10px] md:text-xs rounded-full transition-all hover:bg-imperium-gold hover:scale-105 shadow-xl"

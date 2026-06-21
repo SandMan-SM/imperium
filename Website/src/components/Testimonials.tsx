@@ -117,7 +117,11 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 
 function MarqueeRow({ cards, reverse = false }: { cards: Testimonial[]; reverse?: boolean }) {
     return (
-        <div className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div
+            role="marquee"
+            aria-label="Subscriber testimonials, scrolling continuously"
+            className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]"
+        >
             <motion.div
                 className="flex gap-6 pr-5"
                 animate={{ x: reverse ? ["0%", "50%"] : ["0%", "-50%"] }}
