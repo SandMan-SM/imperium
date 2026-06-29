@@ -35,12 +35,11 @@ export function WhyImperium() {
                     transition={{ duration: 0.7 }}
                     className="text-center mb-12 sm:mb-16"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                        <span className="text-[10px] font-bold tracking-[0.2em] text-imperium-gold uppercase">System Architecture</span>
-                    </div>
                     <h2 className="text-2xl sm:text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-4 sm:mb-4">
-                        Why <span className="text-imperium-gold font-bold font-serif italic">Imperium?</span>
+                        Why{" "}
+                        <span className="font-bold font-serif italic text-gradient-gold">
+                            Imperium
+                        </span>
                     </h2>
                     <p className="text-white/40 max-w-xl mx-auto font-light text-sm sm:text-base px-2 sm:px-0">
                         An uncompromising approach to personal sovereignty and strategic intelligence.

@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, Eye } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const PRINCIPLES = [
@@ -37,34 +35,6 @@ const PRINCIPLES = [
 ];
 
 export function PrinciplesTeaser() {
-    const { profile, loading } = useAuth();
-
-    // Determine access level based on subscription
-    const getAccessLevel = () => {
-        if (loading) return 'loading';
-        if (!profile) return 'public';
-        if (profile.is_premium || profile.subscription_status === 'active') {
-            return 'premium';
-        }
-        return 'subscriber';
-    };
-
-    const accessLevel = getAccessLevel();
-
-    const getPrincipleAccess = (index: number) => {
-        if (accessLevel === 'premium') return 'full';
-        if (accessLevel === 'subscriber') {
-            if (index < 10) return 'full'; // 0-9 = principles 1-10
-            if (index < 20) return 'preview'; // 10-19 = principles 11-20
-            return 'locked'; // 20-27 = principles 21-28
-        }
-        if (accessLevel === 'public') {
-            if (index < 5) return 'full'; // 0-4 = principles 1-5
-            return 'locked'; // 5-27 = principles 6-28
-        }
-        return 'locked';
-    };
-
     return (
         <section className="py-24 bg-imperium-bg relative overflow-hidden border-t border-imperium-border">
             <div className="absolute inset-0 pointer-events-none">
@@ -74,14 +44,14 @@ export function PrinciplesTeaser() {
             <div className="container mx-auto px-4 max-w-5xl">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-1 mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                        <span className="text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">The Complete Doctrine</span>
+                        <span className="w-1.5 h-1.5 rounded-full gradient-gold animate-pulse" />
+                        <span className="text-xs font-bold tracking-[0.2em] text-gradient-gold uppercase">The Complete Doctrine</span>
                     </div>
                     <h2 className="text-3xl md:text-5xl text-white tracking-[0.08em] uppercase mb-4">
-                        The <span className="text-imperium-gold font-bold font-serif italic">28 Principles</span>
+                        The <span className="text-gradient-gold font-bold font-serif italic">28 Principles</span>
                     </h2>
                     <p className="text-gray-400 max-w-xl mx-auto font-light">
-                        The complete Imperium operating system. Laws forged from the study of history's most formidable minds.
+                        The complete Imperium operating system. Laws forged from the study of history&apos;s most formidable minds.
                     </p>
                 </div>
 
@@ -89,7 +59,7 @@ export function PrinciplesTeaser() {
                     {PRINCIPLES.slice(0, 5).map((p, index) => (
                         <div
                             key={p.num}
-                            className="group relative grid grid-cols-12 gap-4 sm:gap-6 items-start rounded-xl border border-imperium-border bg-imperium-surface hover:border-imperium-gold/40 hover:bg-imperium-card transition-all duration-500 hover:scale-[1.02] shadow-imperium"
+                            className="group relative grid grid-cols-12 gap-4 sm:gap-6 items-start rounded-xl border border-imperium-border bg-imperium-surface hover:border-imperium-gold/45 hover:bg-imperium-gold/[0.045] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_18px_50px_rgba(240,200,90,0.16)] shadow-imperium"
                             style={{
                                 animationDelay: `${index * 0.05}s`,
                                 animation: `fadeInUp 0.6s ease-out forwards`,
@@ -99,8 +69,9 @@ export function PrinciplesTeaser() {
                         >
                             {/* Large Number Badge - takes up first part of the bar */}
                             <div className="col-span-3 sm:col-span-2 flex items-center justify-center">
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center transition-all duration-300 text-imperium-gold group-hover:scale-105">
-                                    <span className="text-2xl sm:text-3xl font-bold font-mono tracking-wider">{p.num}</span>
+                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                                    <div className="absolute inset-y-4 left-4 w-px bg-gradient-to-b from-transparent via-imperium-gold/0 to-transparent group-hover:via-imperium-gold/55 transition-colors" />
+                                    <span className="text-2xl sm:text-3xl font-bold font-mono tracking-wider text-gradient-gold">{p.num}</span>
                                 </div>
                             </div>
 

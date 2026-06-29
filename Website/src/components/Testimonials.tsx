@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useId } from "react";
+import { motion } from "framer-motion";
 
 type Testimonial = {
     id: number;
@@ -75,11 +75,23 @@ const ROW_1 = [...TESTIMONIALS.slice(0, 4), ...TESTIMONIALS.slice(0, 4)];
 const ROW_2 = [...TESTIMONIALS.slice(4), ...TESTIMONIALS.slice(4)];
 
 function StarRating({ count }: { count: number }) {
+    const gradientId = useId().replace(/:/g, "");
+
     return (
         <div className="flex gap-1 mb-4">
             {Array.from({ length: count }).map((_, i) => (
-                <svg key={i} className="w-4 h-4 text-imperium-gold fill-imperium-gold" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                <svg key={i} className="w-4 h-4" viewBox="0 0 20 20" aria-hidden>
+                    <defs>
+                        <linearGradient id={`${gradientId}-${i}`} x1="0%" x2="100%" y1="0%" y2="100%">
+                            <stop offset="0%" stopColor="#7b5512" />
+                            <stop offset="22%" stopColor="#e0ad2e" />
+                            <stop offset="42%" stopColor="#fff2a6" />
+                            <stop offset="62%" stopColor="#b77d17" />
+                            <stop offset="82%" stopColor="#f5d879" />
+                            <stop offset="100%" stopColor="#c69227" />
+                        </linearGradient>
+                    </defs>
+                    <path fill={`url(#${gradientId}-${i})`} d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
             ))}
         </div>
@@ -90,10 +102,10 @@ function TestimonialCard({ t }: { t: Testimonial }) {
     return (
         <div className="relative flex-shrink-0 w-80 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 backdrop-blur-md hover:border-imperium-gold/20 hover:bg-white/[0.05] transition-all duration-500 group">
             {/* Gold gradient top accent */}
-            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-imperium-gold/40 to-transparent" />
+            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-[#fff2a6]/50 to-transparent" />
 
             {/* Quote mark */}
-            <div className="absolute top-4 right-5 text-imperium-gold/[0.12] text-6xl font-serif leading-none select-none">"</div>
+            <div className="absolute top-4 right-5 text-gradient-gold opacity-20 text-6xl font-serif leading-none select-none">"</div>
 
             <StarRating count={t.rating} />
 
@@ -103,8 +115,10 @@ function TestimonialCard({ t }: { t: Testimonial }) {
 
             <div className="flex items-center gap-4 mt-auto pt-4 border-t border-white/[0.06]">
                 {/* Avatar placeholder with initials */}
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-imperium-gold/30 to-imperium-gold/5 border border-imperium-gold/20 flex items-center justify-center text-xs font-bold text-imperium-gold flex-shrink-0">
-                    {t.name.split(" ").map(n => n[0]).join("")}
+                <div className="w-9 h-9 rounded-full gradient-gold-dim border border-imperium-gold/25 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <span className="text-gradient-gold">
+                        {t.name.split(" ").map(n => n[0]).join("")}
+                    </span>
                 </div>
                 <div>
                     <p className="text-sm font-semibold text-white leading-tight">{t.name}</p>
@@ -124,7 +138,7 @@ function MarqueeRow({ cards, reverse = false }: { cards: Testimonial[]; reverse?
         >
             <motion.div
                 className="flex gap-6 pr-5"
-                animate={{ x: reverse ? ["0%", "50%"] : ["0%", "-50%"] }}
+                animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
                 transition={{
                     duration: 35,
                     ease: "linear",
@@ -156,12 +170,12 @@ export function Testimonials() {
                     className="text-center"
                 >
                     <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-1 mb-4 sm:mb-6 border border-imperium-gold/20 rounded-full bg-imperium-gold/5 backdrop-blur-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                        <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-imperium-gold uppercase">Live Intelligence Network</span>
+                        <span className="w-1.5 h-1.5 rounded-full gradient-gold animate-pulse" />
+                        <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-gradient-gold uppercase">Live Intelligence Network</span>
                     </div>
 
                     <h2 className="text-2xl sm:text-3xl md:text-5xl font-light tracking-[0.08em] text-white uppercase mb-4 sm:mb-4 px-2 sm:px-0">
-                        Proof of <span className="text-imperium-gold font-bold">Concept</span>
+                        Proof of <span className="text-gradient-gold font-bold">Concept</span>
                     </h2>
                     <p className="text-gray-400 font-light max-w-lg mx-auto text-sm sm:text-base px-4 sm:px-0">
                         Results don't lie. These are the people who made the decision.

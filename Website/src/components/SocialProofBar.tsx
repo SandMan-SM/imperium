@@ -78,7 +78,7 @@ function MetricCard({ metric, delay }: { metric: any; delay: number }) {
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/[0.02] to-transparent rounded-2xl blur-xl scale-150 group-hover:scale-100 transition-transform duration-1000" />
 
             {/* Main card */}
-            <div className="relative glass-card rounded-2xl p-8 border border-white/[0.08] hover:border-imperium-gold/20 transition-all duration-500 group-hover:shadow-[0_16px_60px_-12px_rgba(212,175,55,0.25)]">
+            <div className="relative glass-card rounded-2xl p-8 border border-white/[0.08] hover:border-imperium-gold/20 transition-all duration-500 group-hover:shadow-[0_16px_60px_-12px_rgba(240,200,90,0.25)]">
                 {/* Circular progress indicator */}
                 <div className="relative mb-6">
                     <div className="w-20 h-20 mx-auto relative">
@@ -97,7 +97,7 @@ function MetricCard({ metric, delay }: { metric: any; delay: number }) {
                                 cx="50"
                                 cy="50"
                                 r="45"
-                                stroke="#d4af37"
+                                stroke="#f0c85a"
                                 strokeWidth="8"
                                 fill="none"
                                 strokeLinecap="round"
@@ -220,11 +220,11 @@ export function UrgencyBanner() {
                 <div className="flex items-center justify-center gap-1.5 sm:gap-4 text-[9px] sm:text-xs text-imperium-gold font-bold tracking-wider uppercase">
                     <div className="flex items-center gap-1 sm:gap-2">
                         <StaticClockIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="text-imperium-gold hidden sm:inline">New update in:</span>
-                        <span className="text-imperium-gold sm:hidden">Update in:</span>
+                        <span className="text-gradient-gold hidden sm:inline">New update in:</span>
+                        <span className="text-gradient-gold sm:hidden">Update in:</span>
                     </div>
                     <div className="bg-imperium-gold/10 border border-imperium-gold/30 rounded px-1.5 sm:px-2 py-0.5 sm:py-1">
-                        <div className="text-imperium-gold font-mono text-[10px] sm:text-xs tracking-wider font-bold">
+                        <div className="text-gradient-gold font-mono text-[10px] sm:text-xs tracking-wider font-bold">
                             {formatTime(timeLeft.hours, timeLeft.minutes, timeLeft.seconds)}
                         </div>
                     </div>
@@ -233,4 +233,3 @@ export function UrgencyBanner() {
         </div>
     );
 }
-

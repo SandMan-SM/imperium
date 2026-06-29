@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { BRAND } from "@/lib/brand";
 
 export function Hero() {
     return (
@@ -19,7 +19,7 @@ export function Hero() {
             <div
                 aria-hidden
                 className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[140vw] sm:w-[60rem] h-[24rem] rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(ellipse at center, rgba(212,175,55,0.10), transparent 65%)" }}
+                style={{ background: "radial-gradient(ellipse at center, rgba(240,200,90,0.12), transparent 65%)" }}
             />
 
             {/* Content */}
@@ -32,8 +32,8 @@ export function Hero() {
                     transition={{ duration: 0.5 }}
                     className="flex items-center gap-2 mb-6 sm:mb-8 px-3 sm:px-4 py-1.5 border border-imperium-gold/25 bg-imperium-gold/5 rounded-full"
                 >
-                    <span className="w-1.5 h-1.5 rounded-full bg-imperium-gold animate-pulse" />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase text-imperium-gold">Daily Intelligence · Inner Circle</span>
+                    <span className="w-1.5 h-1.5 rounded-full gradient-gold animate-pulse" />
+                    <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] uppercase text-gradient-gold">Daily Intelligence · Inner Circle</span>
                 </motion.div>
 
                 {/* Headline */}
@@ -41,54 +41,28 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.15 }}
-                    className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light text-white leading-tight tracking-tight mb-4 md:mb-6"
+                    className="font-light text-white leading-[1.08] tracking-tight mb-6 md:mb-8 text-[clamp(2rem,8.25vw,7.5rem)]"
                 >
-                    Build the Mind.{" "}
-                    <em className="font-serif italic text-gradient-gold">Command</em>{" "}
-                    the Future.
+                    <span className="block whitespace-nowrap">
+                        Build the Mind. <em className="font-serif italic text-gradient-gold">Command</em>
+                    </span>
+                    <span className="block mx-auto whitespace-nowrap min-w-[14.5rem] sm:min-w-[22rem]">the Future.</span>
                 </motion.h1>
-
-                {/* Subtitle */}
-                <motion.p
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="text-xs sm:text-sm md:text-lg text-white/50 font-light max-w-lg mx-auto mb-8 sm:mb-10 leading-relaxed px-2 sm:px-0"
-                >
-                    Daily precision frameworks for discipline, strategy, and self-mastery — curated for those who operate at the highest level.
-                </motion.p>
 
                 {/* CTAs */}
                 <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.45 }}
-                    className="flex flex-col sm:flex-row gap-4 sm:gap-4 items-center justify-center mx-auto"
+                    className="flex items-center justify-center mx-auto"
                 >
-                    <a
-                        href={STRIPE_CHECKOUT_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 sm:px-6 py-4 sm:py-4 bg-white text-imperium-bg text-[10px] sm:text-[11px] font-bold tracking-[0.25em] uppercase rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block"
-                    >
-                        Join for $20 / month
-                    </a>
                     <Link
-                        href="/shop"
-                        className="px-3 sm:px-5 py-3 sm:py-4 border border-white/20 text-white/60 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase rounded-full hover:border-white/40 hover:text-white transition-all duration-200 text-center whitespace-nowrap inline-block"
+                        href="/mission-statement"
+                        className="px-5 sm:px-6 py-3.5 sm:py-4 border border-imperium-gold/35 bg-imperium-gold/[0.06] text-gradient-gold text-[10px] sm:text-[11px] font-bold tracking-[0.16em] sm:tracking-[0.18em] uppercase rounded-full hover:border-imperium-gold/70 hover:bg-imperium-gold/[0.12] hover:scale-105 transition-all duration-200 text-center whitespace-nowrap inline-block shadow-[0_10px_34px_rgba(240,200,90,0.12)]"
                     >
-                        View the Arsenal
+                        Mission Statement
                     </Link>
                 </motion.div>
-
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                    className="mt-5 text-[10px] font-bold tracking-[0.2em] uppercase text-white/20"
-                >
-                    Cancel anytime · No contracts
-                </motion.p>
 
                 {/* Stat strip (mirrors the Testimonials stat strip) */}
                 <motion.div
@@ -97,7 +71,7 @@ export function Hero() {
                     transition={{ duration: 0.6, delay: 0.9 }}
                     className="container mx-auto px-4 max-w-4xl mt-6 z-10"
                 >
-                    <div className="grid grid-cols-3 gap-1 sm:gap-px bg-imperium-border rounded-xl sm:rounded-2xl overflow-hidden">
+                    <div className="relative grid grid-cols-3 overflow-hidden">
                         {[
                             { value: "∞", label: "ROI" },
                             { value: BRAND.subscriberCount, label: "Subscribers" },
@@ -105,18 +79,19 @@ export function Hero() {
                         ].map((stat, i) => (
                             <div
                                 key={i}
-                                className="bg-white/5 backdrop-blur-sm border border-white/[0.04] px-1 sm:px-6 py-4 sm:py-8 text-center group hover:bg-white/10 transition-colors duration-300"
+                                className="relative px-2 sm:px-6 py-5 sm:py-8 text-center group"
                             >
-                                <div className="flex items-center justify-center h-10 sm:h-16 md:h-20 mb-0 sm:mb-1">
+                                {i > 0 && <div className="absolute left-0 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />}
+                                <div className="flex items-center justify-center h-10 sm:h-14 md:h-16 mb-1 sm:mb-2">
                                     {stat.value === '∞' ? (
-                                        <div className="text-3xl sm:text-5xl md:text-7xl font-normal text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">∞</div>
+                                        <div className="text-4xl sm:text-5xl md:text-6xl font-normal text-gradient-gold transition-transform duration-300 group-hover:scale-105 leading-none">∞</div>
                                     ) : (
-                                        <div className="text-lg sm:text-2xl md:text-4xl font-bold text-white group-hover:text-imperium-gold transition-colors duration-300 leading-none">
+                                        <div className="text-xl sm:text-3xl md:text-5xl font-bold text-gradient-gold leading-none">
                                             {stat.value}
                                         </div>
                                     )}
                                 </div>
-                                <div className="text-[8px] sm:text-xs text-gray-500 uppercase tracking-[0.1em] sm:tracking-[0.15em] font-bold mt-0 sm:mt-1">
+                                <div className="text-[8px] sm:text-[10px] text-white/35 uppercase tracking-[0.16em] sm:tracking-[0.22em] font-bold">
                                     {stat.label === 'ROI' ? 'LIFETIME ROI' : stat.label}
                                 </div>
                             </div>

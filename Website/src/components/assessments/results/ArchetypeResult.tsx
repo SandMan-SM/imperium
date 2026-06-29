@@ -9,7 +9,8 @@ export function ArchetypeResult({ data }: { data: AR }) {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
         <p className="section-kicker justify-center mb-4">{data.lineage.category} Lineage</p>
         <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white tracking-wide mb-1">
-          Descendant of <span className="text-gradient-gold italic">{data.lineage.name}</span>
+          <span className="block whitespace-nowrap">Descendant of</span>
+          <span className="block text-gradient-gold italic">{data.lineage.name}</span>
         </h1>
         <p className="text-body text-white/60 max-w-xl mx-auto mt-4 leading-relaxed">{data.lineage.essence}</p>
       </motion.div>

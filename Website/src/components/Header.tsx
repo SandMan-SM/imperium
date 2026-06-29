@@ -100,11 +100,11 @@ export function Header() {
     return (
         <>
             <CartDrawer />
-            <header className="fixed top-0 w-full z-50 border-b border-white/[0.08] bg-[#030712]/95 backdrop-blur-xl">
+            <header className="fixed top-0 w-full z-50 border-b border-white/[0.10] bg-neutral-900/55 backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.28)]">
                 <div className="container mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
 
                     {/* Logo */}
-                    <Link href="/" className="text-lg font-bold tracking-[0.3em] text-[#d4af37] uppercase hover:text-[#e8c84a] transition-colors">
+                    <Link href="/" className="text-lg font-bold tracking-[0.3em] text-gradient-gold uppercase transition-colors">
                         Imperium
                     </Link>
 
@@ -388,9 +388,9 @@ export function Header() {
             {open && (
                 <div className="fixed inset-0 z-[100] md:hidden">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-0 h-full w-[75vw] max-w-[300px] bg-[#030712] border-l border-white/[0.08] flex flex-col p-6 sm:p-8">
+                    <div className="absolute right-0 top-0 h-full w-[75vw] max-w-[300px] bg-neutral-900/85 backdrop-blur-2xl border-l border-white/[0.10] flex flex-col p-6 sm:p-8">
                         <div className="flex items-center justify-between mb-8 sm:mb-10">
-                            <span className="text-base font-bold tracking-[0.3em] text-[#d4af37] uppercase">Imperium</span>
+                            <span className="text-base font-bold tracking-[0.3em] text-gradient-gold uppercase">Imperium</span>
                             <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>

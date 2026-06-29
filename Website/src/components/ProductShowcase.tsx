@@ -140,7 +140,7 @@ export function ProductShowcase() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                                className="group glass-card rounded-2xl overflow-hidden flex flex-col hover:border-imperium-gold/25 hover:shadow-[0_8px_40px_-8px_rgba(212,175,55,0.12)] transition-all duration-500 cursor-pointer"
+                                className="group glass-card rounded-2xl overflow-hidden flex flex-col hover:border-imperium-gold/25 hover:shadow-[0_8px_40px_-8px_rgba(240,200,90,0.14)] transition-all duration-500 cursor-pointer"
                                 onClick={() => router.push(`/shop/${product.slug || product.id}`)}
                             >
                                 {/* Image */}

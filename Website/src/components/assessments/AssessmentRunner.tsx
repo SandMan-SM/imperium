@@ -163,7 +163,9 @@ export function AssessmentRunner({ meta }: { meta: AssessmentMeta }) {
       <div className="max-w-md mx-auto pt-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
           <p className="section-kicker justify-center mb-5">Your results are ready</p>
-          <h1 className="text-display text-2xl sm:text-4xl text-white mb-4">Where should we send them?</h1>
+          <h1 className="text-display relative left-1/2 -translate-x-1/2 w-max max-w-[calc(100vw-2rem)] whitespace-nowrap text-center text-[clamp(1.35rem,7vw,2.25rem)] text-white mb-4">
+            Where should we send them?
+          </h1>
           <p className="text-body text-sm text-white/60 mb-8 max-w-sm mx-auto">
             Enter your name and email to unlock your full results — we&apos;ll send a copy to your inbox, free.
           </p>

@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import SponsorRotation from "@/components/federation-sponsors/SponsorRotation";
 import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { NewsletterPosts } from "@/components/NewsletterPosts";
 
 export default function NewsletterPage() {
     const { user, profile, checkPremiumStatus } = useAuth();
@@ -62,9 +63,15 @@ export default function NewsletterPage() {
                     )}
 
                     <h1 className="text-2xl sm:text-3xl md:text-6xl text-white mb-4 sm:mb-6 leading-tight px-2 sm:px-0" style={{ paddingTop: '6px' }}>
-                        The{" "}
-                        <span className="font-serif italic text-gradient-gold">Imperium</span>{" "}
-                        {isPremium && isLoggedIn ? "Premium Brief" : "Intelligence Brief"}
+                        {isPremium && isLoggedIn ? (
+                            <>
+                                Premium <span className="font-serif italic text-gradient-gold">Brief</span>
+                            </>
+                        ) : (
+                            <>
+                                Daily <span className="text-gradient-gold">Intelligence</span> Brief
+                            </>
+                        )}
                     </h1>
 
                     <p className="text-white/45 font-light text-xs sm:text-sm md:text-lg leading-relaxed mb-4 sm:mb-4 px-2 sm:px-0">
@@ -98,8 +105,8 @@ export default function NewsletterPage() {
 
             {/* Premium: Show exclusive content, Free: Show sample */}
             <div className="py-20">
-                <div className="container mx-auto px-6 max-w-3xl">
-                    <NewsletterContent isPremium={isPremium && isLoggedIn} isLoggedIn={isLoggedIn} />
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <NewsletterPosts isPremium={isPremium && isLoggedIn} isLoggedIn={isLoggedIn} limit={5} />
                 </div>
             </div>
 
@@ -164,136 +171,6 @@ export default function NewsletterPage() {
     );
 }
 
-function NewsletterContent({ isPremium, isLoggedIn }: { isPremium: boolean; isLoggedIn: boolean }) {
-    const [newsletters, setNewsletters] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchNewsletters() {
-            setLoading(true);
-            try {
-                const { data } = await supabase
-                    .from("newsletters")
-                    .select("*")
-                    .eq("published", true)
-                    .order("created_at", { ascending: false })
-                    .limit(10);
-
-                setNewsletters(data || []);
-            } catch (error) {
-                console.error("Error fetching newsletters:", error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchNewsletters();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="text-center py-12">
-                <div className="w-8 h-8 border-2 border-imperium-gold/30 border-t-imperium-gold rounded-full animate-spin mx-auto"></div>
-                <p className="text-white/35 font-light text-sm mt-4">Loading intelligence...</p>
-            </div>
-        );
-    }
-
-    if (newsletters.length === 0) {
-        return (
-            <div className="text-center">
-                <h2 className="text-2xl text-white mb-4">
-                    {isPremium ? "Latest Premium Brief" : "Sample Intelligence Brief"}
-                </h2>
-                <p className="text-white/35 font-light text-sm mb-10">
-                    {isPremium ? "Your exclusive premium intelligence content." : "Every brief looks like this. Dense. Formatted. Executable."}
-                </p>
-                <div className="glass-card rounded-2xl p-6 md:p-10 text-left">
-                    <p className="text-white/40 font-light text-sm">No newsletters published yet.</p>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-8">
-            <div className="text-center">
-                <h2 className="text-2xl text-white mb-4">
-                    Latest Intelligence Brief
-                </h2>
-                <p className="text-white/35 font-light text-sm">
-                    {isPremium ? "Your exclusive premium intelligence content." : "Public briefs from the Imperium archive."}
-                </p>
-            </div>
-
-            {newsletters.map((nl) => (
-                <div key={nl.id} className="glass-card rounded-2xl p-6 md:p-10 text-left relative overflow-hidden mb-6">
-                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-imperium-border">
-                        <div>
-                            <p className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-imperium-gold mb-1">
-                                Imperium Intelligence Brief
-                            </p>
-                            <p className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-white/20">
-                                {nl.created_at ? new Date(nl.created_at).toLocaleDateString() : 'New'}
-                            </p>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-imperium-gold/10 border border-imperium-gold/20 flex items-center justify-center">
-                            <span className="text-imperium-gold text-xs font-bold">I</span>
-                        </div>
-                    </div>
-
-                    <h3 className="text-base md:text-lg font-semibold text-white mb-4">
-                        {nl.title}
-                    </h3>
-
-                    {/* Newsletter Content */}
-                    <div className="space-y-6">
-                        {nl.content ? (
-                            <div className="text-white/50 font-light text-[13px] md:text-sm leading-relaxed whitespace-pre-wrap">
-                                {nl.content}
-                            </div>
-                        ) : (
-                            <div className="text-white/40 font-light text-sm">No content available.</div>
-                        )}
-                    </div>
-
-                    {/* Access Indicator */}
-                    <div className="mt-8 pt-6 border-t border-imperium-border">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                {nl.is_public ? (
-                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
-                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                        Public Brief
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-imperium-gold/10 border border-imperium-gold/20 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest uppercase text-imperium-gold">
-                                        <span className="w-2 h-2 bg-imperium-gold rounded-full animate-pulse"></span>
-                                        Premium Only
-                                    </span>
-                                )}
-                                <span className="text-white/20 text-[9px] md:text-[10px] font-bold tracking-widest uppercase">
-                                    {nl.is_public ? "Available to all" : "Premium subscribers"}
-                                </span>
-                            </div>
-
-                            {!nl.is_public && !isPremium && isLoggedIn && (
-                                <a
-                                    href={STRIPE_CHECKOUT_URL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 bg-imperium-gold text-imperium-bg px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-white transition-all"
-                                >
-                                    Upgrade to Premium
-                                </a>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
-
 function NewsletterEmailForm() {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -332,10 +209,10 @@ function NewsletterEmailForm() {
             setStatus("success");
             setMessage("Directive Received. Welcome to the network.");
             setEmail("");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             setStatus("error");
-            setMessage(err.message || "Failed to establish connection. Try again.");
+            setMessage(err instanceof Error ? err.message : "Failed to establish connection. Try again.");
         }
     };
 
