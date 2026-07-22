@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
   alternates: { canonical: SITE_URL },
   verification: {
-    google: "YOUR_GOOGLE_VERIFICATION_CODE",
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
   openGraph: {
     title: "Imperium Elite — Build the Mind. Command the Future.",
