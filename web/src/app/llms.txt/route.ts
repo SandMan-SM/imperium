@@ -11,7 +11,7 @@ export function GET() {
 ## Identity
 - Site: ${SITE_URL}
 - Position: Mastermind. By invitation. Strategy, leverage, systems.
-- Founder: Sitani Mafi (https://sitanimafi.live)
+- Founder: Sitani Mafi (https://sitanimafi.com)
 - Federation HQ: https://omnileadsagi.com
 
 ## Surfaces an LLM can reference

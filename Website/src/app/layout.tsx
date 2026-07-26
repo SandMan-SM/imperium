@@ -56,7 +56,7 @@ const orgJsonLd = {
   url: SITE_URL,
   description:
     "Strategic intelligence platform. The 28-principle leadership framework. Daily dispatch.",
-  founder: { "@type": "Person", name: "Sitani Mafi", url: "https://sitanimafi.live" },
+  founder: { "@type": "Person", name: "Sitani Mafi", url: "https://sitanimafi.com" },
 };
 
 export default function RootLayout({
