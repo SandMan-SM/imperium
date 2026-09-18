@@ -88,7 +88,7 @@ function StarRating({ count }: { count: number }) {
 
 function TestimonialCard({ t }: { t: Testimonial }) {
     return (
-        <div className="relative flex-shrink-0 w-80 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 backdrop-blur-md hover:border-imperium-gold/20 hover:bg-white/[0.05] transition-all duration-500 group">
+        <div className="relative flex-shrink-0 w-[260px] sm:w-80 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5 sm:p-6 backdrop-blur-md hover:border-imperium-gold/20 hover:bg-white/[0.05] transition-all duration-500 group">
             {/* Gold gradient top accent */}
             <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-imperium-gold/40 to-transparent" />
 
