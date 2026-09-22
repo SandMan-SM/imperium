@@ -84,12 +84,14 @@ class ResendService {
                     id: result.data.id
                 } : undefined
             };
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to send email';
+            const name = error instanceof Error ? error.name : 'Error';
             return {
                 success: false,
                 error: {
-                    message: error.message || 'Failed to send email',
-                    name: error.name || 'Error'
+                    message,
+                    name
                 }
             };
         }
