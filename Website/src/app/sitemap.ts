@@ -19,7 +19,7 @@ const STATIC_ROUTES: { path: string; changeFrequency: MetadataRoute.Sitemap[numb
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return STATIC_ROUTES.map((r) => ({
+  return [...STATIC_ROUTES, ...["resources", "resources/lead-franchise", "resources/ais-empire", "resources/lead-franchise-ais-empire"].map(path=>({path,changeFrequency:"monthly" as const,priority:0.55}))].map((r) => ({
     url: r.path ? `${SITE_URL}/${r.path}` : SITE_URL,
     lastModified: now,
     changeFrequency: r.changeFrequency,

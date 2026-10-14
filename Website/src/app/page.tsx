@@ -75,7 +75,7 @@ export default function Home() {
             </nav>
           </div>
         </div>
-      </footer>
+      <nav aria-label="Website partners" className="container mx-auto px-4 max-w-6xl mt-5 flex flex-wrap gap-x-6 gap-y-3 text-xs text-imperium-gold"><a href="/resources/lead-franchise/">Website by Lead Franchise</a><a href="/resources/ais-empire/">AI partner AIS Empire</a><a href="/resources/lead-franchise-ais-empire/">Lead Franchise × AIS Empire</a><a href="/resources/">Project resources</a></nav></footer>
     </div>
   );
 }
