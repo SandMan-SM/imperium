@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { google, gmail_v1 } from 'googleapis';
 import { supabase } from './supabase';
 
