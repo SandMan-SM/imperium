@@ -3,13 +3,13 @@
  * import from here so price, links, and stats stay consistent site-wide.
  */
 export const BRAND = {
-    name: "Imperium Elite",
+    name: "Imperium",
     shortName: "Imperium",
     siteUrl: "https://secretimperium.com",
     founder: "Sitani Mafi",
-    tagline: "Build the Mind. Command the Future.",
+    tagline: "Principles for life. Perspective for work.",
     description:
-        "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
+        "An open library of principles, quotes, work ethic, strategy, and reflections for a deliberate life.",
     priceMonthly: "$20/month",
     priceLabel: "$20 / month",
     subscriberCount: "2,800+",

@@ -1,81 +1,39 @@
 import type { Metadata } from "next";
-import { Hero } from "@/components/Hero";
-import { WhyImperium } from "@/components/WhyImperium";
-import { PrinciplesTeaser } from "@/components/PrinciplesTeaser";
-import { Testimonials } from "@/components/Testimonials";
-import { FeaturedProduct } from "@/components/FeaturedProduct";
-import { NewsletterOptin } from "@/components/NewsletterOptin";
-import { AssessmentsTeaser } from "@/components/AssessmentsTeaser";
-import { SocialProofBar, UrgencyBanner, SocialProofStats } from "@/components/SocialProofBar";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArchiveCard } from "@/components/ArchiveCard";
+import { PartneredWith } from "@/components/Partners";
+import { archiveCategories, archiveEntries } from "@/lib/archive";
+import { getArchiveArtwork } from "@/lib/archive-art";
 
 export const metadata: Metadata = {
-  title: "Imperium Elite — Build the Mind. Command the Future.",
-  description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
-  openGraph: {
-    title: "Imperium Elite — Build the Mind. Command the Future.",
-    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,800+ sovereign-minded operators for $20/month.",
-    type: "website",
-    url: "https://secretimperium.com",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Imperium Elite — Build the Mind. Command the Future.",
-    description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox.",
-  },
+  title: { absolute: "The Archive — Principles, perspective & practice · Imperium" },
+  description: "A free library of principles, original quotes, and practical ideas for thinking clearly, working well, and living with intention. Choose a topic and start reading.",
+  alternates: { canonical: "https://secretimperium.com/" },
+  openGraph: { title: "The Archive · Imperium", description: "Principles, perspective, and practice. A free library for the way you think, work, and live.", url: "https://secretimperium.com/", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "The Archive by Imperium — Principles, perspective and practice" }] },
+  twitter: { card: "summary_large_image", title: "The Archive · Imperium", description: "A free library for the way you think, work, and live.", images: ["/twitter-image"] },
 };
 
+const featuredSlugs = ["law-of-deliberate-action", "compounding-discipline", "find-the-real-constraint"];
+const topicDescriptions: Record<string, string> = { Principles: "Foundations for a considered life.", Quotes: "A few words. A fresh perspective.", "Work ethic": "The craft of doing good work.", Strategy: "Frameworks for clearer decisions.", Reflections: "Pause, reconsider, and grow." };
+
 export default function Home() {
-  return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      {/* Urgency Banner Only */}
-      <UrgencyBanner />
+  const featured = featuredSlugs.map((slug) => archiveEntries.find((entry) => entry.slug === slug)!);
+  return <div className="archive-site">
+    <section className="luxury-hero" aria-labelledby="home-title">
+      <Image className="luxury-hero-background" src="/editorial/hero-acropolis-v1.png" alt="A monumental Greek colonnade overlooking a sunlit Mediterranean landscape" fill priority sizes="100vw" />
+      <div className="luxury-hero-shade" />
+      <div className="archive-wrap luxury-hero-content"><p className="editorial-kicker">AN OPEN LIBRARY BY IMPERIUM</p><h1 id="home-title">The Archive<span>.</span></h1><p className="luxury-hero-deck">Principles for life.<br /><em>Perspective for work.</em></p><p className="luxury-hero-description">Short essays, original quotes, and practical ideas on discipline, clear thinking, and living well. Choose a subject. Find something useful. Put it into practice.</p><div className="luxury-hero-actions"><Link href="/archive/" className="editorial-button">Explore the archive <ArrowRight size={18} aria-hidden="true" /></Link><Link href="/archive/law-of-deliberate-action/" className="editorial-hero-link">Start with a principle <ArrowUpRight size={17} aria-hidden="true" /></Link></div><div className="luxury-hero-footnote"><span>{archiveEntries.length} READINGS</span><span>5 SUBJECTS</span><span>FREE TO EXPLORE</span></div></div>
+      <div className="luxury-hero-caption">TIMELESS IDEAS. EVERYDAY PRACTICE.</div>
+    </section>
 
-      {/* 1. Hero — cinematic entry */}
-      <Hero />
+    <PartneredWith />
 
-      {/* 2. Why Imperium — 3 pillars */}
-      <WhyImperium />
+    <section className="editorial-featured archive-wrap" aria-labelledby="featured-title"><div className="archive-section-top"><div><p className="editorial-kicker">SELECTED FROM THE ARCHIVE</p><h2 id="featured-title">Three places to begin.</h2></div><p className="archive-section-description">A principle to live by. A standard to build.<br className="hidden sm:block" /> A clearer way to see the next step.</p></div><div className="archive-grid featured-archive-grid">{featured.map((entry) => <ArchiveCard key={entry.slug} entry={entry} />)}</div><div className="archive-view-all"><Link href="/archive/" className="editorial-button editorial-button-outline">See the full archive <ArrowRight size={18} aria-hidden="true" /></Link><span>{archiveEntries.length} resources across five subjects</span></div></section>
 
-      {/* 3. The 28 Principles — teaser with paywall */}
-      <PrinciplesTeaser />
+    <section id="collections" className="editorial-collections" aria-labelledby="collections-title"><div className="archive-wrap"><div className="archive-section-top"><div><p className="editorial-kicker">FOLLOW YOUR CURIOSITY</p><h2 id="collections-title">A subject for every season.</h2></div><p className="archive-section-description">Pick what speaks to where you are.</p></div><div className="editorial-topics">{archiveCategories.map((category) => { const entries = archiveEntries.filter((entry) => entry.category === category); const art = getArchiveArtwork(entries[0]); return <Link key={category} href={`/archive/?category=${encodeURIComponent(category)}`} className="editorial-topic"><div className="editorial-topic-image"><Image src={art.src} alt={art.alt} fill sizes="(max-width: 640px) 50vw, 20vw" /></div><div className="editorial-topic-title"><h3>{category}</h3><ArrowUpRight size={17} aria-hidden="true" /></div><p>{topicDescriptions[category]}</p><span>{entries.length} readings</span></Link>; })}</div></div></section>
 
-      {/* 3b. Assessments — lead-gen funnel */}
-      <AssessmentsTeaser />
-
-      {/* 4. Testimonials — dual marquee */}
-      <Testimonials />
-
-      {/* 5. Featured Product — $20 subscription spotlight */}
-      <FeaturedProduct />
-
-      {/* 6. Newsletter optin */}
-      <div id="newsletter">
-        <NewsletterOptin />
-      </div>
-
-      {/* Add spacing above footer */}
-      <div className="h-16"></div>
-
-      <footer className="py-10 border-t border-imperium-gold/20">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <div className="text-xl font-bold tracking-[0.3em] text-imperium-gold uppercase mb-1">Imperium</div>
-              <p className="text-xs text-white/40 uppercase tracking-widest">Powered by Omni AI</p>
-            </div>
-            <nav className="flex flex-col items-center gap-4 text-xs text-white/40 uppercase tracking-widest">
-              <a href="/28principles" className="hover:text-white transition-colors">28 Principles</a>
-              <a href="/assessments" className="hover:text-white transition-colors">Assessments</a>
-              <a href="/shop" className="hover:text-white transition-colors">Arsenal Shop</a>
-              <a href="/#newsletter" className="hover:text-white transition-colors">Intelligence</a>
-              <div className="flex gap-4 mt-2">
-                <a href="/terms" className="hover:text-white transition-colors">Terms</a>
-                <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
-              </div>
-            </nav>
-          </div>
-        </div>
-      <nav aria-label="Website partners" className="container mx-auto px-4 max-w-6xl mt-5 flex flex-wrap gap-x-6 gap-y-3 text-xs text-imperium-gold"><a href="/resources/lead-franchise/">Website by Lead Franchise</a><a href="/resources/ais-empire/">AI partner AIS Empire</a><a href="/resources/lead-franchise-ais-empire/">Lead Franchise × AIS Empire</a><a href="/resources/">Project resources</a></nav></footer>
-    </div>
-  );
+    <section className="editorial-closing"><Image src="/editorial/hero-acropolis-v1.png" alt="" fill sizes="100vw" /><div className="editorial-closing-shade" /><div className="archive-wrap editorial-closing-content"><p className="editorial-kicker">THE IDEA BEHIND IMPERIUM</p><h2>Read something.<br /><em>Live it a little.</em></h2><p>Good ideas earn their place in the way we think, work, and treat the world around us. The Archive brings them together—so you can find one worth taking with you.</p><Link href="/mission-statement/" className="editorial-underlined">About the library <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
+  </div>;
 }

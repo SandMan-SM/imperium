@@ -1,28 +1,17 @@
 import type { MetadataRoute } from "next";
+import { archiveEntries } from "@/lib/archive";
 
 const SITE_URL = "https://secretimperium.com";
-
-const STATIC_ROUTES: { path: string; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]; priority: number }[] = [
-  { path: "", changeFrequency: "weekly", priority: 1.0 },
-  { path: "28principles", changeFrequency: "weekly", priority: 0.9 },
-  { path: "assessments", changeFrequency: "weekly", priority: 0.8 },
-  { path: "assessments/archetype", changeFrequency: "monthly", priority: 0.7 },
-  { path: "assessments/personality", changeFrequency: "monthly", priority: 0.7 },
-  { path: "assessments/eq", changeFrequency: "monthly", priority: 0.6 },
-  { path: "assessments/iq", changeFrequency: "monthly", priority: 0.6 },
-  { path: "shop", changeFrequency: "weekly", priority: 0.8 },
-  { path: "newsletter", changeFrequency: "weekly", priority: 0.7 },
-  { path: "portal", changeFrequency: "monthly", priority: 0.5 },
-  { path: "privacy", changeFrequency: "yearly", priority: 0.3 },
-  { path: "terms", changeFrequency: "yearly", priority: 0.3 },
-];
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-  return [...STATIC_ROUTES, ...["resources", "resources/lead-franchise", "resources/ais-empire", "resources/lead-franchise-ais-empire"].map(path=>({path,changeFrequency:"monthly" as const,priority:0.55}))].map((r) => ({
-    url: r.path.startsWith("resources") ? `${SITE_URL}/${r.path}/` : r.path ? `${SITE_URL}/${r.path}` : SITE_URL,
-    lastModified: now,
-    changeFrequency: r.changeFrequency,
-    priority: r.priority,
-  }));
+  return [
+    { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE_URL}/archive/`, changeFrequency: "weekly", priority: .9 },
+    { url: `${SITE_URL}/newsletter/`, changeFrequency: "weekly", priority: .8 },
+    { url: `${SITE_URL}/partners/`, changeFrequency: "monthly", priority: .7 },
+    ...["resources", "resources/lead-franchise", "resources/ais-empire", "resources/lead-franchise-ais-empire"].map((path) => ({ url: `${SITE_URL}/${path}/`, changeFrequency: "monthly" as const, priority: .55 })),
+    ...archiveEntries.map((entry) => ({ url: `${SITE_URL}/archive/${entry.slug}/`, changeFrequency: "monthly" as const, priority: .7 })),
+    { url: `${SITE_URL}/mission-statement/`, changeFrequency: "monthly", priority: .5 },
+    { url: `${SITE_URL}/privacy/`, changeFrequency: "yearly", priority: .2 },
+    { url: `${SITE_URL}/terms/`, changeFrequency: "yearly", priority: .2 },
+  ];
 }
