@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         }
 
         // Get or create Stripe customer
-        let customer = await getStripe().customers.list({ email, limit: 1 });
+        const customer = await getStripe().customers.list({ email, limit: 1 });
         let customerId = customer.data[0]?.id;
 
         if (!customerId) {
