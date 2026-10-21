@@ -6,6 +6,8 @@ interface EmailData {
     html: string;
     text?: string;
     from?: string;
+    /** Extra headers, e.g. the RFC 8058 List-Unsubscribe pair. */
+    headers?: Record<string, string>;
 }
 
 interface BatchEmailData extends EmailData {
@@ -41,7 +43,10 @@ class ResendService {
     }
 
     private getFromEmail(): string {
-        return process.env.RESEND_FROM_EMAIL || 'Imperium <newsletter@imperium.com>';
+        // secretimperium.com is the verified sending domain; imperium.com is
+        // not verified on the account, so an unconfigured sender would fail
+        // delivery outright.
+        return process.env.RESEND_FROM_EMAIL || 'Imperium <newsletter@secretimperium.com>';
     }
 
     async sendEmail(data: EmailData): Promise<ResendResponse> {
@@ -66,6 +71,7 @@ class ResendService {
                 subject: data.subject,
                 html: data.html,
                 text: data.text,
+                ...(data.headers ? { headers: data.headers } : {}),
             });
 
             if (result.error) {

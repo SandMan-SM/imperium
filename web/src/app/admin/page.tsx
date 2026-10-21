@@ -1075,9 +1075,16 @@ function NewsletterStudio() {
     }, []);
 
     const loadData = async () => {
-        const [{ data: profiles }, { data: newslettersData }] = await Promise.all([
-            supabase.from("profiles").select("is_premium, is_subscribed").eq("is_subscribed", true),
-            supabase.from("newsletters").select("*").order("created_at", { ascending: false })
+        const [{ data: profiles }, { data: newslettersData }, { data: sendEvents }] = await Promise.all([
+            supabase.from("profiles").select("is_premium, newsletter_subscribed").eq("newsletter_subscribed", true),
+            supabase.from("newsletters").select("*").order("created_at", { ascending: false }),
+            // `newsletters` has no sent_at / recipient_count columns in the live
+            // database, so the send record lives in the tenant event log.
+            supabase.from("inbound_imperium_events")
+                .select("target_id, payload, created_at")
+                .eq("event_type", "newsletter_sent")
+                .order("created_at", { ascending: false })
+                .limit(200)
         ]);
 
         const subs = profiles || [];
@@ -1085,7 +1092,24 @@ function NewsletterStudio() {
         const premium = subs.filter((s: any) => s.is_premium).length;
         setStats({ free, premium, total: subs.length });
         setSubscribers(subs);
-        setNewsletters(newslettersData || []);
+
+        const sentMap = new Map<string, { sent_at: string; recipient_count: number }>();
+        for (const event of sendEvents || []) {
+            const targetId = (event as any).target_id;
+            if (!targetId || sentMap.has(targetId)) continue;
+            const payload = (event as any).payload || {};
+            sentMap.set(targetId, {
+                sent_at: (event as any).created_at || payload.sentAt || null,
+                recipient_count: Number(payload.recipientCount || 0),
+            });
+        }
+
+        setNewsletters(
+            (newslettersData || []).map((nl: any) => {
+                const sent = sentMap.get(nl.id);
+                return sent ? { ...nl, sent_at: sent.sent_at, recipient_count: sent.recipient_count } : nl;
+            })
+        );
     };
 
     const showToast = (type: 'success' | 'error', message: string) => {

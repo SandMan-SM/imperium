@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getAdminClient } from "@/lib/server/imperium-capture";
+import Link from "next/link";
+import { unsubscribeEmail } from "@/lib/server/unsubscribe";
 
 export const metadata: Metadata = {
   title: "Unsubscribe",
@@ -8,64 +9,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * One-click unsubscribe.
+ * One-click unsubscribe landing page.
  *
- * Three rows are flipped so no send path can reach this address again:
- *
- *   1. `profiles` — Imperium's own subscriber flags.
- *   2. `federation_newsletter_subscribers` (site = imperium) — the
- *      federation list the Omni hub fans the Intelligence Brief out to.
- *   3. `omni_suppressions` — the global suppression list the capture
- *      pipeline checks before any welcome email goes out.
- *
- * `newsletter_subscribers` was the table this page used to write. It does
- * not exist in the live database, so every unsubscribe silently failed and
- * the address kept receiving mail.
+ * The suppression writes live in `@/lib/server/unsubscribe` so this page
+ * and the RFC 8058 one-click endpoint behave identically.
  */
-async function unsubscribe(email: string): Promise<boolean> {
-  const sb = getAdminClient();
-  if (!sb) return false;
-
-  const normalized = email.trim().toLowerCase();
-
-  const { error: profileError } = await sb
-    .from("profiles")
-    .update({ newsletter_subscribed: false, is_subscribed: false })
-    .ilike("email", normalized);
-  if (profileError) {
-    console.error("[unsubscribe] profile update failed:", profileError.message);
-    return false;
-  }
-
-  const { error: federationError } = await sb
-    .from("federation_newsletter_subscribers")
-    .update({ unsubscribed: true, unsubscribed_at: new Date().toISOString() })
-    .eq("site", "imperium")
-    .ilike("email", normalized);
-  if (federationError) {
-    console.error("[unsubscribe] federation subscriber update failed:", federationError.message);
-    return false;
-  }
-
-  const { error: suppressionError } = await sb
-    .from("omni_suppressions")
-    .upsert(
-      {
-        business_id: null,
-        email: normalized,
-        reason: "unsubscribe",
-        notes: "imperium-one-click",
-      },
-      { onConflict: "business_id,email", ignoreDuplicates: true },
-    );
-  if (suppressionError) {
-    console.error("[unsubscribe] suppression insert failed:", suppressionError.message);
-    return false;
-  }
-
-  return true;
-}
-
 export default async function UnsubscribePage({
   searchParams,
 }: {
@@ -84,17 +32,17 @@ export default async function UnsubscribePage({
     );
   }
 
-  const ok = await unsubscribe(email);
+  const result = await unsubscribeEmail(email);
 
-  if (!ok) {
+  if (!result.ok) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-light text-white mb-2">Error</h1>
           <p className="text-white/40 mb-4">Failed to unsubscribe. Please try again.</p>
-          <a href="/newsletter" className="text-imperium-gold hover:text-white transition-colors">
+          <Link href="/newsletter" className="text-imperium-gold hover:text-white transition-colors">
             Return to Newsletter
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -110,19 +58,19 @@ export default async function UnsubscribePage({
         </p>
 
         <div className="space-y-4">
-          <a
+          <Link
             href="/newsletter"
             className="block w-full bg-imperium-gold text-imperium-bg py-3 px-6 rounded-lg font-bold text-sm uppercase tracking-wider text-center hover:bg-white transition-all"
           >
             Return to Newsletter
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/"
             className="block w-full border border-imperium-gold/30 text-imperium-gold py-3 px-6 rounded-lg font-bold text-sm uppercase tracking-wider text-center hover:border-imperium-gold/50 hover:text-white transition-all"
           >
             Return to Home
-          </a>
+          </Link>
         </div>
 
         <div className="mt-8 pt-6 border-t border-imperium-border/50">
