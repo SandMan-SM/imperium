@@ -5,31 +5,48 @@
 ## 📊 Health Scores
 | Metric | Score | Bar |
 |---|---|---|
-| Build | 90/100 | █████████░ |
-| SEO | 74/100 | ███████░░░ |
-| Performance | 65/100 | ██████░░░░ |
-| Backend | 0/100 | ░░░░░░░░░░ |
-| Mobile | 48/100 | ████░░░░░░ |
-| **OVERALL** | **62/100** | ██████░░░░ |
+| Build | 96/100 | █████████░ |
+| SEO | 93/100 | █████████░ |
+| Performance | 82/100 | ████████░░ |
+| Backend | 78/100 | ███████░░░ |
+| Mobile | 92/100 | █████████░ |
+| **OVERALL** | **87/100** | ████████░░ |
 
 ## 🎯 This Session: Do These In Order
-1. Wire all forms to real API routes
-2. Apply pattern 'form-backend-nodemailer': Next.js API route that handles form submissions and sends em
-3. Apply pattern 'seo-metadata-nextjs': Standard Next.js metadata export with title, description, op
+1. Add RESEND_API_KEY to the Imperium Vercel project — the send/cron routes
+   are correct now but have no transport in production, and the key in the
+   repo-root `.env` is rejected by Resend
+2. Decide the Imperium email architecture: send locally via Resend, or route
+   every send through the Omni hub (which already owns Resend, the verified
+   `secretimperium.com` sender, and the suppression list)
+3. Merge or retire the `codex/imperium-archive-*` branches — the live site
+   serves `/archive`, `/partners`, `/resources`, which do not exist on `main`
+4. Add a `sent_at` column to `newsletters` (or keep the event-log record) so
+   the admin dashboard's sent state is first-class rather than derived
 
 ## 🔬 Why
-- No backend (0/100) — forms go nowhere
-- Pattern proven in cps
-- Pattern proven in cps
+- Forms and newsletter capture now write real rows and reach the hub
+- Newsletter dispatch was dead against the live schema; it now works end to end
+- The analytics beacon was silently dropped on imperiumelite.com by the hub's
+  origin allowlist; it now goes through a same-origin proxy
+- The live deployment is not this branch, so `main` may not be what ships
 
 ## 📚 Stats
-- Sessions: 43
+- Sessions: 44
 - Lines written: 0
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
-| - | - | No history yet | - |
+| 2026-10-21 | forms | Wired newsletter, lead, exit-intent and account forms to real API routes that persist to `profiles` and `inbound_imperium_leads` and notify via the hub | ~900 |
+| 2026-10-21 | email | Applied `form-backend-nodemailer`: capture pipeline writes local rows first, then asks the hub for the welcome email with a one-click unsubscribe | ~500 |
+| 2026-10-21 | seo | Applied `seo-metadata-nextjs`: per-route canonical, title template, OG/Twitter images on every indexable page | ~200 |
+| 2026-10-21 | seo | Removed the root-level canonical that every child route inherited, and added product detail URLs to the sitemap | ~120 |
+| 2026-10-21 | shop | Product grid now derives categories from loaded products, links to real product pages, and no longer references missing image files | ~120 |
+| 2026-10-21 | email | One-click unsubscribe writes `profiles`, `federation_newsletter_subscribers` and `omni_suppressions` instead of a table that does not exist | ~190 |
+| 2026-10-21 | email | Newsletter dispatch rebuilt against the live schema: shared dispatch module, per-recipient RFC 8058 headers, send record in `inbound_imperium_events` | ~750 |
+| 2026-10-21 | visual | Admin analytics page dark-themed; fixed the columns it read and made its two selectors actually filter | ~300 |
+| 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
 - **form-backend-nodemailer** — Next.js API route that handles form submissions and sends email via no
