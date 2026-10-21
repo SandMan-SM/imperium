@@ -9,6 +9,7 @@ import {
   Check, AlertCircle, Loader2
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getAccessToken } from "@/lib/client-session";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -38,19 +39,43 @@ export default function ProfilePage() {
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         router.push("/login?redirect=/account/profile");
         return;
       }
-      
+
       setUser(user);
-      setFormData({
-        ...formData,
+
+      // The profile row is the source of truth; auth metadata is only a mirror.
+      const token = await getAccessToken();
+      if (token) {
+        const response = await fetch("/api/account/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => null);
+
+        if (response?.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.profile) {
+            setFormData((current) => ({
+              ...current,
+              email: data.profile.email || user.email || "",
+              firstName: data.profile.firstName || "",
+              lastName: data.profile.lastName || "",
+              phone: data.profile.phone || "",
+            }));
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      setFormData((current) => ({
+        ...current,
         email: user.email || "",
-        firstName: user.user_metadata?.first_name || "",
-        lastName: user.user_metadata?.last_name || "",
-      });
+        firstName: (user.user_metadata?.first_name as string) || "",
+        lastName: (user.user_metadata?.last_name as string) || "",
+      }));
       setLoading(false);
     }
     
@@ -65,14 +90,38 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const token = await getAccessToken();
+      if (!token) {
+        setError("Your session expired. Please sign in again.");
+        router.push("/login?redirect=/account/profile");
+        return;
+      }
+
+      const response = await fetch("/api/account/profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error || "Failed to update profile");
+        return;
+      }
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Failed to update profile");
+      setError(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
       setSaving(false);
     }
@@ -80,27 +129,51 @@ export default function ProfilePage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-    
+
     if (formData.newPassword.length < 8) {
       setError("Password must be at least 8 characters");
       return;
     }
-    
+
     setSaving(true);
     setError(null);
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const token = await getAccessToken();
+      if (!token) {
+        setError("Your session expired. Please sign in again.");
+        router.push("/login?redirect=/account/profile");
+        return;
+      }
+
+      const response = await fetch("/api/account/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error || "Failed to change password");
+        return;
+      }
+
       setFormData({ ...formData, currentPassword: "", newPassword: "", confirmPassword: "" });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Failed to change password");
+      setError(err instanceof Error ? err.message : "Failed to change password");
     } finally {
       setSaving(false);
     }

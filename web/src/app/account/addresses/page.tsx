@@ -8,6 +8,7 @@ import {
   ChevronLeft, MapPin, Plus, Edit2, Trash2, X, Check
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getAccessToken } from "@/lib/client-session";
 
 type Address = {
   id: string;
@@ -23,39 +24,12 @@ type Address = {
   is_default: boolean;
 };
 
-const mockAddresses: Address[] = [
-  {
-    id: "addr-1",
-    name: "Home",
-    first_name: "John",
-    last_name: "Doe",
-    address: "123 Main Street, Apt 4B",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    country: "US",
-    phone: "(555) 123-4567",
-    is_default: true,
-  },
-  {
-    id: "addr-2",
-    name: "Office",
-    first_name: "John",
-    last_name: "Doe",
-    address: "456 Business Ave, Floor 10",
-    city: "New York",
-    state: "NY",
-    zip: "10002",
-    country: "US",
-    phone: "(555) 987-6543",
-    is_default: false,
-  },
-];
-
 export default function AddressesPage() {
   const router = useRouter();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [formData, setFormData] = useState({
@@ -74,16 +48,33 @@ export default function AddressesPage() {
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         router.push("/login?redirect=/account/addresses");
         return;
       }
-      
-      setAddresses(mockAddresses);
-      setLoading(false);
+
+      const token = await getAccessToken();
+      if (!token) {
+        router.push("/login?redirect=/account/addresses");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/account/addresses", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAddresses(Array.isArray(data.addresses) ? data.addresses : []);
+        }
+      } catch (err) {
+        console.error("Failed to load addresses:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-    
+
     checkAuth();
   }, [router]);
 
@@ -91,28 +82,49 @@ export default function AddressesPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingAddress) {
-      setAddresses(addresses.map(addr => 
-        addr.id === editingAddress.id ? { ...formData, id: editingAddress.id } : addr
-      ));
-    } else {
-      const newAddress = { ...formData, id: `addr-${Date.now()}` };
-      if (formData.is_default) {
-        setAddresses(addresses.map(addr => ({ ...addr, is_default: false })).concat(newAddress));
-      } else {
-        setAddresses([...addresses, newAddress]);
-      }
+    setSaving(true);
+    setError(null);
+
+    const token = await getAccessToken();
+    if (!token) {
+      setError("Your session expired. Please sign in again.");
+      setSaving(false);
+      return;
     }
-    
-    resetForm();
+
+    const payload = editingAddress ? { ...formData, id: editingAddress.id } : formData;
+
+    try {
+      const response = await fetch("/api/account/addresses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ address: payload }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(data.error || "Could not save your address.");
+        return;
+      }
+
+      setAddresses(Array.isArray(data.addresses) ? data.addresses : addresses);
+      resetForm();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save your address.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetForm = () => {
     setShowForm(false);
     setEditingAddress(null);
+    setError(null);
     setFormData({
       name: "",
       first_name: "",
@@ -133,15 +145,52 @@ export default function AddressesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setAddresses(addresses.filter(addr => addr.id !== id));
+  const handleDelete = async (id: string) => {
+    const token = await getAccessToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch("/api/account/addresses", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && Array.isArray(data.addresses)) {
+        setAddresses(data.addresses);
+      } else {
+        setAddresses(addresses.filter(addr => addr.id !== id));
+      }
+    } catch (err) {
+      console.error("Failed to delete address:", err);
+    }
   };
 
-  const handleSetDefault = (id: string) => {
-    setAddresses(addresses.map(addr => ({
-      ...addr,
-      is_default: addr.id === id,
-    })));
+  const handleSetDefault = async (address: Address) => {
+    const token = await getAccessToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch("/api/account/addresses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ address: { ...address, is_default: true } }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && Array.isArray(data.addresses)) {
+        setAddresses(data.addresses);
+      } else {
+        setAddresses(addresses.map(addr => ({ ...addr, is_default: addr.id === address.id })));
+      }
+    } catch (err) {
+      console.error("Failed to set default address:", err);
+    }
   };
 
   if (loading) {
@@ -233,7 +282,7 @@ export default function AddressesPage() {
                 </button>
                 {!address.is_default && (
                   <button
-                    onClick={() => handleSetDefault(address.id)}
+                    onClick={() => handleSetDefault(address)}
                     className="ml-auto text-imperium-gold hover:underline text-sm"
                   >
                     Set as Default
@@ -393,6 +442,10 @@ export default function AddressesPage() {
                   <span className="text-white/60 text-sm">Set as default address</span>
                 </label>
                 
+                {error && (
+                  <p className="text-sm text-red-400">{error}</p>
+                )}
+
                 <div className="flex gap-4 pt-4">
                   <button
                     type="button"
@@ -403,9 +456,10 @@ export default function AddressesPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3 bg-imperium-gold text-imperium-bg font-bold rounded-lg hover:bg-imperium-gold/90 transition-colors"
+                    disabled={saving}
+                    className="flex-1 py-3 bg-imperium-gold text-imperium-bg font-bold rounded-lg hover:bg-imperium-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {editingAddress ? "Save Changes" : "Add Address"}
+                    {saving ? "Saving..." : editingAddress ? "Save Changes" : "Add Address"}
                   </button>
                 </div>
               </form>

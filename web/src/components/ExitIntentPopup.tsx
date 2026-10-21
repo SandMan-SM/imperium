@@ -9,6 +9,18 @@ export function ExitIntentPopup() {
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState('');
+    const [alreadyShown, setAlreadyShown] = useState(false);
+
+    // The cookie can only be read in the browser — reading it during render
+    // breaks server-side rendering of any page that mounts this component.
+    useEffect(() => {
+        try {
+            setAlreadyShown(document.cookie.includes('exit_intent_shown=true'));
+        } catch {
+            setAlreadyShown(false);
+        }
+    }, []);
 
     useEffect(() => {
         let mouseOutTimer: NodeJS.Timeout;
@@ -55,6 +67,7 @@ export function ExitIntentPopup() {
         if (!email) return;
 
         setIsSubmitting(true);
+        setError('');
 
         try {
             const response = await fetch('/api/leads/capture', {
@@ -73,16 +86,20 @@ export function ExitIntentPopup() {
                 setSubmitted(true);
                 // Set cookie to prevent showing again for 30 days
                 document.cookie = "exit_intent_shown=true; max-age=" + 60 * 60 * 24 * 30;
+            } else {
+                const data = await response.json().catch(() => ({}));
+                setError(data.error || 'We could not save your details. Please try again.');
             }
         } catch (error) {
             console.error('Error capturing lead:', error);
+            setError('We could not save your details. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     // Don't show if already shown recently
-    if (document.cookie.includes('exit_intent_shown=true') || submitted) {
+    if (alreadyShown || submitted) {
         return null;
     }
 
@@ -149,12 +166,16 @@ export function ExitIntentPopup() {
                                     <p className="text-xs text-gray-500 text-center">
                                         We respect your privacy. Unsubscribe at any time.
                                     </p>
+
+                                    {error && (
+                                        <p className="text-sm text-red-400 text-center">{error}</p>
+                                    )}
                                 </form>
                             ) : (
                                 <div className="space-y-4">
                                     <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                                         <p className="text-green-400 text-sm">
-                                            ✅ Success! Check your email for access to Principle #1.
+                                            Access granted. Check your email for Principle #1.
                                         </p>
                                     </div>
                                     <button
@@ -178,6 +199,7 @@ export function EmailCaptureWidget() {
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         // Show widget after 10 seconds
@@ -193,6 +215,7 @@ export function EmailCaptureWidget() {
         if (!email) return;
 
         setIsSubmitting(true);
+        setError('');
 
         try {
             const response = await fetch('/api/leads/capture', {
@@ -209,9 +232,13 @@ export function EmailCaptureWidget() {
 
             if (response.ok) {
                 setSubmitted(true);
+            } else {
+                const data = await response.json().catch(() => ({}));
+                setError(data.error || 'We could not save your details. Try again.');
             }
         } catch (error) {
             console.error('Error capturing lead:', error);
+            setError('We could not save your details. Try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -251,9 +278,10 @@ export function EmailCaptureWidget() {
                             >
                                 {isSubmitting ? 'Sending...' : 'Send'}
                             </button>
+                            {error && <p className="text-xs text-red-400">{error}</p>}
                         </form>
                     ) : (
-                        <div className="text-xs text-green-400">✅ Check your email!</div>
+                        <div className="text-xs text-green-400">Access granted. Check your email.</div>
                     )}
                 </div>
             </div>

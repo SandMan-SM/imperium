@@ -305,13 +305,14 @@ function NewsletterEmailForm() {
         setStatus("loading");
 
         try {
-            // Wire to /api/leads/capture for centralized lead management
-            const res = await fetch("/api/leads/capture", {
+            // The subscribe route persists the subscriber, records the lead, and
+            // triggers the welcome email through the federation mail pipeline.
+            const res = await fetch("/api/newsletter/subscribe", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email.toLowerCase(), source: "newsletter-page" }),
             });
-            const result = await res.json();
+            const result = await res.json().catch(() => ({}));
             if (!res.ok) {
                 throw new Error(result.error || "Failed to establish connection. Try again.");
             }
@@ -319,10 +320,10 @@ function NewsletterEmailForm() {
             setStatus("success");
             setMessage("Directive Received. Welcome to the network.");
             setEmail("");
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             setStatus("error");
-            setMessage(err.message || "Failed to establish connection. Try again.");
+            setMessage(err instanceof Error ? err.message : "Failed to establish connection. Try again.");
         }
     };
 
