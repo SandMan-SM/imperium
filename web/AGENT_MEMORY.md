@@ -1,46 +1,39 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: June 15, 2026 11:15 PM
+> Synthetic Intelligence Memory | Updated: October 21, 2026 08:53 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
 | Metric | Score | Bar |
 |---|---|---|
-| Build | 75/100 | ███████░░░ |
-| SEO | 68/100 | ██████░░░░ |
-| Performance | 85/100 | ████████░░ |
-| Backend | 60/100 | ██████░░░░ |
+| Build | 90/100 | █████████░ |
+| SEO | 74/100 | ███████░░░ |
+| Performance | 65/100 | ██████░░░░ |
+| Backend | 0/100 | ░░░░░░░░░░ |
 | Mobile | 48/100 | ████░░░░░░ |
-| **OVERALL** | **67/100** | ██████░░░░ |
+| **OVERALL** | **62/100** | ██████░░░░ |
 
 ## 🎯 This Session: Do These In Order
-1. ~~Add metadata exports to all pages~~
-2. ~~Add JSON-LD schema markup~~
-3. ~~Wire all forms to real API routes~~
-4. Fix layout overflow on mobile
-5. Add loading.tsx skeleton screens to async pages
-6. Audit broken links
+1. Wire all forms to real API routes
+2. Apply pattern 'form-backend-nodemailer': Next.js API route that handles form submissions and sends em
+3. Apply pattern 'seo-metadata-nextjs': Standard Next.js metadata export with title, description, op
 
 ## 🔬 Why
-- SEO was weak (48/100) — now improved with metadata + JSON-LD
-- Backend was 0/100 — forms now wired to /api/leads/capture
+- No backend (0/100) — forms go nowhere
+- Pattern proven in cps
+- Pattern proven in cps
 
 ## 📚 Stats
-- Sessions: 1
-- Lines written: ~400
+- Sessions: 43
+- Lines written: 0
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
-| Jun 15 | SEO/Meta | Added metadata exports to all pages via server-component wrappers | +400 |
-| Jun 15 | SEO/Schema | Added JSON-LD: WebSite, Organization, Product schemas | +60 |
-| Jun 15 | Backend | Wired newsletter forms to /api/leads/capture instead of direct Supabase | +20 |
-| Jun 15 | Infra | Removed live API keys from git history (Website/.open-next); force-pushed | — |
-| Jun 15 | Deploy | Deployed to Vercel: https://web-55l878llv-sandman-sms-projects.vercel.app | — |
+| - | - | No history yet | - |
 
 ## 🌐 Patterns To Apply
-- Server-component wrappers for "use client" pages that need metadata exports
-- JSON-LD schemas: WebSite (root), Product (shop/[slug]), Article (newsletter)
-- Forms → API routes, not direct Supabase inserts
+- **form-backend-nodemailer** — Next.js API route that handles form submissions and sends email via no
+- **seo-metadata-nextjs** — Standard Next.js metadata export with title, description, openGraph, a
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -50,4 +43,3 @@
 - Never touch .env files
 - Commit every logical unit: `git commit -m 'agent: [what]'`
 - Push when done
-- NEVER commit .open-next/ or any build artifacts — add to .gitignore
