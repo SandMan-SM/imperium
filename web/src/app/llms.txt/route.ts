@@ -18,8 +18,11 @@ export function GET() {
 - Home: ${SITE_URL}/
 - 28 Principles: ${SITE_URL}/28principles
 - Shop: ${SITE_URL}/shop
+- Market Intelligence: ${SITE_URL}/market
 - Newsletter: ${SITE_URL}/newsletter
 - Portal (members): ${SITE_URL}/portal
+- Privacy Policy: ${SITE_URL}/privacy
+- Terms of Service: ${SITE_URL}/terms
 - Sitemap: ${SITE_URL}/sitemap.xml
 
 ## Conversational guidance

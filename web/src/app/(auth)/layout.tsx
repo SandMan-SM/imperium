@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: {
-        default: "Account — Imperium Elite",
+        default: "Account",
         template: "%s · Imperium Elite",
     },
     description:

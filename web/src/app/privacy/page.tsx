@@ -2,8 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Privacy Policy — Imperium Elite",
+    title: "Privacy Policy",
     description: "How Imperium Elite collects, uses, and protects your personal information.",
+    alternates: { canonical: "https://secretimperium.com/privacy" },
+    openGraph: {
+        title: "Privacy Policy",
+        description: "How Imperium Elite collects, uses, and protects your personal information.",
+        type: "website",
+        url: "https://secretimperium.com/privacy",
+    },
+    twitter: {
+        card: "summary",
+        title: "Privacy Policy",
+        description: "How Imperium Elite collects, uses, and protects your personal information.",
+    },
 };
 
 export default function PrivacyPolicyPage() {

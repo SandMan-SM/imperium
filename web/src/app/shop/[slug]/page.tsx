@@ -46,24 +46,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProductMeta(slug);
 
-  const title = product ? `${product.name} — Imperium` : "Product — Imperium";
+  const title = product?.name || "Product";
   const description = product?.description || "Premium apparel and gear for the sovereign operator.";
-  const image = product?.image || "/og-image.jpg";
+  const image = product?.image || "/opengraph-image";
+  // Product images are stored as site-relative paths; OpenGraph needs an
+  // absolute URL or social platforms silently drop the preview card.
+  const imageUrl = image.startsWith("http") ? image : `${SITE_URL}${image}`;
 
   return {
     title,
     description,
+    alternates: { canonical: `${SITE_URL}/shop/${slug}` },
     openGraph: {
       title,
       description,
-      images: [{ url: image }],
+      images: [{ url: imageUrl, alt: title }],
       type: "website",
+      url: `${SITE_URL}/shop/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
+      images: [imageUrl],
     },
   };
 }

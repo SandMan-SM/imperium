@@ -65,7 +65,7 @@ const CATALOG: Product[] = [
     price: 88,
     compare_at_price: 110,
     image_url: "/products/hoodie.jpeg",
-    images: ["/products/hoodie.jpeg", "/products/hoodie-2.jpeg", "/products/hoodie-3.jpeg"],
+    images: ["/products/hoodie.jpeg", "/products/hoodie-3.jpeg"],
     in_stock: true,
     stock_quantity: 75,
     sizes: ["S", "M", "L", "XL", "XXL"],
@@ -84,7 +84,7 @@ const CATALOG: Product[] = [
     price: 80,
     compare_at_price: 100,
     image_url: "/products/sweats.jpeg",
-    images: ["/products/sweats.jpeg", "/products/sweats-2.jpeg", "/products/sweats-3.jpeg"],
+    images: ["/products/sweats.jpeg"],
     in_stock: true,
     stock_quantity: 100,
     sizes: ["S", "M", "L", "XL", "XXL"],
@@ -114,7 +114,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     if (product?.images && product.images.length > 0) {
       return product.images;
     }
-    return product?.image_url ? [product.image_url] : ["/products/placeholder.jpg"];
+    return product?.image_url ? [product.image_url] : ["/logo.jpg"];
   }, [product]);
 
   useEffect(() => {
@@ -545,7 +545,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               >
                 <div className="aspect-[4/5] relative">
                   <img
-                    src={relatedProduct.image_url || "/products/placeholder.jpg"}
+                    src={relatedProduct.image_url || "/logo.jpg"}
                     alt={relatedProduct.name}
                     className="w-full h-full object-cover"
                   />

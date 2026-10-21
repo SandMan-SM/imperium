@@ -8,18 +8,32 @@ import { NewsletterOptin } from "@/components/NewsletterOptin";
 import { SocialProofBar, UrgencyBanner, SocialProofStats } from "@/components/SocialProofBar";
 
 export const metadata: Metadata = {
-  title: "Imperium Elite — Build the Mind. Command the Future.",
+  // Absolute: the homepage title already carries the brand, so the root
+  // "%s · Imperium Elite" template must not be appended to it.
+  title: {
+    absolute: "Imperium Elite — Build the Mind. Command the Future.",
+  },
   description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
+  alternates: { canonical: "https://secretimperium.com/" },
   openGraph: {
     title: "Imperium Elite — Build the Mind. Command the Future.",
     description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
     type: "website",
-    url: "https://imperium-green.vercel.app",
+    url: "https://secretimperium.com/",
+    images: [
+      {
+        url: "https://secretimperium.com/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Imperium Elite — Build the Mind. Command the Future.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Imperium Elite — Build the Mind. Command the Future.",
     description: "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox.",
+    images: ["https://secretimperium.com/opengraph-image"],
   },
 };
 

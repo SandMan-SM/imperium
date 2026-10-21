@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Checkout — Imperium Elite",
+    title: "Checkout",
     description: "Complete your Imperium purchase securely.",
     robots: {
         index: false,

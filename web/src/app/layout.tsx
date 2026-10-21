@@ -25,7 +25,10 @@ export const metadata: Metadata = {
   },
   description:
     "A structured 28-principle leadership framework. Daily intelligence delivered to your inbox. Join 2,400+ sovereign-minded operators for $20/month.",
-  alternates: { canonical: SITE_URL },
+  // No canonical here on purpose: a root-level canonical is inherited by
+  // every child route and would tell search engines that /shop, /newsletter
+  // and the rest are duplicates of the homepage. Each indexable route
+  // declares its own canonical.
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
@@ -36,7 +39,8 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: "Imperium Elite",
     type: "website",
-    images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630 }],
+    locale: "en_US",
+    images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: "Imperium Elite — Build the Mind. Command the Future." }],
   },
   twitter: {
     card: "summary_large_image",

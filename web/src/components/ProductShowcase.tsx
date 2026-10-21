@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Plus, Check } from "lucide-react";
+import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 
 type Product = {
@@ -21,6 +22,7 @@ type Product = {
 const CATALOG: Product[] = [
     {
         id: "tee-01",
+        slug: "imperium-command-tee",
         name: "Imperium Command Tee",
         category: "shirts",
         description: "Premium heavyweight cotton. Minimal Imperium insignia on chest. Structured drop-cut silhouette designed for the serious operator.",
@@ -29,6 +31,7 @@ const CATALOG: Product[] = [
     },
     {
         id: "hoodie-01",
+        slug: "exclusive-imperium-hoodie",
         name: "Exclusive Imperium Hoodie",
         category: "hoodies",
         description: "400gsm heavyweight fleece. Boxy architectural fit with embossed Imperium emblem. Built to signal sovereignty in any room.",
@@ -37,6 +40,7 @@ const CATALOG: Product[] = [
     },
     {
         id: "sweats-01",
+        slug: "imperium-stealth-sweats",
         name: "Imperium Stealth Sweats",
         category: "sweats",
         description: "French terry sweatpants. Tapered fit, minimal embroidery, zippered ankles. Built for recovery, remapped for command.",
@@ -52,7 +56,6 @@ export function ProductShowcase() {
     const [activeCategory, setActiveCategory] = useState("All");
     const [addedProduct, setAddedProduct] = useState<string | null>(null);
 
-    const categories = ["All", "Shirts", "Hoodies", "Sweats", "Hats", "Beanies"];
 
     const { addItem } = useCart();
 
@@ -87,7 +90,10 @@ export function ProductShowcase() {
         fetchProducts();
     }, []);
 
-    const handleAddToCart = (product: Product) => {
+    const handleAddToCart = (product: Product, e: React.MouseEvent) => {
+        // The card itself navigates to the product page; adding to the cart
+        // must not also trigger that navigation.
+        e.stopPropagation();
         addItem({
             id: product.id,
             name: product.name,
@@ -103,12 +109,22 @@ export function ProductShowcase() {
         ? products
         : products.filter(p => p.category?.toLowerCase() === activeCategory.toLowerCase());
 
+    // Categories are derived from the loaded products so a category with no
+    // products never renders as an empty grid.
+    const visibleCategories = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of products) {
+            if (p.category) set.add(p.category.toLowerCase());
+        }
+        return ["All", ...Array.from(set).map(c => c.charAt(0).toUpperCase() + c.slice(1))];
+    }, [products]);
+
     return (
         <section className="py-12 sm:py-20">
             {/* Categories */}
             <div className="flex justify-center mb-10 sm:mb-16 px-4">
                 <div className="flex items-center gap-2 sm:gap-4 p-1 border border-imperium-gold/20 bg-imperium-gold/5 rounded-full overflow-x-auto max-w-full">
-                    {categories.map((cat) => (
+                    {visibleCategories.map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
@@ -149,7 +165,7 @@ export function ProductShowcase() {
                                         <img
                                             src={product.image_url}
                                             alt={product.name}
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-104 opacity-80 group-hover:opacity-95"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-95"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-imperium-surface">
@@ -165,7 +181,15 @@ export function ProductShowcase() {
                                 {/* Info */}
                                 <div className="p-6 sm:p-6 flex flex-col flex-1">
                                     <div className="flex items-start justify-between gap-4 sm:gap-4 mb-2 sm:mb-4">
-                                        <h3 className="text-base font-medium text-white leading-snug">{product.name}</h3>
+                                        <h3 className="text-base font-medium text-white leading-snug">
+                                            {/* A real anchor so product detail pages are crawlable */}
+                                            <Link
+                                                href={`/shop/${product.slug || product.id}`}
+                                                className="hover:text-imperium-gold transition-colors"
+                                            >
+                                                {product.name}
+                                            </Link>
+                                        </h3>
                                         <span className="text-imperium-gold font-bold text-sm flex-shrink-0">${Number(product.price).toFixed(2)}</span>
                                     </div>
 
@@ -175,7 +199,7 @@ export function ProductShowcase() {
 
                                     <div className="pt-3 sm:pt-4 flex gap-2">
                                         <button
-                                            onClick={() => handleAddToCart(product)}
+                                            onClick={(e) => handleAddToCart(product, e)}
                                             disabled={addedProduct === product.id}
                                             className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-bold tracking-widest uppercase rounded-lg transition-all duration-300 ${addedProduct === product.id
                                                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
@@ -199,6 +223,8 @@ export function ProductShowcase() {
                                                 href={product.stripe_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                aria-label={`Buy ${product.name} directly`}
                                                 className="flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-bold tracking-widest uppercase text-white/50 hover:text-white border border-imperium-gold/20 hover:border-imperium-gold/30 rounded-lg transition-colors"
                                             >
                                                 <ShoppingBag className="w-3.5 h-3.5" />
