@@ -311,7 +311,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                         : "border-transparent hover:border-white/20"
                     }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt={`${product.name} view ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

@@ -3,7 +3,14 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-const ENDPOINT = "https://omnileadsagi.com/api/inbound";
+/**
+ * Events are posted to Imperium's own `/api/track` route, which forwards
+ * them to the Omni hub server-side. Posting straight to the hub from the
+ * browser required the hub's per-tenant CORS allowlist, which only covers
+ * `secretimperium.com` — on `imperiumelite.com` every beacon was rejected
+ * by the preflight and the analytics never landed.
+ */
+const ENDPOINT = "/api/track";
 const SLUG = "imperium";
 const STORAGE_KEY = "imperium_session_v1";
 const REF_KEY = "imperium_ref_v1";
@@ -56,7 +63,7 @@ function readReferral() {
 
 function send(body: Record<string, unknown>) {
   if (typeof window === "undefined") return;
-  const url = `${ENDPOINT}/${SLUG}/events`;
+  const url = ENDPOINT;
   const payload = JSON.stringify(body);
   try {
     if ("sendBeacon" in navigator) {
@@ -69,7 +76,6 @@ function send(body: Record<string, unknown>) {
     headers: { "Content-Type": "application/json" },
     body: payload,
     keepalive: true,
-    mode: "cors",
   }).catch(() => void 0);
 }
 
