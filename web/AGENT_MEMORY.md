@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 21, 2026 08:53 AM
+> Synthetic Intelligence Memory | Updated: October 21, 2026 11:34 PM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -19,8 +19,10 @@
 2. Decide the Imperium email architecture: send locally via Resend, or route
    every send through the Omni hub (which already owns Resend, the verified
    `secretimperium.com` sender, and the suppression list)
-3. Merge or retire the `codex/imperium-archive-*` branches — the live site
-   serves `/archive`, `/partners`, `/resources`, which do not exist on `main`
+3. ~~Merge the `codex/imperium-archive-*` branches~~ DONE 2026-10-21 —
+   `codex/imperium-archive-20261018` was merged into `main` (commit 5985a3a).
+   `main` now matches production: `/archive`, `/partners`, `/resources` all live.
+   Do NOT re-merge or revert. The archive branches can now be retired.
 4. Add a `sent_at` column to `newsletters` (or keep the event-log record) so
    the admin dashboard's sent state is first-class rather than derived
 
@@ -30,6 +32,8 @@
 - The analytics beacon was silently dropped on imperiumelite.com by the hub's
   origin allowlist; it now goes through a same-origin proxy
 - The live deployment is not this branch, so `main` may not be what ships
+  (RESOLVED 2026-10-21: main now ships to secretimperium.com via the `imperium`
+  Vercel project. Node 20.x -> 24.x fix also landed; production build is green.)
 
 ## 📚 Stats
 - Sessions: 44
@@ -38,6 +42,7 @@
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-21 | merge | Merged `codex/imperium-archive-20261018` into `main` (5985a3a) and bumped Node 20.x -> 24.x in `web/` (9d3aa49). Production deploy is READY and live site verified intact | ~1300 |
 | 2026-10-21 | forms | Wired newsletter, lead, exit-intent and account forms to real API routes that persist to `profiles` and `inbound_imperium_leads` and notify via the hub | ~900 |
 | 2026-10-21 | email | Applied `form-backend-nodemailer`: capture pipeline writes local rows first, then asks the hub for the welcome email with a one-click unsubscribe | ~500 |
 | 2026-10-21 | seo | Applied `seo-metadata-nextjs`: per-route canonical, title template, OG/Twitter images on every indexable page | ~200 |
