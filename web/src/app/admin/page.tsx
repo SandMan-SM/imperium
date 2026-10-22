@@ -1140,13 +1140,19 @@ function NewsletterStudio() {
     const handleSend = async (newsletterId: string) => {
         setSending(true);
         try {
+            // The send route is operator-only, so the admin session token
+            // travels with the request.
+            const { data: { session } } = await supabase.auth.getSession();
             const response = await fetch('/api/newsletter/send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+                },
                 body: JSON.stringify({ newsletterId })
             });
             const result = await response.json();
-            
+
             if (result.success) {
                 showToast('success', `Sent to ${result.recipientCount} subscribers`);
                 await loadData();
@@ -1161,18 +1167,22 @@ function NewsletterStudio() {
 
     const handleSendTest = async () => {
         if (!selectedNewsletter || !title.trim()) return;
-        
+
         const testEmail = 'sitanim8@gmail.com';
 
         setSendingTest(true);
         try {
+            const { data: { session } } = await supabase.auth.getSession();
             const response = await fetch('/api/newsletter/send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
+                },
+                body: JSON.stringify({
                     newsletterId: selectedNewsletter.id,
                     testMode: true,
-                    testEmail 
+                    testEmail
                 })
             });
             const result = await response.json();

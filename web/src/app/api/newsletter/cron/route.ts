@@ -20,10 +20,19 @@ import {
  * out, so publishing is the approval step.
  */
 export async function GET(req: Request) {
-  const cronSecret = req.headers.get('x-vercel-cron-token');
+  // Vercel sends the project cron secret as `Authorization: Bearer <secret>`
+  // and flags the invocation with `x-vercel-cron: 1`. The legacy
+  // `x-vercel-cron-token` header is still accepted. When CRON_SECRET is
+  // configured, an unauthenticated caller is rejected — otherwise anyone
+  // could trigger a full send.
   const expectedSecret = process.env.CRON_SECRET;
+  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
+  const provided =
+    req.headers.get('x-vercel-cron-token') ||
+    bearer ||
+    (req.headers.get('x-vercel-cron') === '1' ? 'vercel-cron' : '');
 
-  if (expectedSecret && cronSecret !== expectedSecret) {
+  if (expectedSecret && provided !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

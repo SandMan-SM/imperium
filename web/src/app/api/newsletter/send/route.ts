@@ -8,6 +8,7 @@ import {
   sendToAddress,
   type NewsletterRow,
 } from '@/lib/server/newsletter-dispatch';
+import { isAdminRequest } from '@/lib/server/admin-auth';
 
 /**
  * Send an authored Intelligence Brief.
@@ -24,8 +25,10 @@ import {
  */
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader && authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
+    // The route sends real mail to the subscriber list, so it is operator-only:
+    // the service-role key (automation) or an admin session. The previous
+    // check let any unauthenticated caller through.
+    if (!(await isAdminRequest(req))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
