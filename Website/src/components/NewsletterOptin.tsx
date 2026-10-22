@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -162,23 +161,18 @@ export function NewsletterEmailForm() {
     setStatus("loading");
 
     try {
-      const { error } = await supabase
-        .from("newsletter_subscribers")
-        .insert([{ email: email.toLowerCase(), status: "active" }]);
-
-      if (error) {
-        if (error.code === '23505') {
-          throw new Error("You are already subscribed to the intelligence brief.");
-        }
-        throw error;
-      }
-
-      // Send welcome email via API (fire-and-forget; don't block on failure)
-      fetch("/api/newsletter/welcome", {
+      // The subscribe route persists the subscriber, records the lead, and
+      // triggers the welcome email through the federation mail pipeline.
+      const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase() }),
-      }).catch(() => {});
+        body: JSON.stringify({ email: email.toLowerCase(), source: "newsletter-optin" }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to establish connection. Try again.");
+      }
 
       setStatus("success");
       setMessage("Directive Received. Welcome to the network.");

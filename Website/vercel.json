@@ -1,7 +1,19 @@
 {
-  "version": 2,
-  "env": {},
-  "regions": [
-    "iad1"
-  ]
+    "version": 2,
+    "env": {
+        "NODE_VERSION": "24.x"
+    },
+    "regions": [
+        "iad1"
+    ],
+    "crons": [
+        {
+            "path": "/api/newsletter/cron",
+            "schedule": "0 11 * * *"
+        },
+        {
+            "path": "/api/market/cron",
+            "schedule": "30 13 * * 1-5"
+        }
+    ]
 }
