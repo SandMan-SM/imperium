@@ -8,7 +8,7 @@ Imperium is a premium e-commerce + content platform delivering "28 Principles" e
 - "Connected to omni ai" — site functionality is expected to be wired into the user's umbrella AI ops layer (backed by Supabase project `odvxtychuxxsudfpcqqs`).
 
 ## Stack
-- **Framework**: Next.js 16 (App Router, currently 16.1.6), React 19 (19.2.3), TypeScript, Node 20.x
+- **Framework**: Next.js 16 (App Router, currently 16.1.6), React 19 (19.2.3), TypeScript, Node 24.x
 - **Styling**: Tailwind CSS 4 (config is CSS-first in `web/src/app/globals.css` via `@theme` tokens — there is **NO** `tailwind.config.ts/js`), Framer Motion (v12.x)
 - **Backend**: Supabase (auth + Postgres + storage); `pg` for direct DB access
 - **Payments**: Stripe (subscriptions + webhooks); Stripe payment links created via the Stripe MCP under the Imperium account
@@ -104,7 +104,7 @@ cd telegram-bot && source venv/bin/activate && python bot.py
 - **DON'T** touch `telegram-bot/venv/` or `node_modules/`.
 
 ## Deploy & env
-- Deploy: `vercel deploy --prod` from `web/`. Region pinned to `iad1`; `NODE_VERSION=20.x` (`web/vercel.json`).
+- Deploy: `vercel deploy --prod` from `web/`. Region pinned to `iad1`; `NODE_VERSION=24.x` (`web/vercel.json`). Node 20.x is discontinued on Vercel and fails the build.
 - Env var **NAMES** (values live in `.env`, never commit/echo them): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`.
 
 ## Stripe integration

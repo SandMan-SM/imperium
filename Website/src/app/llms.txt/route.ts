@@ -1,6 +1,37 @@
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-static";
+
 export function GET() {
-  return new NextResponse(`# Imperium\n> An open resource library for a deliberate life.\n\n## Identity\n- Website: https://secretimperium.com/\n- Founder: Sitani Mafi (https://sitanimafi.com)\n- The Archive collects original principles, quotes, work ethic, strategy, and reflections.\n- All archive resources are readable without an account.\n\n## Pages\n- The Archive: https://secretimperium.com/archive/\n- Newsletter: https://secretimperium.com/newsletter/\n- Partners: https://secretimperium.com/partners/\n- About Imperium: https://secretimperium.com/mission-statement/\n- Sitemap: https://secretimperium.com/sitemap.xml\n\nThe former 28 Principles collection is now part of The Archive.\n`, { headers: { "content-type": "text/plain; charset=utf-8" } });
+  const body = `# Imperium
+> An open resource library for a deliberate life.
+
+## Identity
+- Website: https://secretimperium.com/
+- Founder: Sitani Mafi (https://sitanimafi.com)
+- The Archive collects original principles, quotes, work ethic, strategy, and reflections.
+- All archive resources are readable without an account.
+
+## Pages
+- The Archive: https://secretimperium.com/archive/
+- Newsletter: https://secretimperium.com/newsletter/
+- Partners: https://secretimperium.com/partners/
+- About Imperium: https://secretimperium.com/mission-statement/
+- Sitemap: https://secretimperium.com/sitemap.xml
+
+## Website and AI partner resources
+- Project resources: https://secretimperium.com/resources/
+- Website by Lead Franchise: https://secretimperium.com/resources/lead-franchise/
+- AI partner AIS Empire: https://secretimperium.com/resources/ais-empire/
+- Lead Franchise × AIS Empire: https://secretimperium.com/resources/lead-franchise-ais-empire/
+
+The former 28 Principles collection is now part of The Archive.
+`;
+
+  return new NextResponse(body, {
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "public, max-age=3600, stale-while-revalidate=86400",
+    },
+  });
 }

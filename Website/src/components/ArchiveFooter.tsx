@@ -35,7 +35,17 @@ export function ArchiveFooter() {
                 <div className="flex flex-col gap-2 border-t border-[#d7d7cd] py-6 text-[14px] leading-6 text-[#62675b] sm:flex-row sm:items-center sm:justify-between">
                     <p>© {new Date().getFullYear()} Imperium.</p>
                     <p>Free to read. No account required.</p>
+                    <nav aria-label="Legal" className="flex items-center gap-5">
+                        <Link href="/privacy/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Privacy</Link>
+                        <Link href="/terms/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Terms</Link>
+                    </nav>
                 </div>
+                <nav aria-label="Website partners" className="flex flex-wrap gap-x-6 gap-y-2 pb-6 text-[13px] text-[#62675b]">
+                    <Link href="/resources/lead-franchise/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Website by Lead Franchise</Link>
+                    <Link href="/resources/ais-empire/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">AI partner AIS Empire</Link>
+                    <Link href="/resources/lead-franchise-ais-empire/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Lead Franchise × AIS Empire</Link>
+                    <Link href="/resources/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Project resources</Link>
+                </nav>
             </div>
         </footer>
     );
