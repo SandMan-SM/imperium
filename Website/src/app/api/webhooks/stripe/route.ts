@@ -4,15 +4,74 @@ import { NextResponse } from 'next/server';
 import type { Stripe } from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStripe } from '@/lib/stripe-helper';
+import { getAdminClient } from '@/lib/server/imperium-capture';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const PURCHASE_EVENT_TYPE = 'purchase_recorded';
+
+/**
+ * The live database has no `purchases` table, so purchase history is written
+ * to the tenant event log `inbound_imperium_events` — the same place the
+ * newsletter send record lives. The checkout session id travels in the
+ * payload and is the idempotency key.
+ */
+async function recordPurchase(payload: {
+  sessionId: string;
+  productId: string | null;
+  productName: string | null;
+  amount: number;
+  currency: string;
+  quantity: number;
+  email: string | null;
+}): Promise<void> {
+  const sb = getAdminClient();
+  if (!sb) return;
+
+  const { data: business } = await sb
+    .from('omni_businesses')
+    .select('id')
+    .eq('slug', 'imperium')
+    .maybeSingle();
+  const businessId = (business as { id?: string } | null)?.id ?? null;
+  if (!businessId) {
+    console.error('Stripe webhook: no imperium business id; purchase not recorded');
+    return;
+  }
+
+  const { error } = await sb.from('inbound_imperium_events').insert({
+    business_id: businessId,
+    event_type: PURCHASE_EVENT_TYPE,
+    event_category: 'commerce',
+    action: 'purchased',
+    target_type: 'product',
+    target_id: payload.productId,
+    payload: {
+      stripe_checkout_session: payload.sessionId,
+      product_id: payload.productId,
+      product_name: payload.productName,
+      amount: payload.amount,
+      currency: payload.currency,
+      quantity: payload.quantity,
+      email: payload.email,
+    },
+    value_numeric: payload.amount,
+    created_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    console.error('Stripe webhook: purchase record failed:', error.message);
+  }
+}
 
 async function upsertProfileByEmail(email: string | null, stripeCustomerId?: string) {
   if (!email && !stripeCustomerId) return null;
+  const filter = email
+    ? `email.eq.${email}`
+    : `stripe_customer_id.eq.${stripeCustomerId}`;
   const { data: existing } = await supabaseAdmin
     .from('profiles')
     .select('*')
-    .or(email ? `email.eq.${email}` : '')
+    .or(filter)
     .limit(1);
 
   if (existing && existing[0]) return existing[0];
@@ -64,7 +123,7 @@ export async function POST(req: Request) {
         const email = session.customer_details?.email ?? session.customer_email ?? null;
         const profile = await upsertProfileByEmail(email, session.customer as string | undefined);
 
-        // Insert purchases per line item
+        // Record one purchase row per line item
         for (const li of lineItems.data) {
           const amount = (li.amount_total ?? session.amount_total ?? 0) / 100;
           const qty = li.quantity ?? 1;
@@ -72,16 +131,34 @@ export async function POST(req: Request) {
           const priceId = (li.price as any)?.id ?? (li.price as any)?.product ?? null;
           // Attempt to map product via stripe_price_id or stripe_product_id
           let productId = null;
+          let productName = null;
           if (priceId) {
-            const { data: prod } = await supabaseAdmin.from('products').select('id').or(`stripe_price_id.eq.${priceId},stripe_product_id.eq.${priceId}`).limit(1);
-            if (prod && prod[0]) productId = prod[0].id;
+            const { data: prod } = await supabaseAdmin.from('products').select('id,name').or(`stripe_price_id.eq.${priceId},stripe_product_id.eq.${priceId}`).limit(1);
+            if (prod && prod[0]) {
+              productId = prod[0].id;
+              productName = prod[0].name ?? null;
+            }
           }
 
-          // Check idempotency on purchases using stripe_checkout_session
-          const { data: existing } = await supabaseAdmin.from('purchases').select('*').eq('stripe_checkout_session', session.id).limit(1);
+          // Idempotency: the checkout session id is the key, so a replayed
+          // Stripe event never records the same purchase twice.
+          const { data: existing } = await supabaseAdmin
+            .from('inbound_imperium_events')
+            .select('id')
+            .eq('event_type', PURCHASE_EVENT_TYPE)
+            .filter('payload->>stripe_checkout_session', 'eq', session.id)
+            .limit(1);
           if (existing && existing.length) continue;
 
-          await supabaseAdmin.from('purchases').insert([{ profile_id: profile?.id ?? null, product_id: productId, stripe_checkout_session: session.id, amount: amount, currency: session.currency ?? 'usd', quantity: qty, status: 'succeeded', captured_at: new Date().toISOString(), created_at: new Date().toISOString() }]);
+          await recordPurchase({
+            sessionId: session.id,
+            productId,
+            productName,
+            amount,
+            currency: session.currency ?? 'usd',
+            quantity: qty,
+            email,
+          });
         }
 
         // If subscription mode, mark premium

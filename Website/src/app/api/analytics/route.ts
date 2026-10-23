@@ -2,6 +2,22 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getAdminClient } from "@/lib/server/imperium-capture";
+import { isAdminRequest } from "@/lib/server/admin-auth";
+
+/** Mirrors the CHECK constraint on `user_interactions.event_type`. */
+const ALLOWED_EVENT_TYPES = new Set([
+    'page_view',
+    'click',
+    'form_submit',
+    'newsletter_subscribe',
+    'newsletter_unsubscribe',
+    'product_view',
+    'product_purchase',
+    'affiliate_signup',
+    'newsletter_open',
+    'newsletter_read',
+]);
 
 export async function GET(request: Request) {
     try {
@@ -20,33 +36,40 @@ export async function GET(request: Request) {
 
         switch (metric) {
             case 'revenue':
+                // The live database has no `revenue` table; money movements
+                // live in `transactions` (amount, currency, type, paid_at).
                 query = supabase
-                    .from('revenue')
-                    .select('*')
-                    .order('date', { ascending: false });
+                    .from('transactions')
+                    .select('amount,currency,type,status,paid_at,created_at')
+                    .order('created_at', { ascending: false });
 
                 if (startDate && endDate) {
-                    query = query.gte('date', startDate).lte('date', endDate);
+                    query = query.gte('created_at', startDate).lte('created_at', endDate);
                 }
 
                 const { data: revenueData, error: revenueError } = await query;
 
                 if (revenueError) {
+                    console.error('Analytics revenue query failed:', revenueError.message);
                     return NextResponse.json({ error: "Failed to fetch revenue data" }, { status: 500 });
                 }
 
                 data = {
                     totalRevenue: revenueData.reduce((sum, item) => sum + parseFloat(item.amount), 0),
-                    revenueBySource: revenueData.reduce((acc, item) => {
-                        acc[item.source] = (acc[item.source] || 0) + parseFloat(item.amount);
+                    revenueBySource: revenueData.reduce<Record<string, number>>((acc, item) => {
+                        const source = item.type || 'unknown';
+                        acc[source] = (acc[source] || 0) + parseFloat(item.amount);
                         return acc;
                     }, {}),
-                    revenueByCurrency: revenueData.reduce((acc, item) => {
-                        acc[item.currency] = (acc[item.currency] || 0) + parseFloat(item.amount);
+                    revenueByCurrency: revenueData.reduce<Record<string, number>>((acc, item) => {
+                        const currency = item.currency || 'unknown';
+                        acc[currency] = (acc[currency] || 0) + parseFloat(item.amount);
                         return acc;
                     }, {}),
-                    dailyRevenue: revenueData.reduce((acc, item) => {
-                        const date = item.date.split('T')[0];
+                    dailyRevenue: revenueData.reduce<Record<string, number>>((acc, item) => {
+                        const stamp = item.paid_at || item.created_at;
+                        if (!stamp) return acc;
+                        const date = String(stamp).split('T')[0];
                         acc[date] = (acc[date] || 0) + parseFloat(item.amount);
                         return acc;
                     }, {})
@@ -154,29 +177,46 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        // Recording is an operator action: the row is written with the
+        // service-role client, so the route has to be gated the same way the
+        // newsletter send route is.
+        if (!(await isAdminRequest(request))) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { metric, value, metadata } = await request.json();
 
         if (!metric || !value) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        // `user_interactions.event_type` is constrained to a fixed list, so
+        // an arbitrary metric can never be written.
+        if (!ALLOWED_EVENT_TYPES.has(metric)) {
+            return NextResponse.json({ error: `Unsupported metric. Allowed: ${[...ALLOWED_EVENT_TYPES].join(', ')}` }, { status: 400 });
+        }
 
+        const supabase = getAdminClient();
+        if (!supabase) {
+            return NextResponse.json({ error: "Analytics backend not configured" }, { status: 503 });
+        }
+
+        // The live database has no `analytics` table; interaction events live
+        // in `user_interactions`.
         const { data, error } = await supabase
-            .from('analytics')
+            .from('user_interactions')
             .insert({
-                metric,
-                value,
-                metadata: metadata || {},
+                event_type: metric,
+                event_data: { value, metadata: metadata || {} },
+                page_url: metadata?.page_url ?? request.url,
+                session_id: metadata?.session_id ?? '',
                 timestamp: new Date().toISOString()
             })
             .select()
             .single();
 
         if (error) {
+            console.error('Analytics record failed:', error.message);
             return NextResponse.json({ error: "Failed to record analytics" }, { status: 500 });
         }
 
