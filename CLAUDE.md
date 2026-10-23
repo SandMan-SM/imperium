@@ -120,22 +120,29 @@ cd telegram-bot && source venv/bin/activate && python bot.py
 - **DON'T** touch `telegram-bot/venv/` or `node_modules/`.
 
 ## Deploy & env
-- Deploy: `vercel deploy --prod` from `web/`. Region pinned to `iad1`; `NODE_VERSION=24.x` (`web/vercel.json`). Node 20.x is discontinued on Vercel and fails the build.
+- Deploy: production builds `Website/` (Vercel `rootDirectory=Website`). Deploys land on a git push to `main`; `vercel deploy --prod` from the repo root also works. Region pinned to `iad1`; `NODE_VERSION=24.x` (`Website/vercel.json`). Node 20.x is discontinued on Vercel and fails the build.
 - Env var **NAMES** (values live in `.env`, never commit/echo them): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`.
 
 ## Stripe integration
 - **Stripe SDK helper** (`web/src/lib/stripe-helper.ts`): server-side singleton, API version pinned `2026-02-25.clover`, reads `STRIPE_SECRET_KEY`.
 - **Checkout** (`web/src/app/api/checkout/create-session/route.ts`): POST, mode `payment` (one-time, not subscription). Accepts `items` (name, price, quantity, image_url, size, color), `shipping`, `discount`, `email`. Builds dynamic line items (not pre-registered Stripe products). Success URL `/checkout?success=true`; Cancel URL `/cart`. Card payments only. Shipping 5–7 business days, fixed $0 cost, address collection enabled, supported countries US/CA/GB/AU. Coupon code `IMPERIUM20` applied when discount > 0.
-- **Webhooks** (`web/src/app/api/webhooks/stripe/route.ts`): validates signature with `STRIPE_WEBHOOK_SECRET`; idempotency via `events` table (`stripe_event_id`). Must handle: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed` (also `invoice.payment_succeeded`, `customer.subscription.updated`). On `checkout.session.completed`: upsert profile by email/customer, insert `purchases` per line item, map `stripe_price_id`/`stripe_product_id` → `product_id` via `products` table, set `is_premium=true` if `session.mode='subscription'`. `invoice.payment_succeeded` → `subscription_status='active'`, `is_premium=true`. `customer.subscription.deleted/updated` → `is_premium` from status (active/trialing=true). `invoice.payment_failed` → `subscription_status='past_due'`.
+- **Webhooks** (`web/src/app/api/webhooks/stripe/route.ts`): validates signature with `STRIPE_WEBHOOK_SECRET`; idempotency via `events` table (`stripe_event_id`). Must handle: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed` (also `invoice.payment_succeeded`, `customer.subscription.updated`). On `checkout.session.completed`: upsert profile by email/customer, record one purchase per line item into `inbound_imperium_events` (event_type `purchase_recorded` — **there is no `purchases` table in the live database**), map `stripe_price_id`/`stripe_product_id` → `product_id` via `products` table, set `is_premium=true` if `session.mode='subscription'`. `invoice.payment_succeeded` → `subscription_status='active'`, `is_premium=true`. `customer.subscription.deleted/updated` → `is_premium` from status (active/trialing=true). `invoice.payment_failed` → `subscription_status='past_due'`.
 - **Existing hardcoded payment link**: `https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07` (the $20/month Imperium Elite subscription) is baked into multiple components (e.g. `28principles/page.tsx`). **Grep before changing** so new links match existing conventions.
 - **New payment links**: create via the Stripe MCP under the Imperium account/profile (e.g. Tyrone's offerings). Simplest viable approach for one-off offerings = hardcoded Stripe payment-link URLs in the page; add Supabase `products` rows only if analytics/tracking are needed (webhook expects products pre-registered with `stripe_price_id`/`stripe_product_id`).
 
-## Supabase data model (reference)
+## Supabase data model (reference — verified against the live database, October 2026)
 - `profiles` — `is_premium`, `subscription_status`, `stripe_customer_id`, subscriber/email fields.
-- `products` — tracks `stripe_price_id`, `stripe_product_id` (≈6 rows seen).
-- `purchases` — `product_id`, `stripe_checkout_session`, amount, status.
+- `products` — `stripe_price_id`, `stripe_product_id`, `image_url`, `sku`. **There is no `slug`
+  column**, so product pages resolve from the hardcoded catalogue, not the database.
+- `inbound_imperium_events` — the tenant event log. Newsletter sends and purchase records live
+  here (`event_type` = `newsletter_sent` / `purchase_recorded`).
 - `events` — webhook idempotency via `stripe_event_id`.
-- `newsletters` — `id`, `title`, `content`, `image_url`, `published`, `is_public`, `created_at` (query filters `published=true`, orders by `created_at` desc, limit 20).
+- `newsletters` — `id`, `title`, `content`, `image_url`, `published`, `is_public`, `created_at`
+  (query filters `published=true`, orders by `created_at` desc, limit 20). **No `sent_at` column.**
+- **Tables that do NOT exist**: `revenue`, `analytics`, `purchases`. Use `transactions`
+  (amount/currency/type/paid_at) for money and `user_interactions` for interaction events.
+- `subscriptions`, `referrals`, `affiliates`, `transactions` and `user_interactions` are
+  currently empty — the site has no recorded commerce history.
 
 ## Gotchas
 - Tailwind config is NOT a JS/TS file — it's `@theme` in `globals.css`. Don't look for `tailwind.config.*`.
