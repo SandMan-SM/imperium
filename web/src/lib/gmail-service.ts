@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { google, gmail_v1 } from 'googleapis';
 import { supabase } from './supabase';
 
@@ -149,13 +148,11 @@ class GmailService {
                 throw new Error('Newsletter not found');
             }
 
-            // Get active subscribers. `newsletter_subscribers` does not exist
-            // in the live database — the subscriber list is `profiles` with
-            // the `newsletter_subscribed` flag the capture pipeline sets.
+            // Get active subscribers
             const { data: subscribers } = await supabase
-                .from('profiles')
+                .from('newsletter_subscribers')
                 .select('email')
-                .eq('newsletter_subscribed', true);
+                .eq('status', 'active');
 
             if (!subscribers || subscribers.length === 0) {
                 return { success: 0, failed: 0 };
@@ -247,13 +244,13 @@ class GmailService {
     async getSubscriptionStatus(email: string): Promise<'subscribed' | 'unsubscribed' | 'not_found'> {
         try {
             const { data } = await supabase
-                .from('profiles')
-                .select('newsletter_subscribed')
+                .from('newsletter_subscribers')
+                .select('status')
                 .eq('email', email.toLowerCase())
-                .maybeSingle();
+                .single();
 
             if (!data) return 'not_found';
-            return data.newsletter_subscribed ? 'subscribed' : 'unsubscribed';
+            return data.status === 'active' ? 'subscribed' : 'unsubscribed';
         } catch (error) {
             return 'not_found';
         }
@@ -262,9 +259,12 @@ class GmailService {
     async subscribeEmail(email: string): Promise<boolean> {
         try {
             const { error } = await supabase
-                .from('profiles')
-                .update({ newsletter_subscribed: true })
-                .eq('email', email.toLowerCase());
+                .from('newsletter_subscribers')
+                .upsert({
+                    email: email.toLowerCase(),
+                    status: 'active',
+                    subscribed_at: new Date().toISOString()
+                }, { onConflict: 'email' });
 
             return !error;
         } catch (error) {
@@ -276,8 +276,8 @@ class GmailService {
     async unsubscribeEmail(email: string): Promise<boolean> {
         try {
             const { error } = await supabase
-                .from('profiles')
-                .update({ newsletter_subscribed: false })
+                .from('newsletter_subscribers')
+                .update({ status: 'unsubscribed' })
                 .eq('email', email.toLowerCase());
 
             return !error;

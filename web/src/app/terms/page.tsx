@@ -2,20 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Terms of Service",
+    title: "Terms of Service — Imperium Elite",
     description: "Terms and conditions for using Imperium Elite services and subscriptions.",
-    alternates: { canonical: "https://secretimperium.com/terms" },
-    openGraph: {
-        title: "Terms of Service",
-        description: "Terms and conditions for using Imperium Elite services and subscriptions.",
-        type: "website",
-        url: "https://secretimperium.com/terms",
-    },
-    twitter: {
-        card: "summary",
-        title: "Terms of Service",
-        description: "Terms and conditions for using Imperium Elite services and subscriptions.",
-    },
 };
 
 export default function TermsOfServicePage() {

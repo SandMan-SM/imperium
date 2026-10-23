@@ -33,7 +33,7 @@ interface UserFeedback {
     sessionId?: string;
     type: 'error' | 'confusion' | 'suggestion' | 'praise';
     message: string;
-    context?: unknown;
+    context?: any;
     timestamp: number;
     isResolved: boolean;
     priority: 'low' | 'medium' | 'high' | 'critical';
@@ -224,7 +224,7 @@ class MonitoringSystem {
      */
     getDashboardData(): {
         health: SystemHealth | null;
-        performance: unknown;
+        performance: any;
         feedback: { total: number; unresolved: number; byType: Record<string, number> };
         alerts: string[];
     } {
@@ -265,7 +265,7 @@ class MonitoringSystem {
             window.addEventListener('load', () => {
                 const navigationEntries = window.performance.getEntriesByType('navigation');
                 if (navigationEntries.length > 0) {
-                    const navigation = navigationEntries[0] as PerformanceNavigationTiming;
+                    const navigation = navigationEntries[0] as any;
 
                     this.recordMetric({
                         name: 'page_load_time',
@@ -396,8 +396,8 @@ class MonitoringSystem {
 
     private getMemoryUsage(): number {
         // Simplified memory usage calculation
-        if (typeof performance !== 'undefined' && (performance as unknown as { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory) {
-            const memory = (performance as unknown as { memory: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+        if (typeof performance !== 'undefined' && (performance as any).memory) {
+            const memory = (performance as any).memory;
             return (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
         }
         return 0;
@@ -547,7 +547,7 @@ class MonitoringSystem {
         }
     }
 
-    private triggerAlert(message: string, details: unknown): void {
+    private triggerAlert(message: string, details: any): void {
         console.error(`🚨 MONITORING ALERT: ${message}`, details);
 
         // In a real implementation, you might:

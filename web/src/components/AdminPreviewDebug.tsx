@@ -29,7 +29,7 @@ export default function AdminPreviewDebug() {
       <div className="fixed right-4 bottom-4 z-60">
         <button
           onClick={() => { setVisible(true); try { sessionStorage.setItem('admin_preview_debug_visible', 'true'); } catch (e) {} }}
-          className="bg-[#071118] border border-white/[0.06] px-3 py-2 rounded-lg text-xs text-white/80 shadow-lg"
+          className="bg-imperium-deep border border-white/[0.06] px-3 py-2 rounded-lg text-xs text-white/80 shadow-lg"
         >
           Open Debug
         </button>
@@ -54,7 +54,7 @@ export default function AdminPreviewDebug() {
 
   return (
     <div className={`fixed right-4 bottom-4 z-60 ${collapsed ? "w-40" : "w-80 max-w-[90vw]"}`}>
-      <div className={`bg-[#071118] border border-white/[0.06] p-2 rounded-lg text-xs text-white/80 shadow-lg ${collapsed ? "p-2" : "p-4"}`}>
+      <div className={`bg-imperium-deep border border-white/[0.06] p-2 rounded-lg text-xs text-white/80 shadow-lg ${collapsed ? "p-2" : "p-4"}`}>
         <div className="flex items-center justify-between mb-2">
           <strong className="text-white text-sm">Admin Preview Debug</strong>
           <div className="flex items-center gap-2">

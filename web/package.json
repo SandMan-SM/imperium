@@ -12,7 +12,6 @@
     "node": "24.x"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.19.0",
     "@supabase/supabase-js": "^2.98.0",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
@@ -21,11 +20,10 @@
     "framer-motion": "^12.35.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^0.577.0",
-    "mjml": "^4.18.0",
-    "next": "16.1.6",
+    "next": "16.3.8",
     "pg": "^8.20.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "react-email": "^5.2.9",
     "recharts": "^3.8.0",
     "resend": "^6.9.3",
@@ -39,8 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "playwright": "^1.63.0",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.73.0"

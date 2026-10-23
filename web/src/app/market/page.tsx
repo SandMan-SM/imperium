@@ -9,26 +9,6 @@ export const metadata: Metadata = {
   title: "Hermes Market Intelligence",
   description: "Daily Hermes market scan for futures-linked public company watchlists.",
   alternates: { canonical: "https://secretimperium.com/market" },
-  openGraph: {
-    title: "Hermes Market Intelligence",
-    description: "Daily Hermes market scan for futures-linked public company watchlists.",
-    type: "website",
-    url: "https://secretimperium.com/market",
-    images: [
-      {
-        url: "https://secretimperium.com/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "Hermes Market Intelligence — Imperium Elite",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Hermes Market Intelligence",
-    description: "Daily Hermes market scan for futures-linked public company watchlists.",
-    images: ["https://secretimperium.com/opengraph-image"],
-  },
 };
 
 async function getSnapshot(): Promise<MarketSnapshot & { persisted: boolean }> {

@@ -1,447 +1,92 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ShoppingBag, User, Eye } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
-import { useCart } from "@/lib/cart-context";
-import { CartDrawer } from "@/components/CartDrawer";
+import { Menu, X } from "lucide-react";
+
+const navigation = [
+    { label: "The Archive", href: "/archive/" },
+    { label: "Newsletter", href: "/newsletter/" },
+    { label: "About", href: "/mission-statement/" },
+    { label: "Partners", href: "/partners/" },
+];
 
 export function Header() {
-    const pathname = usePathname();
+    const pathname = usePathname().replace(/\/$/, "") || "/";
     const [open, setOpen] = useState(false);
-    const [viewDropdownOpen, setViewDropdownOpen] = useState(false);
-    const { user, profile, rawProfile, previewView, setPreview, signOut, loading } = useAuth();
-    const { itemCount, setIsCartOpen } = useCart();
-
-    // show eyeball when the underlying raw profile is admin (so preview doesn't hide it)
-    const isAdmin = rawProfile?.is_admin || profile?.is_admin;
-
-    const [currentView, setCurrentView] = useState<string>('admin');
-    const [hasLocalPreview, setHasLocalPreview] = useState(false);
-
-    // derive active view from context or storage so highlighting is accurate
-    const activeView = (previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null) || 'admin');
+    const menuButton = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-        if (isAdmin) {
-            const view = previewView || localStorage.getItem('preview_view') || 'admin';
-            setCurrentView(view);
-
-            // Try to dynamically load a local-only helper script at /local/admin-preview.js.
-            // If the file exists in web/public/local/admin-preview.js it will expose
-            // window.__imperium_admin_preview which enables the Eye control.
-            try {
-                const script = document.createElement('script');
-                script.src = '/local/admin-preview.js';
-                script.async = true;
-                script.onload = () => {
-                    try {
-                        const helper = (window as any).__imperium_admin_preview;
-                        setHasLocalPreview(!!(helper && helper.shouldShowEye));
-                    } catch (e) {
-                        setHasLocalPreview(false);
-                    }
-                };
-                script.onerror = () => setHasLocalPreview(false);
-                document.head.appendChild(script);
-
-                // ensure currentView reflects previewView immediately when script loads
-                script.onload = () => {
-                    try {
-                        const helper = (window as any).__imperium_admin_preview;
-                        setHasLocalPreview(!!(helper && helper.shouldShowEye));
-                        const v = localStorage.getItem('preview_view') || previewView || 'admin';
-                        setCurrentView(v);
-                    } catch (e) {
-                        setHasLocalPreview(false);
-                    }
-                };
-
-                return () => {
-                    // cleanup appended script
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                };
-            } catch (e) {
-                setHasLocalPreview(false);
+        if (!open) return;
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setOpen(false);
+                menuButton.current?.focus();
             }
-        } else {
-            // ensure currentView falls back to admin for non-admin pages
-            setCurrentView('admin');
-        }
-    }, [isAdmin]);
+        };
+        window.addEventListener("keydown", closeOnEscape);
+        return () => window.removeEventListener("keydown", closeOnEscape);
+    }, [open]);
 
-    // Keep the local `currentView` in sync with the Auth context previewView
-    useEffect(() => {
-        try {
-            const v = previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null) || 'admin';
-            setCurrentView(v);
-        } catch (e) {
-            // ignore
-        }
-    }, [previewView]);
-
-    // keep for future conditional behavior; not used currently
-    const isAdminPage = pathname === "/admin";
-
-    const navLinks = [
-        { label: "28 Principles", href: "/28principles" },
-        { label: "Newsletter", href: "/newsletter" },
-        { label: "Arsenal", href: "/shop" },
-    ];
-
-    const handleSignOut = async () => {
-        await signOut();
-        window.location.href = "/";
-    };
+    const isCurrentPage = (href: string) => !href.includes("#") && pathname === href.replace(/\/$/, "");
 
     return (
-        <>
-            <CartDrawer />
-            <header className="fixed top-0 w-full z-50 border-b border-white/[0.08] bg-[#030712]/95 backdrop-blur-xl">
-                <div className="container mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
+        <header className="editorial-header sticky top-0 z-50 border-b border-[#d7d7cd] bg-[#f7f5ef]/95 text-[#252820] backdrop-blur-xl">
+            <div className="editorial-header-inner mx-auto flex h-[82px] max-w-[1360px] items-center justify-between gap-6 px-5 sm:px-8 lg:h-[88px] lg:px-12">
+                <Link href="/" onClick={() => setOpen(false)} className="shrink-0" aria-label="Imperium home">
+                    <span className="block font-serif text-[28px] font-semibold uppercase leading-none tracking-[0.035em] sm:text-[31px]">Imperium</span>
+                    <span className="mt-1.5 hidden text-[12px] leading-none text-[#62675b] lg:block">The resource library</span>
+                </Link>
 
-                    {/* Logo */}
-                    <Link href="/" className="text-lg font-bold tracking-[0.3em] text-[#d4af37] uppercase hover:text-[#e8c84a] transition-colors">
-                        Imperium
-                    </Link>
-
-                    {/* Desktop nav */}
-                    <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-                        {navLinks.map(l => (
-                            <Link
-                                key={l.href}
-                                href={l.href}
-                                className="text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white transition-colors duration-200"
-                            >
-                                {l.label}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Desktop CTA */}
-                    <div className="hidden md:flex items-center gap-4 lg:gap-6">
-                        {/* Admin View Switcher */}
-                        {isAdmin && (
-                            <div className="relative">
-                                <button
-                                    onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
-                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
-                                    aria-label="View options"
-                                    aria-expanded={viewDropdownOpen}
-                                >
-                                    <Eye className="w-5 h-5" />
-                                </button>
-                                {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
-                                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
-                                            <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
-                                            <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
-                                                setCurrentView('public');
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) {
-                                                    try { helper.setPreview('public'); } catch (e) { window.location.reload(); }
-                                                } else {
-                                                    // update context preview as well so pages that depend on checkPremiumStatus update
-                                                    if (setPreview) {
-                                                        try { await setPreview('public'); } catch (e) { /* ignore */ }
-                                                    }
-                                                    // no forced reload here; context will re-fetch profile and components will update
-                                                }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
-                                        >
-                                            <span className={activeView === 'public' ? 'text-imperium-gold' : ''}>Public</span>
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) { }
-                                                setCurrentView('subscriber');
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) {
-                                                    try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); }
-                                                } else {
-                                                    if (setPreview) {
-                                                        try { await setPreview('subscriber'); } catch (e) { /* ignore */ }
-                                                    }
-                                                }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
-                                        >
-                                            <span className={activeView === 'subscriber' ? 'text-imperium-gold' : ''}>Subscriber</span>
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) { }
-                                                setCurrentView('free');
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) {
-                                                    try { helper.setPreview('free'); } catch (e) { window.location.reload(); }
-                                                } else {
-                                                    if (setPreview) {
-                                                        try { await setPreview('free'); } catch (e) { /* ignore */ }
-                                                    }
-                                                }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
-                                        >
-                                            <span className={activeView === 'free' ? 'text-imperium-gold' : ''}>Free</span>
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) { }
-                                                setCurrentView('premium');
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) {
-                                                    try { helper.setPreview('premium'); } catch (e) { window.location.reload(); }
-                                                } else {
-                                                    if (setPreview) {
-                                                        try { await setPreview('premium'); } catch (e) { /* ignore */ }
-                                                    }
-                                                }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-white/60 hover:text-white hover:bg-white/[0.02]"
-                                        >
-                                            <span className={activeView === 'premium' ? 'text-imperium-gold' : ''}>Premium</span>
-                                        </button>
-                                        <div className="border-t border-white/[0.06] my-1" />
-                                        <button
-                                            onClick={() => {
-                                                try { localStorage.removeItem('preview_view'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.clearPreview) {
-                                                    try { helper.clearPreview(); } catch (e) { window.location.reload(); }
-                                                } else {
-                                                    window.location.reload();
-                                                }
-                                                setCurrentView('admin');
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase text-imperium-gold hover:bg-white/[0.02]"
-                                        >
-                                            <span className={activeView === 'admin' ? 'text-imperium-gold' : ''}>Admin</span>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Cart Button */}
-                        <button
-                            onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-white/40 hover:text-white transition-colors"
-                            aria-label="Cart"
+                <nav aria-label="Main navigation" className="hidden items-center gap-5 md:flex lg:gap-8">
+                    {navigation.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            aria-current={isCurrentPage(item.href) ? "page" : undefined}
+                            className={`flex min-h-11 items-center border-b text-[14px] transition-colors hover:border-[#737759] hover:text-[#525a3d] ${isCurrentPage(item.href) ? "border-[#737759] font-medium text-[#252820]" : "border-transparent text-[#565c50]"}`}
                         >
-                            <ShoppingBag className="w-5 h-5" />
-                            {itemCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-imperium-gold text-imperium-bg text-[9px] font-bold rounded-full flex items-center justify-center">
-                                    {itemCount}
-                                </span>
-                            )}
-                        </button>
+                            {item.label}
+                        </Link>
+                    ))}
+                </nav>
 
-                        {loading ? (
-                            <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
-                        ) : user ? (
-                            <div className="flex items-center gap-4 lg:gap-4">
-                                <Link
-                                    href="/portal"
-                                    className="flex items-center gap-2 px-4 py-2 border border-imperium-gold/30 text-imperium-gold text-[10px] font-semibold tracking-[0.15em] uppercase rounded-full hover:bg-imperium-gold/10 transition-all surface-card"
-                                >
-                                    <User className="w-4 h-4" />
-                                    Portal
-                                </Link>
-                            </div>
-                        ) : (
-                            <Link
-                                href="/login"
-                                className="px-5 py-2 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
-                            >
-                                Sign In
-                            </Link>
-                        )}
-                    </div>
+                <Link href="/archive/" className="hidden min-h-11 items-center justify-center rounded-md border border-[#252820] bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:border-[#454c37] hover:bg-[#454c37] md:inline-flex">
+                    Browse resources
+                </Link>
 
-                    {/* Mobile toggle & cart */}
-                    <div className="flex md:hidden items-center gap-2">
-                        {/* Mobile Eye (only when helper enabled for admins) */}
-                        {isAdmin && hasLocalPreview && (
-                            <div className="relative">
-                                <button
-                                    onClick={() => setViewDropdownOpen(!viewDropdownOpen)}
-                                    className="flex items-center justify-center p-2 text-white/40 hover:text-white transition-colors"
-                                    aria-label="View options"
-                                    aria-expanded={viewDropdownOpen}
-                                >
-                                    <Eye className="w-5 h-5" />
-                                </button>
-                                {viewDropdownOpen && (
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0e14] border border-white/[0.08] rounded-lg shadow-xl z-[9999] py-1">
-                                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
-                                            <span className="text-[10px] font-medium tracking-wider uppercase text-white/40">View Mode</span>
-                                            <button onClick={() => setViewDropdownOpen(false)} className="text-white/40 hover:text-white">
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'public'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) { try { helper.setPreview('public'); } catch (e) { window.location.reload(); } }
-                                                else { if (setPreview) { try { await setPreview('public'); } catch (e) { /* ignore */ } } }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'public' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
-                                        >
-                                            Public
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'subscriber'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) { try { helper.setPreview('subscriber'); } catch (e) { window.location.reload(); } }
-                                                else { if (setPreview) { try { await setPreview('subscriber'); } catch (e) { /* ignore */ } } }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'subscriber' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
-                                        >
-                                            Subscriber
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'free'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) { try { helper.setPreview('free'); } catch (e) { window.location.reload(); } }
-                                                else { if (setPreview) { try { await setPreview('free'); } catch (e) { /* ignore */ } } }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'free' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
-                                        >
-                                            Free
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.setItem('preview_view', 'premium'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.setPreview) { try { helper.setPreview('premium'); } catch (e) { window.location.reload(); } }
-                                                else { if (setPreview) { try { await setPreview('premium'); } catch (e) { /* ignore */ } } }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'premium' ? 'text-imperium-gold' : 'text-white/60'} hover:text-white hover:bg-white/[0.02]`}
-                                        >
-                                            Premium
-                                        </button>
-                                        <div className="border-t border-white/[0.06] my-1" />
-                                        <button
-                                            onClick={async () => {
-                                                try { localStorage.removeItem('preview_view'); } catch (e) { }
-                                                const helper = (window as any).__imperium_admin_preview;
-                                                if (helper && helper.clearPreview) { try { helper.clearPreview(); } catch (e) { window.location.reload(); } }
-                                                else { if (setPreview) { try { await setPreview(null); } catch (e) { /* ignore */ } } }
-                                                setViewDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2 text-[11px] font-medium tracking-wider uppercase ${activeView === 'admin' ? 'text-imperium-gold' : 'text-imperium-gold/60'} hover:bg-white/[0.02]`}
-                                        >
-                                            Admin
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                <button
+                    ref={menuButton}
+                    type="button"
+                    onClick={() => setOpen((value) => !value)}
+                    aria-expanded={open}
+                    aria-controls="mobile-navigation"
+                    aria-label={open ? "Close navigation" : "Open navigation"}
+                    className="flex h-11 w-11 items-center justify-center rounded-md border border-[#d7d7cd] text-[#252820] transition-colors hover:border-[#737759] hover:bg-[#eeede5] md:hidden"
+                >
+                    {open ? <X size={21} aria-hidden="true" /> : <Menu size={21} aria-hidden="true" />}
+                </button>
+            </div>
 
-                        <button
-                            onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-white/60 hover:text-white transition-colors"
-                            aria-label="Cart"
-                        >
-                            <ShoppingBag className="w-5 h-5" />
-                            {itemCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-imperium-gold text-imperium-bg text-[9px] font-bold rounded-full flex items-center justify-center">
-                                    {itemCount}
-                                </span>
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setOpen(true)}
-                            className="text-white/60 hover:text-white transition-colors p-1"
-                            aria-label="Open menu"
-                        >
-                            <Menu className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            {/* Mobile drawer */}
             {open && (
-                <div className="fixed inset-0 z-[100] md:hidden">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-0 h-full w-[75vw] max-w-[300px] bg-[#030712] border-l border-white/[0.08] flex flex-col p-6 sm:p-8">
-                        <div className="flex items-center justify-between mb-8 sm:mb-10">
-                            <span className="text-base font-bold tracking-[0.3em] text-[#d4af37] uppercase">Imperium</span>
-                            <button onClick={() => setOpen(false)} className="text-white/40 hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <nav className="flex flex-col gap-1">
-                            {navLinks.map(l => (
-                                <Link
-                                    key={l.href}
-                                    href={l.href}
-                                    onClick={() => setOpen(false)}
-                                    className="py-4 sm:py-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-white/40 hover:text-white border-b border-white/[0.06] transition-colors"
-                                >
-                                    {l.label}
-                                </Link>
-                            ))}
-                        </nav>
-
-                        <div className="mt-auto space-y-3">
-                            {user ? (
-                                <>
-                                    <Link
-                                        href="/portal"
-                                        onClick={() => setOpen(false)}
-                                        className="flex items-center justify-center gap-2 w-full py-4 border border-imperium-gold/30 text-imperium-gold text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-imperium-gold/10 transition-colors"
-                                    >
-                                        <User className="w-4 h-4" />
-                                        Portal
-                                    </Link>
-                                    <button
-                                        onClick={() => {
-                                            handleSignOut();
-                                            setOpen(false);
-                                        }}
-                                        className="block w-full text-center py-4 border border-white/10 text-white/40 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:border-white/20 hover:text-white transition-colors"
-                                    >
-                                        Sign Out
-                                    </button>
-                                </>
-                            ) : (
-                                <Link
-                                    href="/login"
-                                    onClick={() => setOpen(false)}
-                                    className="block w-full text-center py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-colors btn-primary"
-                                >
-                                    Sign In
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                <nav id="mobile-navigation" aria-label="Mobile navigation" className="max-h-[calc(100dvh-82px)] overflow-y-auto border-t border-[#d7d7cd] bg-[#f7f5ef] px-5 pb-6 pt-2 md:hidden">
+                    {navigation.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            aria-current={isCurrentPage(item.href) ? "page" : undefined}
+                            className={`flex min-h-12 items-center border-b border-[#e4e3da] py-3 text-[16px] transition-colors hover:text-[#525a3d] ${isCurrentPage(item.href) ? "font-medium text-[#252820]" : "text-[#565c50]"}`}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
+                    <Link href="/archive/" onClick={() => setOpen(false)} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:bg-[#454c37]">
+                        Browse resources
+                    </Link>
+                </nav>
             )}
-        </>
+        </header>
     );
 }

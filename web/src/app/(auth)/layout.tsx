@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: {
-        default: "Account",
-        template: "%s · Imperium Elite",
-    },
-    description:
-        "Sign in or create your Imperium account to access the 28 Principles and premium intelligence.",
+    title: "Sign In — Imperium",
+    description: "Sign in or create your Imperium account to access the 28 Principles and premium intelligence.",
     robots: { index: false, follow: false },
 };
 

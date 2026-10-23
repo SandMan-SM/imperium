@@ -1,0 +1,152 @@
+{
+  "slug": "imperium",
+  "name": "Imperium",
+  "domain": "secretimperium.com",
+  "entity": "#organization",
+  "font": "serif",
+  "palette": [
+    "#030712",
+    "#F4F0E7",
+    "#F0C85A",
+    "#0F131A"
+  ],
+  "image": "/banner.jpg",
+  "alt": "Existing Imperium abstract luminous emblem on a dark background; brand artwork.",
+  "position": "center",
+  "label": "Open resource library · Editorial publication",
+  "hubTitle": "A clear home for useful ideas.",
+  "hubIntro": "Imperium brings an open reading library, a newsletter destination, and a partner directory into one branded experience. These resources explain the website contribution and the possibilities for separately scoped operational support.",
+  "proof": [
+    {
+      "title": "An open reading library",
+      "body": "The Archive brings principles, original quotes, work ethic, strategy, and reflections together without an account gate.",
+      "href": "/archive/"
+    },
+    {
+      "title": "A distinct newsletter destination",
+      "body": "The newsletter has its own editorial introduction and partner features, with an honest empty state while no public letters are available.",
+      "href": "/newsletter/"
+    },
+    {
+      "title": "A visible partner network",
+      "body": "The partner directory introduces the featured businesses, creators, and organizations with links to their official websites.",
+      "href": "/partners/"
+    }
+  ],
+  "seo": "Imperium’s provider resources describe the public website without promising audience growth or commercial outcomes. Each resource has its own title, canonical and share image, with breadcrumbs and provider identities separate from the Imperium organization.",
+  "geo": "The useful discovery questions are concrete: where can a visitor read the principles, how is the newsletter distinct from The Archive, and which partners are featured? Original answers and links to public source pages help readers verify the explanation. They do not establish that an AI engine currently cites Imperium.",
+  "pages": [
+    {
+      "key": "lead-franchise",
+      "kind": "builder",
+      "title": "Lead Franchise: the website behind Imperium",
+      "share": "A clear home for an open library",
+      "intro": "Lead Franchise is credited as the website builder behind Imperium’s public resource library. The website gives The Archive, the newsletter, and the partner directory separate, recognizable destinations.",
+      "problemTitle": "Useful reading needs a clear place to begin.",
+      "problem": "A first-time visitor may want a practical idea, an introduction to the newsletter, or information about a partner. The design challenge is to make those choices clear within one identity and let visitors read without an account.",
+      "solutionTitle": "Let the structure do the explaining.",
+      "solution": "Imperium’s charcoal palette, warm stone surfaces, Greek architectural imagery, and bronze accents carry a consistent identity across the public routes. The navigation connects The Archive, newsletter, and partners. Lead Franchise’s credited work is the website experience; this account does not attribute audience totals or sales to that work.",
+      "workflow": [
+        {
+          "title": "Find a useful idea",
+          "body": "Browse principles, quotes, work ethic, strategy, and reflections in the open resource library.",
+          "href": "/archive/"
+        },
+        {
+          "title": "Understand the newsletter",
+          "body": "Give the newsletter its own destination and distinguish its public-letter collection from the resource library.",
+          "href": "/newsletter/"
+        },
+        {
+          "title": "Explore the partners",
+          "body": "Make partner identities and official website destinations easy to find.",
+          "href": "/partners/"
+        }
+      ],
+      "review": "Imperium’s website turns reading, editorial discovery, and partner exploration into distinct, navigable choices. Its visual identity stays coherent while the routes explain their purpose. This is a project review authored for the provider resource, not an independently attributed endorsement.",
+      "question": "Can this approach support another resource library?",
+      "answer": "Yes. Lead Franchise can structure a library around its actual source material and reader needs. Any new account, payment, or email workflow requires its own verified implementation and release checks.",
+      "path": "/resources/lead-franchise",
+      "description": "Lead Franchise is credited as the website builder behind Imperium’s public resource library, with separate destinations for The Archive, newsletter, and partner directory.",
+      "shareAlt": "Imperium — A clear home for a disciplined framework. Lead Franchise website project."
+    },
+    {
+      "key": "ais-empire",
+      "kind": "ai-partner",
+      "title": "AIS Empire AI Employees for resource libraries",
+      "share": "Operational support behind the platform",
+      "intro": "AIS Empire is the AI Employee partner available to support defined sales, reception, content, and website tasks around a resource library such as Imperium. The roles begin with approved source material and clear publication boundaries.",
+      "problemTitle": "Public reading and publishing authority are different responsibilities.",
+      "problem": "The Archive is open for reading. That public access does not grant permission to publish new content, change partner information, or send messages. Any operational assistant needs a defined source boundary and an accountable reviewer.",
+      "solutionTitle": "Scope the work before connecting the tools.",
+      "solution": "A content team could prepare principle-based editorial drafts for review. A receptionist could route general library questions. Sales and marketing could explain approved provider offers. Website and SEO/GEO roles could maintain discovery pages. Automated publishing or message sending would need its own approved integration and release checks.",
+      "workflow": [
+        {
+          "title": "Approved knowledge",
+          "body": "Base public replies and drafts on the actual principles, quotes, and editorial resources.",
+          "href": "/archive/"
+        },
+        {
+          "title": "Publication review",
+          "body": "Use the newsletter’s stated purpose as context without inventing editions or treating an empty public-letter collection as published content.",
+          "href": "/newsletter/"
+        },
+        {
+          "title": "Accurate partner information",
+          "body": "Use the named partner directory and its official links when describing the network.",
+          "href": "/partners/"
+        }
+      ],
+      "review": "The public routes provide a practical source boundary for an AI operating design. A role can be evaluated against whether it answers from the actual library, routes a question accurately, and respects publication controls. There is no claimed AIS performance result for Imperium on this page.",
+      "question": "Does the public library authorize automated publishing?",
+      "answer": "No. Reading public resources does not grant publishing or messaging authority. Any such workflow needs a separately approved integration with verified access and release checks.",
+      "path": "/resources/ais-empire",
+      "description": "AIS Empire is the AI Employee partner available for separately scoped content, reception, website, and operational work around a public resource library such as Imperium.",
+      "shareAlt": "Imperium — Operational support behind the platform. AIS Empire provider resource."
+    },
+    {
+      "key": "lead-franchise-ais-empire",
+      "kind": "partnership",
+      "title": "Lead Franchise × AIS Empire for resource libraries",
+      "share": "A framework. A website. A defined operating system.",
+      "intro": "The LF × AIS partnership joins website discovery to scoped operational support. Imperium’s public library illustrates why clear information architecture and publishing permissions should be considered together.",
+      "problemTitle": "The next action must fit the reader.",
+      "problem": "Reading a principle, exploring the newsletter, and visiting a partner are different intentions. A joint system should carry the right context into the appropriate destination without merging those intentions or enrolling someone in unrelated messages.",
+      "solutionTitle": "Keep the experience connected and the roles explicit.",
+      "solution": "Lead Franchise contributes website design, navigation, SEO/GEO structure and source attribution. AIS Empire contributes defined AI roles and operational controls. The partnership’s Agentic Websites offer is $50,000; the separate AI Employees offer is $100,000. These provider prices do not apply to reading Imperium’s free library.",
+      "workflow": [
+        {
+          "title": "Explain the library",
+          "body": "Build public reading pages around actual ideas and practical reader questions.",
+          "href": "/archive/"
+        },
+        {
+          "title": "Keep editorial context clear",
+          "body": "Separate the newsletter’s purpose and public-letter collection from the open resource library.",
+          "href": "/newsletter/"
+        },
+        {
+          "title": "Make the next destination explicit",
+          "body": "Identify each featured partner and link to its official website without implying a completed application or message.",
+          "href": "/partners/"
+        }
+      ],
+      "review": "Imperium’s route structure gives the partnership a specific design example: distinct reading and discovery intentions within one brand. Proposed operational work needs its own delivery evidence before it becomes a case-study result. This page makes no financial, audience-growth, or installed AI automation claim.",
+      "question": "Does this page confirm installed AI workflows?",
+      "answer": "No blanket capability is promised. Any operational action must be explicitly scoped, authorized, and verified against the actual workflow. The public library and partner directory do not establish that an automated workflow is installed.",
+      "path": "/resources/lead-franchise-ais-empire",
+      "description": "The LF × AIS partnership joins website discovery to separately scoped operational support, using Imperium’s open library and distinct editorial destinations as a design example.",
+      "shareAlt": "Imperium — A framework. A website. A defined operating system. AIS Empire provider resource."
+    }
+  ],
+  "hubPath": "/resources",
+  "hubDescription": "Imperium brings an open reading library, a newsletter destination, and a partner directory into one branded experience. These resources explain the website contribution and the possibilities for separately scoped operational support.",
+  "schemaType": "Organization",
+  "evidencePaths": [
+    "src/app/page.tsx",
+    "src/app/archive/page.tsx",
+    "src/lib/archive.ts",
+    "src/app/newsletter/page.tsx",
+    "src/app/partners/page.tsx"
+  ]
+}

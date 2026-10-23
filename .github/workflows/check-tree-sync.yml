@@ -1,0 +1,16 @@
+name: Imperium — Tree Sync Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tree-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Website/ and web/ are in sync
+        run: scripts/sync-trees.sh --check

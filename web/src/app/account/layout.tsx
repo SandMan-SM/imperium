@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Account",
+    title: "Account — Imperium",
     description: "Manage your Imperium account, orders, and subscription.",
     robots: { index: false, follow: false },
 };

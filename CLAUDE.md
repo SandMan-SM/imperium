@@ -8,27 +8,36 @@ Imperium is a premium e-commerce + content platform delivering "28 Principles" e
 - "Connected to omni ai" — site functionality is expected to be wired into the user's umbrella AI ops layer (backed by Supabase project `odvxtychuxxsudfpcqqs`).
 
 ## Stack
-- **Framework**: Next.js 16 (App Router, currently 16.1.6), React 19 (19.2.3), TypeScript, Node 24.x
+- **Framework**: Next.js 16 (App Router, currently 16.3.8), React 19 (19.2.8), TypeScript, Node 24.x
 - **Styling**: Tailwind CSS 4 (config is CSS-first in `web/src/app/globals.css` via `@theme` tokens — there is **NO** `tailwind.config.ts/js`), Framer Motion (v12.x)
 - **Backend**: Supabase (auth + Postgres + storage); `pg` for direct DB access
 - **Payments**: Stripe (subscriptions + webhooks); Stripe payment links created via the Stripe MCP under the Imperium account
 - **Email**: Resend + react-email + mjml
 - **Bot**: Python Telegram bot in `telegram-bot/` (28 Principles delivery)
 - **Other deps**: Google Cloud Storage / googleapis, recharts, tiptap, lucide-react, clsx
-- **Deploy**: Vercel (`web/`), Docker (`telegram-bot/`)
+- **Deploy**: Vercel (project `imperium`, rootDirectory `Website`, git-push to `main`), Docker (`telegram-bot/`)
 
 ## Directory Layout
 ```
-web/          → Next.js app — MAIN FOCUS (all web work happens here)
+Website/      → Next.js app — THE PRODUCTION ROOT (Vercel rootDirectory=Website)
+web/          → byte-identical MIRROR of Website/ (kept because tooling points here)
 telegram-bot/ → Python Telegram bot (28 Principles delivery)
 automations/  → n8n workflows
 supabase/     → DB migrations (do NOT run)
+scripts/      → repo tooling (tree sync, mobile overflow audit)
 docs/         → docs
 ```
 
+### Tree sync (read before editing)
+Production builds **`Website/`**, not `web/`. The two trees used to drift and the
+non-shipping tree silently swallowed fixes. `web/` is now an exact mirror:
+- Edit in **either** tree, then run `scripts/sync-trees.sh` (mirrors `Website/` -> `web/`).
+- `scripts/sync-trees.sh --check` fails if they drift; CI enforces it on every push/PR.
+- `AGENT_MEMORY.md` lives in both trees and is kept byte-identical by the sync.
+
 ### Key web paths
-- `web/src/app/` — routes: `(auth)`, `28principles`, `account` (incl. `account/profile`), `admin`, `cart`, `checkout`, `newsletter`, `portal`, `shop`, `privacy`, `terms`, plus `tyronengouamo` + `tyronengouamo/referral`.
-- `web/src/app/api/` — `admin`, `affiliates`, `analytics`, `checkout`, `leads`, `newsletter`, `orders`, `referrals`, `subscriptions`, `sync-products`, `webhooks` (Stripe).
+- `web/src/app/` — routes: `(auth)`, `28principles`, `account` (incl. `account/profile`), `admin`, `archive`, `partners`, `resources`, `assessments`, `archetype`, `personality`, `iq`, `eq`, `market`, `mission-statement`, `newsletter` (incl. `newsletter/archive`, `newsletter/unsubscribe`), `shop`, `privacy`, `terms`. The public storefront routes (`/28principles`, `/shop`, `/account`, `/cart`, `/checkout`, `/login`, `/signup`, `/portal`, `/subscribe`) currently **redirect to `/archive/`** — the Archive rebrand is live; the backing routes and APIs are retained.
+- `web/src/app/api/` — `admin`, `affiliates`, `analytics`, `assessments`, `checkout`, `leads`, `market`, `newsletter` (incl. `newsletter/cron`), `orders`, `referrals`, `subscribe`, `subscriptions`, `sync-products`, `track` (same-origin analytics proxy), `webhooks` (Stripe).
 - `web/src/lib/curriculum.ts` — the 28 Principles content as a typed `Phase[]` export (5 phases, 28 units, ~80 sub-points). Phase I free; Phases II–V gated by Supabase subscription via `useAuth` context.
 - `web/src/lib/stripe-helper.ts` — singleton Stripe instance factory (`getStripe()`), server-side only, reads `STRIPE_SECRET_KEY` (throws if missing), API version pinned to `2026-02-25.clover`.
 - `web/src/lib/cart-context.tsx` — cart context provider.
@@ -44,14 +53,21 @@ docs/         → docs
 
 ## Commands
 ```bash
-# Web (do everything from web/)
+# Web (either tree works; Website/ is what production ships)
 cd web
 npm run dev
 npm run build      # MUST be green before deploy — fix all TS + lint errors
 npm run lint
 
-# Deploy (production) — run from web/
-vercel deploy --prod
+# Keep web/ identical to the production root Website/
+scripts/sync-trees.sh           # mirror Website/ -> web/
+scripts/sync-trees.sh --check   # fail if they drifted
+
+# Deploy (production) — deploys happen from git push to main (rootDirectory=Website)
+# or explicitly: cd Website && vercel deploy --prod
+
+# Mobile overflow audit (needs playwright)
+node scripts/check_overflow.mjs https://secretimperium.com 375
 
 # Telegram bot
 cd telegram-bot && source venv/bin/activate && python bot.py
@@ -59,14 +75,14 @@ cd telegram-bot && source venv/bin/activate && python bot.py
 
 ## Agent Priorities (in order)
 1. **Fix build** — `cd web && npm run build`, fix all TypeScript + lint errors.
-2. **Complete admin dashboard** — `web/src/app/admin/` — ensure all CRUD operations work: user management, product management, newsletter sending, analytics.
-3. **Stripe webhooks** — verify `web/src/app/api/webhooks/stripe/` handles: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed` (see also `invoice.payment_succeeded`, `customer.subscription.updated`).
-4. **Subscription gating** — ensure `/28principles` (Phases II–V) and other gated pages check subscription status from Supabase before rendering content.
-5. **Newsletter system** — verify newsletter sign-up form saves to Supabase and triggers Resend email.
-6. **Shop page** — ensure `/shop` loads products from Supabase correctly, add-to-cart works, checkout flows to Stripe.
-7. **SEO** — add metadata to all pages, especially `/28principles`, `/shop`.
-8. **Mobile polish** — full responsive pass at 375px / 768px / 1440px.
-9. **Error boundaries** — wrap all async components in Suspense + `error.tsx`.
+2. **Keep the trees identical** — after every edit run `scripts/sync-trees.sh`; production ships `Website/`.
+3. **Complete admin dashboard** — `web/src/app/admin/` — ensure all CRUD operations work: user management, product management, newsletter sending, analytics.
+4. **Stripe webhooks** — verify `web/src/app/api/webhooks/stripe/` handles: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed` (see also `invoice.payment_succeeded`, `customer.subscription.updated`).
+5. **Newsletter system** — verify newsletter sign-up form saves to Supabase and triggers Resend email; sends require an admin session or the service-role key, cron requires `CRON_SECRET`.
+6. **Archive surface** — `/archive`, `/archive/[slug]`, `/partners`, `/resources`, `/mission-statement` are the live public pages; keep metadata, sitemap and OG images correct for them.
+7. **SEO** — add metadata to all indexable pages; keep `sitemap.ts`, `robots.ts`, `llms.txt` in step with live routes.
+8. **Mobile polish** — full responsive pass at 375px / 768px / 1440px (`node scripts/check_overflow.mjs <url> 375`).
+9. **Error boundaries** — wrap all async components in Suspense + `error.tsx` / `loading.tsx`.
 
 ## Design System
 - **Tailwind config is NOT a JS/TS file** — it's `@theme` in `web/src/app/globals.css`. Don't look for `tailwind.config.*`.
