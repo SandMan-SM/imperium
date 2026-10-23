@@ -13,7 +13,7 @@ export interface UserInteraction {
     session_id: string;
     page_url: string;
     event_type: 'page_view' | 'click' | 'form_submit' | 'newsletter_subscribe' | 'newsletter_unsubscribe' | 'product_view' | 'product_purchase' | 'affiliate_signup' | 'newsletter_open' | 'newsletter_read';
-    event_data: Record<string, any>;
+    event_data: Record<string, unknown>;
     timestamp: string;
     ip_address?: string;
     user_agent?: string;
@@ -192,7 +192,7 @@ class AnalyticsService {
     /**
      * Track form submissions
      */
-    async trackFormSubmit(formType: string, formData: Record<string, any>, user_id?: string): Promise<void> {
+    async trackFormSubmit(formType: string, formData: Record<string, unknown>, user_id?: string): Promise<void> {
         await this.trackInteraction({
             user_id,
             session_id: this.getSessionId(),
@@ -347,7 +347,7 @@ class AnalyticsService {
         document.addEventListener('submit', (event) => {
             const form = event.target as HTMLFormElement;
             const formData = new FormData(form);
-            const formObject: Record<string, any> = {};
+            const formObject: Record<string, unknown> = {};
 
             formData.forEach((value, key) => {
                 formObject[key] = value;
@@ -359,7 +359,7 @@ class AnalyticsService {
         // Track newsletter subscriptions
         const newsletterForms = document.querySelectorAll('form[action*="newsletter"]');
         newsletterForms.forEach(form => {
-            form.addEventListener('submit', (event) => {
+            form.addEventListener('submit', () => {
                 const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
                 if (emailInput) {
                     this.trackNewsletterSubscribe(emailInput.value, form.id || 'unknown_form', user_id);
@@ -370,7 +370,7 @@ class AnalyticsService {
         // Track affiliate signups
         const affiliateForms = document.querySelectorAll('form[action*="affiliate"]');
         affiliateForms.forEach(form => {
-            form.addEventListener('submit', (event) => {
+            form.addEventListener('submit', () => {
                 const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
                 const codeInput = form.querySelector('input[name="affiliate_code"]') as HTMLInputElement;
                 if (emailInput && codeInput) {

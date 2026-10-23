@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import type { Stripe } from "stripe";
 import { getStripe } from "@/lib/stripe-helper";
 
 // Use the runtime-friendly admin client from lib/supabase which supports multiple env var names
@@ -9,39 +9,95 @@ import { supabaseAdmin as _supabaseAdmin } from '@/lib/supabase';
 
 const supabaseAdmin = _supabaseAdmin;
 
+/**
+ * Shape of the product payloads accepted by this endpoint. Only columns that
+ * actually exist on the `products` table are modelled here.
+ */
+interface IncomingProduct {
+    id: string;
+    name: string;
+    description?: string | null;
+    price: number | string;
+    image_url?: string | null;
+    stripe_product_id?: string | null;
+    stripe_price_id?: string | null;
+    stripe_url?: string | null;
+    payment_link_url?: string | null;
+    payment_link_id?: string | null;
+}
+
+/** Per-product outcome returned to the client. */
+interface SyncResult {
+    id: string;
+    name: string;
+    success: boolean;
+    skipped?: boolean;
+    error?: StripeErrorDetail | string;
+    stripe_url?: string | null;
+    payment_link_url?: string | null;
+    payment_link_id?: string;
+    stripe_product_id?: string;
+    stripe_price_id?: string;
+    image_sent_to_stripe?: string | null;
+    stripe_product_images?: string[] | null;
+}
+
+/** Error detail echoed back to the client for debugging. */
+interface StripeErrorDetail {
+    message: string;
+    type?: unknown;
+    code?: unknown;
+    statusCode?: unknown;
+    raw?: unknown;
+}
+
+/** Narrows an unknown thrown value to a plain object so its fields can be read. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+/** Reads a `message` property off an unknown error value, mirroring `error?.message`. */
+function errorMessage(error: unknown): string | undefined {
+    const message = asRecord(error)?.message;
+    return typeof message === "string" ? message : undefined;
+}
+
 export async function POST(req: NextRequest) {
     try {
-        const { products } = await req.json();
+        const { products } = (await req.json()) as { products?: unknown };
 
         if (!products || !Array.isArray(products)) {
             return NextResponse.json({ error: "Invalid products array" }, { status: 400 });
         }
 
-        const results = [];
+        const productList = products as IncomingProduct[];
+        const results: SyncResult[] = [];
 
-        for (const product of products) {
+        for (const product of productList) {
             try {
                 // Skip products that already have a payment link (only skip when payment_link_url exists)
                 if (product.payment_link_url) {
                     results.push({ id: product.id, name: product.name, success: true, skipped: true });
                     continue;
                 }
-                let stripeProductId = product.stripe_product_id;
-                let stripePriceId = product.stripe_price_id;
+                let stripeProductId: string | undefined = product.stripe_product_id ?? undefined;
+                let stripePriceId: string | undefined = product.stripe_price_id ?? undefined;
 
                 // If product has a payment link URL already but missing Stripe ids, try to resolve them
                 if (!stripeProductId && product.stripe_url) {
                     try {
                         // list payment links and find matching url (fall back to scanning recent links)
                         const list = await getStripe().paymentLinks.list({ limit: 100 });
-                        const match = list.data.find((pl: any) => pl.url === product.stripe_url || pl.url === product.payment_link_url);
+                        const match = list.data.find((pl) => pl.url === product.stripe_url || pl.url === product.payment_link_url);
                         if (match) {
                             // retrieve full payment link to access line items
                             const full = await getStripe().paymentLinks.retrieve(match.id, { expand: ['line_items'] });
-                            const li = (full as any).line_items?.data?.[0];
+                            const li = full.line_items?.data?.[0];
                             if (li) {
-                                stripePriceId = (li.price as any)?.id ?? (li.price as any)?.id;
-                                stripeProductId = (li.price as any)?.product ?? (li.price as any)?.product;
+                                const price = li.price;
+                                stripePriceId = price?.id ?? undefined;
+                                const priceProduct = price?.product;
+                                stripeProductId = typeof priceProduct === 'string' ? priceProduct : undefined;
                             }
                         }
                     } catch (err) {
@@ -101,7 +157,7 @@ export async function POST(req: NextRequest) {
                     try {
                         if (images && images.length > 0) {
                             const existing = await getStripe().products.retrieve(String(stripeProductId));
-                            const existingImages = Array.isArray((existing as any).images) ? (existing as any).images : [];
+                            const existingImages = Array.isArray(existing.images) ? existing.images : [];
                             if (existingImages.length === 0) {
                                 await getStripe().products.update(String(stripeProductId), { images });
                             }
@@ -163,7 +219,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
                 // Retrieve the Stripe product to return images for immediate verification
-                let stripeProductRecord: any = null;
+                let stripeProductRecord: Stripe.Product | null = null;
                 try {
                     stripeProductRecord = await getStripe().products.retrieve(String(stripeProductId));
                 } catch (err) {
@@ -183,16 +239,17 @@ export async function POST(req: NextRequest) {
                     stripe_product_images: stripeProductRecord?.images ?? null,
                     success: true,
                 });
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error(`Error creating payment link for ${product.name}:`, error);
                 // Build a verbose error object to return to the client for debugging
-                const errInfo: any = {
-                    message: error?.message ?? String(error),
+                const details = asRecord(error);
+                const errInfo: StripeErrorDetail = {
+                    message: errorMessage(error) ?? String(error),
                 };
-                if (error?.type) errInfo.type = error.type;
-                if (error?.code) errInfo.code = error.code;
-                if (error?.statusCode) errInfo.statusCode = error.statusCode;
-                if (error?.raw) errInfo.raw = error.raw;
+                if (details?.type) errInfo.type = details.type;
+                if (details?.code) errInfo.code = details.code;
+                if (details?.statusCode) errInfo.statusCode = details.statusCode;
+                if (details?.raw) errInfo.raw = details.raw;
 
                 results.push({
                     id: product.id,
@@ -204,9 +261,9 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ results });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Stripe sync error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
     }
 }
 
@@ -222,7 +279,7 @@ export async function GET() {
         }
 
         return NextResponse.json({ products });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
     }
 }

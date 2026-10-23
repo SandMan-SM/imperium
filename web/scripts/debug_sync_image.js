@@ -1,11 +1,13 @@
 // Quick debugging script to test Stripe image upload for a product
 // Run from project root: cd web && node scripts/debug_sync_image.js
 
-const path = require('path');
+import path from 'node:path';
+import dotenv from 'dotenv';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
 // Prefer loading web/.env.local explicitly so local secrets are available when running from repo root
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+dotenv.config({ path: path.join(import.meta.dirname, '..', '.env.local') });
 
 async function main() {
   const stripeKey = process.env.STRIPE_SECRET_KEY;

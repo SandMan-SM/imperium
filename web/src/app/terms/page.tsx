@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "Terms of Service — Imperium Elite",
@@ -23,7 +22,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">1. Acceptance of Terms</h2>
                         <p className="text-white/60 leading-relaxed">
-                            By accessing and using Imperium Strategic Intelligence ("we", "our", "us"), you accept and agree to be bound by the terms and provision of this agreement. In addition, when using our services, you shall be subject to any posted guidelines or rules applicable to such services. Any participation in this site will constitute acceptance of this agreement. If you do not agree to abide by the above, please do not use this site.
+                            By accessing and using Imperium Strategic Intelligence (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;), you accept and agree to be bound by the terms and provision of this agreement. In addition, when using our services, you shall be subject to any posted guidelines or rules applicable to such services. Any participation in this site will constitute acceptance of this agreement. If you do not agree to abide by the above, please do not use this site.
                         </p>
                     </section>
 
@@ -41,7 +40,7 @@ export default function TermsOfServicePage() {
                         </p>
                         <ul className="text-white/60 space-y-2 pl-6">
                             <li>• Use the service in any way that violates any applicable federal, state, local, or international law or regulation</li>
-                            <li>• Engage in any conduct that restricts or inhibits anyone's use or enjoyment of the service</li>
+                            <li>• Engage in any conduct that restricts or inhibits anyone&#39;s use or enjoyment of the service</li>
                             <li>• Use the service for any commercial purpose without our prior written consent</li>
                             <li>• Attempt to gain unauthorized access to the service or its related systems or networks</li>
                         </ul>
@@ -50,7 +49,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">4. Intellectual Property</h2>
                         <p className="text-white/60 leading-relaxed">
-                            All content, trademarks, data, information, graphics, icons, text, photographs, images, audio clips, video clips, data compilations, page layout, the selection and arrangement thereof, and all software compilations, underlying source code, software (including applets and scripts), and other material on this site (collectively "Content") are protected by copyright and other intellectual property rights. All Content is our property or the property of third-party licensors and is protected by U.S. and international copyright laws.
+                            All content, trademarks, data, information, graphics, icons, text, photographs, images, audio clips, video clips, data compilations, page layout, the selection and arrangement thereof, and all software compilations, underlying source code, software (including applets and scripts), and other material on this site (collectively &quot;Content&quot;) are protected by copyright and other intellectual property rights. All Content is our property or the property of third-party licensors and is protected by U.S. and international copyright laws.
                         </p>
                     </section>
 
@@ -67,7 +66,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">6. Disclaimer of Warranties</h2>
                         <p className="text-white/60 leading-relaxed">
-                            Your use of our services is at your sole risk. The service is provided on an "as is" and "as available" basis. We expressly disclaim all warranties of any kind, whether express or implied, including, but not limited to the implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+                            Your use of our services is at your sole risk. The service is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We expressly disclaim all warranties of any kind, whether express or implied, including, but not limited to the implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
                         </p>
                     </section>
 
@@ -81,7 +80,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">8. Indemnification</h2>
                         <p className="text-white/60 leading-relaxed">
-                            You agree to indemnify and hold harmless Imperium and its parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, interns and employees, from any claim or demand, including reasonable attorneys' fees, made by any third party due to or arising out of your breach of these Terms of Service or your violation of any law or the rights of a third party.
+                            You agree to indemnify and hold harmless Imperium and its parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, interns and employees, from any claim or demand, including reasonable attorneys&#39; fees, made by any third party due to or arising out of your breach of these Terms of Service or your violation of any law or the rights of a third party.
                         </p>
                     </section>
 
@@ -95,7 +94,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">10. Changes to Terms</h2>
                         <p className="text-white/60 leading-relaxed">
-                            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+                            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material we will try to provide at least 30 days&#39; notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
                         </p>
                     </section>
 

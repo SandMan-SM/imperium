@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-  ChevronLeft, User, Mail, Lock, Phone, Bell, CreditCard,
+import {
+  ChevronLeft, User, Mail, Lock, Phone, Bell,
   Check, AlertCircle, Loader2
 } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -45,15 +46,15 @@ export default function ProfilePage() {
       }
       
       setUser(user);
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         email: user.email || "",
         firstName: user.user_metadata?.first_name || "",
         lastName: user.user_metadata?.last_name || "",
-      });
+      }));
       setLoading(false);
     }
-    
+
     checkAuth();
   }, [router]);
 
@@ -71,7 +72,7 @@ export default function ProfilePage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to update profile");
     } finally {
       setSaving(false);
@@ -99,7 +100,7 @@ export default function ProfilePage() {
       setFormData({ ...formData, currentPassword: "", newPassword: "", confirmPassword: "" });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
+    } catch {
       setError("Failed to change password");
     } finally {
       setSaving(false);

@@ -9,7 +9,7 @@ export default function AdminPreviewDebug() {
   const [collapsed, setCollapsed] = useState(false);
   const [visible, setVisible] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
-    try { return sessionStorage.getItem('admin_preview_debug_visible') !== 'false'; } catch (e) { return true; }
+    try { return sessionStorage.getItem('admin_preview_debug_visible') !== 'false'; } catch { return true; }
   });
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function AdminPreviewDebug() {
     return (
       <div className="fixed right-4 bottom-4 z-60">
         <button
-          onClick={() => { setVisible(true); try { sessionStorage.setItem('admin_preview_debug_visible', 'true'); } catch (e) {} }}
+          onClick={() => { setVisible(true); try { sessionStorage.setItem('admin_preview_debug_visible', 'true'); } catch {} }}
           className="bg-imperium-deep border border-white/[0.06] px-3 py-2 rounded-lg text-xs text-white/80 shadow-lg"
         >
           Open Debug
@@ -66,7 +66,7 @@ export default function AdminPreviewDebug() {
               {collapsed ? "Expand" : "Collapse"}
             </button>
             <button
-              onClick={() => { setVisible(false); try { sessionStorage.setItem('admin_preview_debug_visible', 'false'); } catch (e) {} }}
+              onClick={() => { setVisible(false); try { sessionStorage.setItem('admin_preview_debug_visible', 'false'); } catch {} }}
               aria-label="Close debug panel"
               className="text-white/40 hover:text-white"
             >

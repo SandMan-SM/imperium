@@ -20,6 +20,10 @@ export function SafeImage({
     ...rest
 }: ImgHTMLAttributes<HTMLImageElement> & { fallback?: string }) {
     return (
+        // A plain <img> is required here: the fallback swap happens at runtime
+        // and the source URLs come from the database (not a configured remote
+        // domain), so next/image cannot be used.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
             src={src}
             alt={alt}

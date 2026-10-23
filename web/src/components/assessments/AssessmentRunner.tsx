@@ -31,16 +31,22 @@ export function AssessmentRunner({ meta }: { meta: AssessmentMeta }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Restore a previously completed result. The read is deferred to a
+  // macrotask so the state update is not applied synchronously in the effect
+  // body (which would trigger a cascading render).
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(resultKey);
-      if (raw) {
-        setResult(JSON.parse(raw));
-        setPhase("result");
+    const timer = setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(resultKey);
+        if (raw) {
+          setResult(JSON.parse(raw));
+          setPhase("result");
+        }
+      } catch {
+        /* ignore */
       }
-    } catch {
-      /* ignore */
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [resultKey]);
 
   const handleComplete = useCallback((a: number[]) => {

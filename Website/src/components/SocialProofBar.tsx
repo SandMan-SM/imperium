@@ -2,9 +2,16 @@
 
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { Users, DollarSign, TrendingUp, Clock } from "lucide-react";
+import { Users, DollarSign, TrendingUp, Clock, type LucideIcon } from "lucide-react";
 
-const METRICS = [
+type Metric = {
+    value: number;
+    label: string;
+    icon: LucideIcon;
+    suffix: string;
+};
+
+const METRICS: Metric[] = [
     { value: 200, label: "ROI", icon: DollarSign, suffix: "%" },
     { value: 2800, label: "Subscribers", icon: Users, suffix: "+" },
     { value: 99, label: "Efficiency", icon: TrendingUp, suffix: "%" },
@@ -34,7 +41,7 @@ export function SocialProofStats() {
     );
 }
 
-function MetricCard({ metric, delay }: { metric: any; delay: number }) {
+function MetricCard({ metric, delay }: { metric: Metric; delay: number }) {
     const containerRef = useRef(null);
     const isInView = useInView(containerRef, { once: true, margin: "-50px" });
     const [count, setCount] = useState(0);
@@ -138,38 +145,45 @@ function StaticClockIcon({ className = "" }: { className?: string }) {
     );
 }
 
+type TimeLeft = {
+    hours: number;
+    minutes: number;
+    seconds: number;
+};
+
 export function UrgencyBanner() {
-    const [timeLeft, setTimeLeft] = useState({
-        hours: 0,
-        minutes: 0,
-        seconds: 0
-    });
-    const [isClient, setIsClient] = useState(false);
+    // `null` until the countdown is seeded on the client, which also keeps the
+    // server and client markup identical (no hydration mismatch).
+    const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
     const [isScrolling, setIsScrolling] = useState(false);
 
     const getTimeUntilNext11AM = () => {
         const now = new Date();
         const target = new Date(now);
         target.setHours(11, 0, 0, 0);
-        
+
         if (now >= target) {
             target.setDate(target.getDate() + 1);
         }
-        
+
         const diff = target.getTime() - now.getTime();
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
+
         return { hours, minutes, seconds };
     };
 
     useEffect(() => {
-        setIsClient(true);
-        setTimeLeft(getTimeUntilNext11AM());
+        // Seed the countdown from a macrotask so the state update is not
+        // applied synchronously in the effect body.
+        const seed = setTimeout(() => {
+            setTimeLeft(getTimeUntilNext11AM());
+        }, 0);
 
         const timer = setInterval(() => {
             setTimeLeft(prev => {
+                if (!prev) return getTimeUntilNext11AM();
                 if (prev.seconds > 0) {
                     return { ...prev, seconds: prev.seconds - 1 };
                 } else if (prev.minutes > 0) {
@@ -196,6 +210,7 @@ export function UrgencyBanner() {
         window.addEventListener('scroll', handleScroll);
 
         return () => {
+            clearTimeout(seed);
             clearInterval(timer);
             window.removeEventListener('scroll', handleScroll);
             clearTimeout(scrollTimeout);
@@ -207,7 +222,7 @@ export function UrgencyBanner() {
     };
 
     // Don't render until client-side to avoid hydration mismatch
-    if (!isClient) {
+    if (!timeLeft) {
         return null;
     }
 

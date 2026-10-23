@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 
 import { createClient } from "@supabase/supabase-js";
-import { getStripe } from "@/lib/stripe-helper";
 
 export async function POST(request: Request) {
     try {

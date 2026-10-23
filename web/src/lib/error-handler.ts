@@ -9,12 +9,24 @@ interface ErrorContext {
     timestamp: number;
     error: Error;
     stack?: string;
-    context?: any;
+    context?: unknown;
     userId?: string;
     sessionId?: string;
     retryCount?: number;
     isRecoverable: boolean;
     source: string;
+}
+
+/**
+ * Aggregated view of a set of errors, produced by `getErrorReport`.
+ */
+interface ErrorSummary {
+    totalErrors: number;
+    timeRange: { start: string; end: string } | null;
+    errorTypes: Map<string, number>;
+    sources: Map<string, number>;
+    recoverableErrors: number;
+    criticalErrors: number;
 }
 
 interface RecoveryAction {
@@ -89,7 +101,7 @@ class ErrorHandler {
 
         // Check for alert conditions
         if (this.config.enableMonitoring) {
-            this.checkAlertConditions(errorContext);
+            this.checkAlertConditions();
         }
 
         // Attempt recovery if enabled and error is recoverable
@@ -183,7 +195,7 @@ class ErrorHandler {
      */
     getErrorReport(timeRange?: { start: number; end: number }): {
         errors: ErrorContext[];
-        summary: any;
+        summary: ErrorSummary;
         recommendations: string[];
     } {
         const errors = timeRange
@@ -224,7 +236,7 @@ class ErrorHandler {
         });
     }
 
-    private checkAlertConditions(errorContext: ErrorContext): void {
+    private checkAlertConditions(): void {
         const now = Date.now();
         const oneHourAgo = now - (60 * 60 * 1000);
         const recentErrors = this.errorHistory.filter(e => e.timestamp > oneHourAgo);
@@ -296,9 +308,9 @@ class ErrorHandler {
         }
     }
 
-    private sanitizeContext(context: any): any {
+    private sanitizeContext(context: unknown): Record<string, unknown> {
         // Remove sensitive information from context before logging
-        const sanitized = { ...context };
+        const sanitized: Record<string, unknown> = { ...(context as Record<string, unknown>) };
 
         // Remove common sensitive fields
         delete sanitized.password;
@@ -315,7 +327,7 @@ class ErrorHandler {
         return 0.85; // 85% success rate
     }
 
-    private triggerAlert(message: string, details: any): void {
+    private triggerAlert(message: string, details: unknown): void {
         console.error(`🚨 SYSTEM ALERT: ${message}`, details);
 
         // In a real implementation, you might:
@@ -347,8 +359,8 @@ class ErrorHandler {
         }
     }
 
-    private generateErrorSummary(errors: ErrorContext[]): any {
-        const summary = {
+    private generateErrorSummary(errors: ErrorContext[]): ErrorSummary {
+        const summary: ErrorSummary = {
             totalErrors: errors.length,
             timeRange: errors.length > 0
                 ? {
@@ -418,7 +430,7 @@ export const commonRecoveryActions = {
     databaseConnection: [
         {
             name: 'retryConnection',
-            action: async (context: ErrorContext) => {
+            action: async () => {
                 // Implement database reconnection logic
                 console.log('Attempting database reconnection...');
                 // await database.reconnect();
@@ -435,7 +447,7 @@ export const commonRecoveryActions = {
     networkError: [
         {
             name: 'retryRequest',
-            action: async (context: ErrorContext) => {
+            action: async () => {
                 // Implement request retry logic
                 console.log('Retrying failed network request...');
                 // await retryFailedRequest(context);
@@ -448,7 +460,7 @@ export const commonRecoveryActions = {
         },
         {
             name: 'fallbackToCache',
-            action: async (context: ErrorContext) => {
+            action: async () => {
                 // Implement cache fallback logic
                 console.log('Falling back to cached data...');
                 // await useCachedData(context);
@@ -465,7 +477,7 @@ export const commonRecoveryActions = {
     authenticationError: [
         {
             name: 'refreshToken',
-            action: async (context: ErrorContext) => {
+            action: async () => {
                 // Implement token refresh logic
                 console.log('Refreshing authentication token...');
                 // await refreshAuthToken();

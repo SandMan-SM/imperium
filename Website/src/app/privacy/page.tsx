@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "Privacy Policy — Imperium Elite",
@@ -175,7 +174,7 @@ export default function PrivacyPolicyPage() {
                     </section>
 
                     <section>
-                        <h2 className="text-xl font-light text-white mb-4">9. Children's Privacy</h2>
+                        <h2 className="text-xl font-light text-white mb-4">9. Children&#39;s Privacy</h2>
                         <p className="text-white/60 leading-relaxed">
                             Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children.
                         </p>
@@ -198,7 +197,7 @@ export default function PrivacyPolicyPage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">12. Changes to This Privacy Policy</h2>
                         <p className="text-white/60 leading-relaxed">
-                            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+                            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last updated&quot; date.
                         </p>
                     </section>
 

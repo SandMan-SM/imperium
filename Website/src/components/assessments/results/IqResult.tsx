@@ -10,7 +10,7 @@ export function IqResult({ data, disclaimer }: { data: IR; disclaimer?: string }
   return (
     <div className="flex flex-col gap-8">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
-        <p className="section-kicker justify-center mb-4">You're Sharpest In</p>
+        <p className="section-kicker justify-center mb-4">You&apos;re Sharpest In</p>
         <h1 className="font-serif text-3xl sm:text-5xl text-gradient-gold mb-3 capitalize">{data.strongestStyle}</h1>
         <p className="text-body text-white/60 max-w-lg mx-auto leading-relaxed">
           Intelligence isn&apos;t one number — it&apos;s a profile. Here&apos;s the shape of how your mind reasons.

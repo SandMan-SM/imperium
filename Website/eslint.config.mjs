@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Cloudflare Workers bundle, not source.
+    "public/_worker.js",
   ]),
 ]);
 

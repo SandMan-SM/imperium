@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { supabase } from "@/lib/supabase";
 import { User, Session } from "@supabase/supabase-js";
 
 interface Profile {
@@ -41,65 +41,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [rawProfile, setRawProfile] = useState<Profile | null>(null);
-  const [previewView, setPreviewView] = useState<string | null>(null);
-
-  // initialize previewView from localStorage on mount so context reflects current state
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const v = localStorage.getItem('preview_view');
-        if (v) setPreviewView(v);
-      } catch (e) {
-        // ignore
-      }
+  // The preview view is persisted in localStorage. It is read during the initial
+  // client render (server renders null) so no post-mount state update is needed;
+  // only the admin-only preview UI consumes this value.
+  const [previewView, setPreviewView] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem('preview_view') || null;
+    } catch {
+      return null;
     }
-  }, []);
-
-  // Listen for storage events so changes to preview_view in another tab or via the helper
-  // update the context and re-fetch the profile across the app without requiring a full reload.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const onStorage = async (e: StorageEvent) => {
-      if (e.key === 'preview_view') {
-        try {
-          const v = e.newValue;
-          setPreviewView(v);
-          if (user) {
-            const p = await fetchProfile(user.id);
-            setProfile(p);
-          }
-        } catch (err) {
-          console.warn('failed to handle preview_view storage event', err);
-        }
-      }
-    };
-
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, [user]);
-
-  // When previewView changes in this context, re-fetch the profile so the app reflects the
-  // new preview without relying on a full page reload.
-  useEffect(() => {
-    if (!user) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const p = await fetchProfile(user.id);
-        if (mounted) setProfile(p);
-      } catch (e) {
-        /* ignore */
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [previewView, user]);
+  });
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -113,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // keep an unmodified copy of the raw profile for admin-only features
-      try { setRawProfile(data as Profile); } catch (e) {}
+      try { setRawProfile(data as Profile); } catch {}
 
       // Check for preview view (admin testing feature)
       const pv = previewView || (typeof window !== 'undefined' ? localStorage.getItem('preview_view') : null);
@@ -147,16 +103,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             break;
           // 'admin' or null = real profile data
         }
-        
+
         return previewProfile as Profile;
       }
-      
+
       return data as Profile;
     } catch (error) {
       console.error("Error fetching profile:", error);
       return null;
     }
-  };
+  }, [previewView]);
+
+  // Stable handle to the latest fetchProfile implementation. Long-lived effects
+  // (the session bootstrap below) read through this ref so they keep running
+  // exactly once while still calling the current implementation.
+  const fetchProfileRef = useRef(fetchProfile);
+  useEffect(() => {
+    fetchProfileRef.current = fetchProfile;
+  }, [fetchProfile]);
+
+  // Listen for storage events so changes to preview_view in another tab or via the helper
+  // update the context and re-fetch the profile across the app without requiring a full reload.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onStorage = async (e: StorageEvent) => {
+      if (e.key === 'preview_view') {
+        try {
+          const v = e.newValue;
+          setPreviewView(v);
+          if (user) {
+            const p = await fetchProfile(user.id);
+            setProfile(p);
+          }
+        } catch (err) {
+          console.warn('failed to handle preview_view storage event', err);
+        }
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user, fetchProfile]);
+
+  // When previewView changes in this context, re-fetch the profile so the app reflects the
+  // new preview without relying on a full page reload.
+  useEffect(() => {
+    if (!user) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const p = await fetchProfile(user.id);
+        if (mounted) setProfile(p);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [previewView, user, fetchProfile]);
 
   // Set preview view programmatically (updates localStorage + refreshes profile)
   const setPreview = async (view: string | null) => {
@@ -189,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchProfile(session.user.id)
+        fetchProfileRef.current(session.user.id)
           .then((profileData) => setProfile(profileData))
           .catch((err) => {
             console.error("Error fetching profile on init:", err);
@@ -212,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchProfile(session.user.id)
+        fetchProfileRef.current(session.user.id)
           .then((profileData) => setProfile(profileData))
           .catch((err) => {
             console.error("Error fetching profile on auth change:", err);
@@ -332,7 +338,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isPremium: data.is_premium === true || data.subscription_status === "active",
         profile: data as Profile,
       };
-    } catch (error) {
+    } catch {
       return { isPremium: false, profile: null };
     }
   };

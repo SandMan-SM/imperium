@@ -105,12 +105,12 @@ function TestimonialCard({ t }: { t: Testimonial }) {
             <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-[#fff2a6]/50 to-transparent" />
 
             {/* Quote mark */}
-            <div className="absolute top-4 right-5 text-gradient-gold opacity-20 text-6xl font-serif leading-none select-none">"</div>
+            <div className="absolute top-4 right-5 text-gradient-gold opacity-20 text-6xl font-serif leading-none select-none">&quot;</div>
 
             <StarRating count={t.rating} />
 
             <p className="text-sm text-gray-300 font-light leading-relaxed mb-6 line-clamp-4 group-hover:text-white transition-colors duration-300">
-                "{t.quote}"
+                &quot;{t.quote}&quot;
             </p>
 
             <div className="flex items-center gap-4 mt-auto pt-4 border-t border-white/[0.06]">
@@ -178,7 +178,7 @@ export function Testimonials() {
                         Proof of <span className="text-gradient-gold font-bold">Concept</span>
                     </h2>
                     <p className="text-gray-400 font-light max-w-lg mx-auto text-sm sm:text-base px-4 sm:px-0">
-                        Results don't lie. These are the people who made the decision.
+                        Results don&apos;t lie. These are the people who made the decision.
                     </p>
                 </motion.div>
             </div>

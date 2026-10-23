@@ -4,12 +4,6 @@ import { motion } from "framer-motion";
 import { Bar } from "./Bar";
 import type { PersonalityResult as PR } from "@/lib/assessments/types";
 
-const AXIS_LABEL: Record<string, [string, string]> = {
-  EI: ["Extraversion", "Introversion"],
-  SN: ["Sensing", "Intuition"],
-  TF: ["Thinking", "Feeling"],
-  JP: ["Judging", "Perceiving"],
-};
 const LETTER_LABEL: Record<string, string> = {
   E: "Extraversion", I: "Introversion", S: "Sensing", N: "Intuition",
   T: "Thinking", F: "Feeling", J: "Judging", P: "Perceiving",

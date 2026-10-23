@@ -10,10 +10,10 @@ interface OperationRecord {
     type: 'file_read' | 'file_write' | 'api_call' | 'database_query' | 'state_update';
     timestamp: number;
     path?: string;
-    data?: any;
+    data?: unknown;
     success: boolean;
     error?: string;
-    contextSnapshot: any;
+    contextSnapshot: ContextSnapshot;
 }
 
 interface FileState {
@@ -31,10 +31,21 @@ interface ValidationResult {
     timestamp: number;
 }
 
+/**
+ * Point-in-time snapshot of the tracked context (file states, recent
+ * operations and the validation cache) captured with every operation.
+ */
+interface ContextSnapshot {
+    timestamp: number;
+    fileStates: Record<string, FileState>;
+    recentOperations: OperationRecord[];
+    validationCache: Record<string, ValidationResult>;
+}
+
 class ContextManager {
     private operations: OperationRecord[] = [];
     private fileStates: Map<string, FileState> = new Map();
-    private stateSnapshots: Map<string, any> = new Map();
+    private stateSnapshots: Map<string, unknown> = new Map();
     private maxOperations = 1000; // Limit memory usage
     private validationCache: Map<string, ValidationResult> = new Map();
 
@@ -44,7 +55,7 @@ class ContextManager {
     recordOperation(
         type: OperationRecord['type'],
         path?: string,
-        data?: any,
+        data?: unknown,
         success: boolean = true,
         error?: string
     ): string {
@@ -84,7 +95,7 @@ class ContextManager {
     /**
      * Update file state tracking
      */
-    private updateFileState(path: string, isWrite: boolean, data?: any) {
+    private updateFileState(path: string, isWrite: boolean, data?: unknown) {
         const existing = this.fileStates.get(path);
         const now = Date.now();
 
@@ -109,7 +120,7 @@ class ContextManager {
     /**
      * Capture current context state
      */
-    private captureContextSnapshot(): any {
+    private captureContextSnapshot(): ContextSnapshot {
         return {
             timestamp: Date.now(),
             fileStates: Object.fromEntries(this.fileStates),
@@ -180,7 +191,7 @@ class ContextManager {
             this.validationCache.set(cacheKey, result);
             return result;
 
-        } catch (error) {
+        } catch {
             const result = {
                 isValid: false,
                 confidence: 0.1,
@@ -223,7 +234,7 @@ class ContextManager {
     /**
      * Create content hash for comparison
      */
-    private hashContent(content: any): string {
+    private hashContent(content: unknown): string {
         if (!content) return '';
 
         const str = typeof content === 'string' ? content : JSON.stringify(content);

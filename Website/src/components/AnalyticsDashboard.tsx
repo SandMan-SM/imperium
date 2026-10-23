@@ -16,13 +16,68 @@ import {
     Smartphone
 } from 'lucide-react';
 
+/**
+ * Row shapes as selected by the admin analytics page. Each table exposes a
+ * different timestamp column, so they are modelled separately and unified
+ * through `TimedRow`.
+ */
+interface RetentionMetrics {
+    total_users?: number | null;
+    premium_subscribers?: number | null;
+    active_30d_users?: number | null;
+    avg_purchases_per_user?: number | null;
+    total_network_revenue?: number | null;
+}
+
+interface TimedRow {
+    created_at?: string | null;
+    timestamp?: string | null;
+    opened_at?: string | null;
+}
+
+interface NewsletterStat extends TimedRow {
+    id: string;
+    title?: string | null;
+    is_public?: boolean | null;
+    published?: boolean | null;
+}
+
+interface ProductStat extends TimedRow {
+    id: string;
+    name?: string | null;
+    views_count?: number | null;
+    purchase_count?: number | null;
+    revenue_generated?: number | null;
+    price?: number | null;
+}
+
+interface AffiliateStat extends TimedRow {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    total_earnings?: number | null;
+    total_commissions?: number | null;
+    status?: string | null;
+}
+
+interface UserInteraction extends TimedRow {
+    id?: string | null;
+    event_type?: string | null;
+}
+
+interface NewsletterEngagement extends TimedRow {
+    id?: string | null;
+    newsletter_id?: string | null;
+    read_duration_seconds?: number | null;
+}
+
 interface AnalyticsDashboardProps {
-    retentionMetrics: any;
-    newsletterStats: any[];
-    productStats: any[];
-    affiliateStats: any[];
-    userInteractions: any[];
-    newsletterEngagement: any[];
+    retentionMetrics: RetentionMetrics | null;
+    newsletterStats: NewsletterStat[];
+    productStats: ProductStat[];
+    affiliateStats: AffiliateStat[];
+    userInteractions: UserInteraction[];
+    newsletterEngagement: NewsletterEngagement[];
 }
 
 const RANGE_MS: Record<string, number> = {
@@ -37,7 +92,7 @@ const RANGE_MS: Record<string, number> = {
  * `newsletters` / `products` / `affiliates` use created_at,
  * `user_interactions` uses timestamp, `newsletter_engagement` uses opened_at.
  */
-function rowTimestamp(row: any): number | null {
+function rowTimestamp(row: TimedRow | null | undefined): number | null {
     const raw = row?.created_at ?? row?.timestamp ?? row?.opened_at ?? null;
     if (!raw) return null;
     const parsed = new Date(raw).getTime();
@@ -54,6 +109,9 @@ export function AnalyticsDashboard({
 }: AnalyticsDashboardProps) {
     const [timeRange, setTimeRange] = useState('7d');
     const [selectedMetric, setSelectedMetric] = useState('all');
+    // `Date.now()` is impure, so the reference "now" is captured once on mount
+    // instead of being recomputed on every render.
+    const [now] = useState(() => Date.now());
 
     // Calculate derived metrics
     const totalRevenue = productStats.reduce((sum, product) => sum + (product.revenue_generated || 0), 0);
@@ -65,11 +123,11 @@ export function AnalyticsDashboard({
         if (!window) {
             return { newsletters: newsletterStats, products: productStats, affiliates: affiliateStats, interactions: userInteractions, engagement: newsletterEngagement };
         }
-        const cutoff = Date.now() - window;
-        const within = (row: any) => {
+        const cutoff = now - window;
+        function within<T extends TimedRow>(row: T): boolean {
             const at = rowTimestamp(row);
             return at === null ? false : at >= cutoff;
-        };
+        }
         return {
             newsletters: newsletterStats.filter(within),
             products: productStats.filter(within),
@@ -77,17 +135,17 @@ export function AnalyticsDashboard({
             interactions: userInteractions.filter(within),
             engagement: newsletterEngagement.filter(within),
         };
-    }, [timeRange, newsletterStats, productStats, affiliateStats, userInteractions, newsletterEngagement]);
+    }, [now, timeRange, newsletterStats, productStats, affiliateStats, userInteractions, newsletterEngagement]);
 
     // `newsletter_engagement` has no `opens` column — a row with an
     // `opened_at` timestamp IS an open.
-    const totalNewsletterOpens = filtered.engagement.filter((row: any) => row.opened_at).length;
+    const totalNewsletterOpens = filtered.engagement.filter((row) => row.opened_at).length;
     const avgReadTime = filtered.engagement.length
-        ? filtered.engagement.reduce((sum, row: any) => sum + (row.read_duration_seconds || 0), 0) / filtered.engagement.length
+        ? filtered.engagement.reduce((sum, row) => sum + (row.read_duration_seconds || 0), 0) / filtered.engagement.length
         : 0;
 
     // `user_interactions` has no `count` column — one row is one event.
-    const interactionCounts = filtered.interactions.reduce((acc: Record<string, number>, interaction: any) => {
+    const interactionCounts = filtered.interactions.reduce((acc: Record<string, number>, interaction) => {
         const key = interaction.event_type || 'unknown';
         acc[key] = (acc[key] || 0) + 1;
         return acc;
@@ -242,7 +300,7 @@ export function AnalyticsDashboard({
                     <div className={card}>
                         <h3 className="text-lg font-light text-white mb-4">Top Products</h3>
                         <div className="space-y-4">
-                            {filtered.products.slice(0, 5).map((product: any) => (
+                            {filtered.products.slice(0, 5).map((product) => (
                                 <div key={product.id} className="flex justify-between items-center p-4 border border-white/[0.07] rounded">
                                     <div>
                                         <p className="font-medium text-white">{product.name}</p>
@@ -269,8 +327,8 @@ export function AnalyticsDashboard({
                     <div className={card}>
                         <h3 className="text-lg font-light text-white mb-4">Newsletter Performance</h3>
                         <div className="space-y-3">
-                            {filtered.newsletters.slice(0, 5).map((newsletter: any) => {
-                                const engagement = filtered.engagement.filter((e: any) => e.newsletter_id === newsletter.id);
+                            {filtered.newsletters.slice(0, 5).map((newsletter) => {
+                                const engagement = filtered.engagement.filter((e) => e.newsletter_id === newsletter.id);
                                 return (
                                     <div key={newsletter.id} className="flex justify-between items-center p-4 border border-white/[0.07] rounded">
                                         <div>
@@ -284,7 +342,7 @@ export function AnalyticsDashboard({
                                             <p className="text-sm text-white/40">
                                                 Avg: {Math.round(
                                                     engagement.length
-                                                        ? engagement.reduce((sum: number, e: any) => sum + (e.read_duration_seconds || 0), 0) / engagement.length
+                                                        ? engagement.reduce((sum: number, e) => sum + (e.read_duration_seconds || 0), 0) / engagement.length
                                                         : 0
                                                 )}s
                                             </p>
@@ -304,7 +362,7 @@ export function AnalyticsDashboard({
                     <div className={card}>
                         <h3 className="text-lg font-light text-white mb-4">Affiliate Performance</h3>
                         <div className="space-y-3">
-                            {filtered.affiliates.slice(0, 5).map((affiliate: any) => (
+                            {filtered.affiliates.slice(0, 5).map((affiliate) => (
                                 <div key={affiliate.id} className="flex justify-between items-center p-4 border border-white/[0.07] rounded">
                                     <div>
                                         <p className="font-medium text-white">{affiliate.name}</p>

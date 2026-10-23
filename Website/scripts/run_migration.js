@@ -1,12 +1,14 @@
 // Run migration from web context so dependencies resolve from web/node_modules
 // Usage: node web/scripts/run_migration.js
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env.local') });
-const { Client } = require('pg');
+import fs from 'node:fs';
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { Client } from 'pg';
+
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../.env.local') });
 
 async function run() {
-  const sqlPath = path.resolve(__dirname, '../../../supabase/migrations/001_create_tracking_tables.sql');
+  const sqlPath = path.resolve(import.meta.dirname, '../../../supabase/migrations/001_create_tracking_tables.sql');
   if (!fs.existsSync(sqlPath)) {
     console.error('Migration file not found:', sqlPath);
     process.exit(1);
@@ -27,7 +29,7 @@ async function run() {
     console.log('Migration applied successfully');
   } catch (err) {
     console.error('Migration error:', err.message || err);
-    try { await client.query('ROLLBACK'); } catch (e) {}
+    try { await client.query('ROLLBACK'); } catch {}
     process.exit(1);
   } finally {
     await client.end();

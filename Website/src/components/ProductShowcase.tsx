@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ShoppingBag, Plus, Check } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";

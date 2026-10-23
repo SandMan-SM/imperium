@@ -1,8 +1,10 @@
 // Run this from the web directory: node apply_migration_direct.js
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(process.cwd(), '.env.local') });
-const { Client } = require('pg');
+import fs from 'node:fs';
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { Client } from 'pg';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 async function main() {
   const migrationPath = path.resolve(process.cwd(), '../supabase/migrations/001_create_tracking_tables.sql');
@@ -27,7 +29,7 @@ async function main() {
     console.log('Migration applied successfully');
   } catch (err) {
     console.error('Migration failed:', err.message || err);
-    try { await client.query('ROLLBACK'); } catch (e) {}
+    try { await client.query('ROLLBACK'); } catch {}
     process.exit(1);
   } finally {
     await client.end();

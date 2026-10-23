@@ -25,22 +25,56 @@ interface SchemaField {
     min?: number;
     max?: number;
     pattern?: RegExp;
-    enum?: any[];
+    enum?: unknown[];
     items?: SchemaField; // For arrays
     properties?: Record<string, SchemaField>; // For objects
-    validator?: (value: any) => boolean | string;
+    validator?: (value: unknown) => boolean | string;
 }
 
 interface CrossFieldRule {
     fields: string[];
-    validator: (data: any) => boolean | string;
+    validator: (data: unknown) => boolean | string;
     message: string;
+}
+
+/**
+ * Read a `length`-like property from an arbitrary value.
+ * Mirrors the loose `value.length` access the validator historically performed:
+ * strings and arrays report their real length, plain objects only report one
+ * when they expose a numeric `length` property, everything else has no length.
+ */
+function getLength(value: unknown): number | undefined {
+    if (typeof value === 'string' || Array.isArray(value)) {
+        return value.length;
+    }
+    if (typeof value === 'object' && value !== null) {
+        const length = (value as { length?: unknown }).length;
+        if (typeof length === 'number') {
+            return length;
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Coerce an arbitrary value to a number using the same semantics the loose
+ * comparison operators relied on, so numeric range checks behave identically.
+ */
+function toComparableNumber(value: unknown): number {
+    return typeof value === 'number' ? value : Number(value);
+}
+
+/**
+ * Coerce an arbitrary value to its string form for pattern/URL checks.
+ */
+function toComparableString(value: unknown): string {
+    return typeof value === 'string' ? value : String(value);
 }
 
 class DataValidator {
     private schemas: Map<string, SchemaField[]> = new Map();
     private crossFieldRules: Map<string, CrossFieldRule[]> = new Map();
-    private validationCache: Map<string, ValidationResult<any>> = new Map();
+    private validationCache: Map<string, ValidationResult<unknown>> = new Map();
     private maxCacheSize = 1000;
 
     /**
@@ -61,7 +95,7 @@ class DataValidator {
      * Validate data against a registered schema
      */
     validate<T>(
-        data: any,
+        data: unknown,
         schemaName: string,
         options?: {
             source?: string;
@@ -76,6 +110,7 @@ class DataValidator {
             const cached = this.validationCache.get(cacheKey)!;
             return {
                 ...cached,
+                data: cached.data as T | null,
                 timestamp: Date.now() // Update timestamp
             };
         }
@@ -137,7 +172,7 @@ class DataValidator {
 
         const result: ValidationResult<T> = {
             isValid: errors.length === 0 && confidence > 0.5,
-            data: errors.length === 0 ? data : null,
+            data: errors.length === 0 ? (data as T) : null,
             errors,
             warnings,
             confidence,
@@ -157,7 +192,7 @@ class DataValidator {
      * Validate a single field against its schema
      */
     private validateField(
-        value: any,
+        value: unknown,
         field: SchemaField,
         path: string = field.name
     ): { isValid: boolean; errors: string[]; warnings: string[]; confidence: number } {
@@ -185,11 +220,12 @@ class DataValidator {
 
         // Length validation for strings and arrays
         if (field.type === 'string' || field.type === 'array') {
-            if (field.minLength !== undefined && value.length < field.minLength) {
+            const length = getLength(value);
+            if (length !== undefined && field.minLength !== undefined && length < field.minLength) {
                 errors.push(`${path} must be at least ${field.minLength} characters long`);
                 confidence -= 0.1;
             }
-            if (field.maxLength !== undefined && value.length > field.maxLength) {
+            if (length !== undefined && field.maxLength !== undefined && length > field.maxLength) {
                 errors.push(`${path} must be at most ${field.maxLength} characters long`);
                 confidence -= 0.1;
             }
@@ -197,11 +233,12 @@ class DataValidator {
 
         // Range validation for numbers
         if (field.type === 'number') {
-            if (field.min !== undefined && value < field.min) {
+            const numericValue = toComparableNumber(value);
+            if (field.min !== undefined && numericValue < field.min) {
                 errors.push(`${path} must be at least ${field.min}`);
                 confidence -= 0.1;
             }
-            if (field.max !== undefined && value > field.max) {
+            if (field.max !== undefined && numericValue > field.max) {
                 errors.push(`${path} must be at most ${field.max}`);
                 confidence -= 0.1;
             }
@@ -209,7 +246,7 @@ class DataValidator {
 
         // Pattern validation for strings
         if (field.type === 'string' && field.pattern) {
-            if (!field.pattern.test(value)) {
+            if (!field.pattern.test(toComparableString(value))) {
                 errors.push(`${path} does not match required pattern`);
                 confidence -= 0.1;
             }
@@ -238,8 +275,9 @@ class DataValidator {
         }
 
         if (field.type === 'array' && field.items) {
-            for (let i = 0; i < value.length; i++) {
-                const itemResult = this.validateField(value[i], field.items, `${path}[${i}]`);
+            const items = value as ArrayLike<unknown>;
+            for (let i = 0; i < items.length; i++) {
+                const itemResult = this.validateField(items[i], field.items, `${path}[${i}]`);
                 if (!itemResult.isValid) {
                     errors.push(...itemResult.errors);
                     warnings.push(...itemResult.warnings);
@@ -260,15 +298,17 @@ class DataValidator {
      * Validate all fields in a schema
      */
     private validateFields(
-        data: any,
+        data: unknown,
         schema: SchemaField[],
         errors: string[],
         warnings: string[]
     ): { confidence: number } {
         let confidence = 1.0;
 
+        const record = data as Record<string, unknown>;
+
         for (const field of schema) {
-            const result = this.validateField(data[field.name], field);
+            const result = this.validateField(record[field.name], field);
             if (!result.isValid) {
                 errors.push(...result.errors);
                 warnings.push(...result.warnings);
@@ -282,7 +322,7 @@ class DataValidator {
     /**
      * Validate data type
      */
-    private validateType(value: any, expectedType: SchemaField['type'], path: string): {
+    private validateType(value: unknown, expectedType: SchemaField['type'], path: string): {
         isValid: boolean;
         errors: string[];
     } {
@@ -341,7 +381,7 @@ class DataValidator {
 
             case 'url':
                 try {
-                    new URL(value);
+                    new URL(toComparableString(value));
                 } catch {
                     errors.push(`${path} must be a valid URL`);
                     return { isValid: false, errors };
@@ -356,16 +396,18 @@ class DataValidator {
      * Check data integrity
      */
     private checkDataIntegrity(
-        data: any,
+        data: unknown,
         schema: SchemaField[],
         errors: string[],
         warnings: string[]
     ): { confidence: number } {
         let confidence = 1.0;
 
+        const record = data as Record<string, unknown>;
+
         // Check for unexpected fields (strict mode)
         const schemaFieldNames = new Set(schema.map(field => field.name));
-        const dataFieldNames = new Set(Object.keys(data));
+        const dataFieldNames = new Set(Object.keys(record));
 
         for (const fieldName of dataFieldNames) {
             if (!schemaFieldNames.has(fieldName)) {
@@ -377,7 +419,7 @@ class DataValidator {
         // Check for missing required fields
         const requiredFields = schema.filter(field => field.required).map(field => field.name);
         for (const field of requiredFields) {
-            if (!(field in data)) {
+            if (!(field in record)) {
                 errors.push(`Missing required field: ${field}`);
                 confidence -= 0.2;
             }
@@ -385,7 +427,7 @@ class DataValidator {
 
         // Check for null/undefined values in non-required fields
         for (const field of schema) {
-            if (!field.required && (data[field.name] === null || data[field.name] === undefined)) {
+            if (!field.required && (record[field.name] === null || record[field.name] === undefined)) {
                 warnings.push(`Field ${field.name} is null/undefined`);
                 confidence -= 0.02;
             }
@@ -398,16 +440,18 @@ class DataValidator {
      * Apply strict validation rules
      */
     private applyStrictValidation(
-        data: any,
+        data: unknown,
         schema: SchemaField[],
         errors: string[],
         warnings: string[]
     ): { confidence: number } {
         let confidence = 1.0;
 
+        const record = data as Record<string, unknown>;
+
         // In strict mode, warn about any type coercion that might have occurred
         for (const field of schema) {
-            const value = data[field.name];
+            const value = record[field.name];
             if (value !== undefined && value !== null) {
                 // Check if string numbers are actually numbers
                 if (field.type === 'number' && typeof value === 'string') {
@@ -430,7 +474,7 @@ class DataValidator {
     /**
      * Cache validation result
      */
-    private cacheValidationResult(cacheKey: string, result: ValidationResult<any>): void {
+    private cacheValidationResult(cacheKey: string, result: ValidationResult<unknown>): void {
         if (this.validationCache.size >= this.maxCacheSize) {
             // Remove oldest entry
             const oldestKey = this.validationCache.keys().next().value;
@@ -445,7 +489,7 @@ class DataValidator {
     /**
      * Generate cache key for validation
      */
-    private generateCacheKey(data: any, schemaName: string): string {
+    private generateCacheKey(data: unknown, schemaName: string): string {
         const dataHash = this.hashData(data);
         return `${schemaName || 'unknown'}:${dataHash}`;
     }
@@ -453,8 +497,8 @@ class DataValidator {
     /**
      * Create hash of data for caching
      */
-    private hashData(data: any): string {
-        const str = JSON.stringify(data, Object.keys(data).sort());
+    private hashData(data: unknown): string {
+        const str = JSON.stringify(data, Object.keys(data as object).sort());
         let hash = 0;
 
         for (let i = 0; i < str.length; i++) {
@@ -546,8 +590,9 @@ export const crossFieldRules = {
     user: [
         {
             fields: ['firstName', 'lastName'],
-            validator: (data: any) => {
-                if (!data.firstName && !data.lastName) {
+            validator: (data: unknown) => {
+                const record = data as Record<string, unknown>;
+                if (!record.firstName && !record.lastName) {
                     return 'At least one of firstName or lastName must be provided';
                 }
                 return true;
@@ -559,11 +604,13 @@ export const crossFieldRules = {
     subscription: [
         {
             fields: ['amount', 'tier'],
-            validator: (data: any) => {
+            validator: (data: unknown) => {
+                const record = data as Record<string, unknown>;
                 const tierAmounts: Record<string, number> = { basic: 20, premium: 50, enterprise: 100 };
-                const expectedAmount = tierAmounts[data.tier];
-                if (data.amount !== expectedAmount) {
-                    return `Amount for ${data.tier} tier should be ${expectedAmount}`;
+                const tier = record.tier as string;
+                const expectedAmount = tierAmounts[tier];
+                if (record.amount !== expectedAmount) {
+                    return `Amount for ${tier} tier should be ${expectedAmount}`;
                 }
                 return true;
             },

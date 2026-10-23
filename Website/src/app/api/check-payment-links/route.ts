@@ -1,17 +1,48 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
+import type { Stripe } from 'stripe';
 import { getStripe } from '@/lib/stripe-helper';
+
+/** Product row fields this endpoint reads. */
+interface ProductLinkRow {
+  id: string;
+  payment_link_url?: string | null;
+  stripe_url?: string | null;
+  payment_link_id?: string | null;
+}
+
+/** Result for a single product. */
+interface LinkCheckResult {
+  id: string;
+  active: boolean;
+  found: boolean;
+  url: string | null;
+  payment_link_id?: string;
+}
+
+/** Narrows an unknown thrown value to a plain object so its fields can be read. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+/** Reads a `message` property off an unknown error value, mirroring `err?.message`. */
+function errorMessage(error: unknown): string | undefined {
+  const message = asRecord(error)?.message;
+  return typeof message === 'string' ? message : undefined;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { products } = await req.json();
+    const { products } = (await req.json()) as { products?: unknown };
     if (!Array.isArray(products)) {
       return NextResponse.json({ error: 'Invalid products array' }, { status: 400 });
     }
 
+    const productList = products as ProductLinkRow[];
+
     // Helper to try to retrieve payment link by id (if provided) or by extracting possible id from URL
-    async function tryRetrieveByUrlOrId(url: string, maybeId?: string) {
+    async function tryRetrieveByUrlOrId(url: string, maybeId?: string | null): Promise<Stripe.PaymentLink | null> {
       // If DB provided a payment_link_id, try that first
       if (maybeId) {
         try {
@@ -30,11 +61,11 @@ export async function POST(req: NextRequest) {
           try {
             const pl = await getStripe().paymentLinks.retrieve(id);
             return pl;
-          } catch (err) {
+          } catch {
             // fallthrough to listing
           }
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
       return null;
@@ -43,8 +74,8 @@ export async function POST(req: NextRequest) {
     // Get a page of payment links to match by URL (fallback)
     const list = await getStripe().paymentLinks.list({ limit: 100 });
 
-    const results = [] as any[];
-    for (const p of products) {
+    const results: LinkCheckResult[] = [];
+    for (const p of productList) {
       const url = p.payment_link_url || p.stripe_url || null;
       if (!url) {
         results.push({ id: p.id, active: false, found: false, url: null });
@@ -52,16 +83,16 @@ export async function POST(req: NextRequest) {
       }
 
       // First try to directly retrieve by using stored payment_link_id (if any) or parsing the URL
-      let match: any = null;
+      let match: Stripe.PaymentLink | null = null;
       try {
         match = await tryRetrieveByUrlOrId(url, p.payment_link_id);
-      } catch (e) {
+      } catch {
         match = null;
       }
 
       // If retrieve failed, fallback to listing match
       if (!match) {
-        match = list.data.find((pl: any) => pl.url === url || (pl.url && url.includes(pl.url)));
+        match = list.data.find((pl) => pl.url === url || (pl.url && url.includes(pl.url))) ?? null;
       }
 
       if (!match) {
@@ -69,13 +100,13 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const active = typeof (match as any).active === 'boolean' ? (match as any).active : true;
+      const active = typeof match.active === 'boolean' ? match.active : true;
       results.push({ id: p.id, active, found: true, url, payment_link_id: match.id });
     }
 
     return NextResponse.json({ results });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('check-payment-links error:', err);
-    return NextResponse.json({ error: err?.message ?? String(err) }, { status: 500 });
+    return NextResponse.json({ error: errorMessage(err) ?? String(err) }, { status: 500 });
   }
 }

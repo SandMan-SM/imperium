@@ -1,5 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
-import { envValidator } from './env-validation'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+/**
+ * The concrete client type produced by `createClient`. Used to type the admin
+ * client and its proxy without losing the fluent query-builder API.
+ */
+type SupabaseClientInstance = SupabaseClient
 
 /**
  * Enhanced Supabase Client Configuration
@@ -130,7 +135,7 @@ const validateSupabaseConfig = () => {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Create service role client for protected API operations that bypass RLS
-let _adminClient: any = null
+let _adminClient: SupabaseClientInstance | null = null
 let _adminClientError: string | null = null
 
 try {
@@ -146,7 +151,7 @@ try {
 }
 
 // Enhanced admin client proxy with better error handling
-export const supabaseAdmin: any = new Proxy({}, {
+const adminClientProxy = new Proxy({} as Record<string, unknown>, {
   get(_, prop: string) {
     if (_adminClientError) {
       throw new Error(`Supabase admin client error: ${_adminClientError}`)
@@ -161,8 +166,10 @@ export const supabaseAdmin: any = new Proxy({}, {
       )
     }
 
-    const v = _adminClient[prop]
-    if (typeof v === 'function') return v.bind(_adminClient)
+    const v = (_adminClient as unknown as Record<string, unknown>)[prop]
+    if (typeof v === 'function') {
+      return (v as (...args: unknown[]) => unknown).bind(_adminClient)
+    }
     return v
   },
   set(_, prop: string, val) {
@@ -174,10 +181,13 @@ export const supabaseAdmin: any = new Proxy({}, {
       throw new Error('Supabase admin client not configured.')
     }
 
-    _adminClient[prop] = val
+    (_adminClient as unknown as Record<string, unknown>)[prop] = val
     return true
   }
 })
+
+// Exposed with the full client type so callers keep the fluent query-builder API.
+export const supabaseAdmin = adminClientProxy as unknown as SupabaseClientInstance
 
 // Configuration health check function
 export const checkSupabaseHealth = () => {

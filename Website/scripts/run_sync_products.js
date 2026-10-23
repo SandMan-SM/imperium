@@ -1,7 +1,9 @@
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+import path from 'node:path';
+import dotenv from 'dotenv';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+dotenv.config({ path: path.join(import.meta.dirname, '..', '.env.local') });
 
 async function main() {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-02-25.clover' });

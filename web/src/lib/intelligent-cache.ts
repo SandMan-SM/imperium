@@ -31,8 +31,28 @@ interface CacheConfig {
     compressionThreshold: number; // minimum size to compress
 }
 
+/**
+ * Shape produced by `compressData` for payloads that exceed the compression
+ * threshold. Detected by the `__compressed` marker.
+ */
+interface CompressedPayload {
+    __compressed: true;
+    data: string;
+}
+
+/**
+ * Type guard for the compressed payload envelope.
+ */
+function isCompressedPayload(value: unknown): value is CompressedPayload {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        (value as { __compressed?: unknown }).__compressed === true
+    );
+}
+
 class IntelligentCache {
-    private cache: Map<string, CacheEntry<any>> = new Map();
+    private cache: Map<string, CacheEntry<unknown>> = new Map();
     private dependencyGraph: Map<string, Set<string>> = new Map(); // key -> dependent keys
     private config: CacheConfig;
     private stats: CacheStats = {
@@ -76,12 +96,12 @@ class IntelligentCache {
         }
 
         // Compress large values if enabled
-        let data = value;
+        let data: unknown = value;
         if (options?.compress ?? this.config.enableCompression) {
             data = this.compressData(value);
         }
 
-        const entry: CacheEntry<any> = {
+        const entry: CacheEntry<unknown> = {
             data,
             timestamp: now,
             ttl,
@@ -129,7 +149,7 @@ class IntelligentCache {
             data = this.decompressData(data);
         }
 
-        return data;
+        return data as T;
     }
 
     /**
@@ -286,7 +306,7 @@ class IntelligentCache {
 
     // Private methods
 
-    private hasMemoryFor(data: any): boolean {
+    private hasMemoryFor(data: unknown): boolean {
         const dataSize = this.estimateDataSize(data);
         const currentSize = this.calculateMemoryUsage().current;
         return currentSize + dataSize <= this.config.memoryLimit;
@@ -328,7 +348,7 @@ class IntelligentCache {
     private invalidateDependents(key: string): void {
         // Find all entries that depend on this key
         const dependents = Array.from(this.dependencyGraph.entries())
-            .filter(([_, deps]) => deps.has(key))
+            .filter((entry) => entry[1].has(key))
             .map(([k]) => k);
 
         // Invalidate dependents recursively
@@ -337,7 +357,7 @@ class IntelligentCache {
         }
     }
 
-    private compressData(data: any): any {
+    private compressData(data: unknown): unknown {
         if (!this.config.enableCompression) return data;
 
         const size = this.estimateDataSize(data);
@@ -349,14 +369,14 @@ class IntelligentCache {
             return {
                 __compressed: true,
                 data: btoa(jsonString)
-            };
+            } satisfies CompressedPayload;
         } catch {
             return data;
         }
     }
 
-    private decompressData(data: any): any {
-        if (!data?.__compressed) return data;
+    private decompressData(data: unknown): unknown {
+        if (!isCompressedPayload(data)) return data;
 
         try {
             const jsonString = atob(data.data);
@@ -366,11 +386,11 @@ class IntelligentCache {
         }
     }
 
-    private isCompressed(data: any): boolean {
-        return data?.__compressed === true;
+    private isCompressed(data: unknown): boolean {
+        return isCompressedPayload(data);
     }
 
-    private estimateDataSize(data: any): number {
+    private estimateDataSize(data: unknown): number {
         try {
             return new Blob([JSON.stringify(data)]).size;
         } catch {

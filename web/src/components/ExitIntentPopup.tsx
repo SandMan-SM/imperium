@@ -121,7 +121,7 @@ export function ExitIntentPopup() {
 
                             <p className="text-gray-400 mb-6 leading-relaxed">
                                 Get <span className="text-imperium-gold font-bold">FREE access</span> to Principle #1:
-                                <span className="text-white block mt-2">"The Law of Deliberate Action"</span>
+                                <span className="text-white block mt-2">&quot;The Law of Deliberate Action&quot;</span>
                             </p>
 
                             {!submitted ? (

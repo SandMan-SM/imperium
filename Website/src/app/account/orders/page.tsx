@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-  ChevronLeft, Package, Search, Filter,
+import {
+  ChevronLeft, Package, Search,
   CheckCircle, Clock, Truck, XCircle
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { SafeImage } from "@/components/SafeImage";
 
@@ -85,7 +86,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
@@ -104,7 +105,7 @@ export default function OrdersPage() {
     checkAuth();
   }, [router]);
 
-  const statusConfig: Record<string, { icon: any; color: string; bg: string; label: string }> = {
+  const statusConfig: Record<string, { icon: LucideIcon; color: string; bg: string; label: string }> = {
     pending: { icon: Clock, color: "text-yellow-400", bg: "bg-yellow-400/10", label: "Pending" },
     processing: { icon: Package, color: "text-blue-400", bg: "bg-blue-400/10", label: "Processing" },
     shipped: { icon: Truck, color: "text-purple-400", bg: "bg-purple-400/10", label: "Shipped" },

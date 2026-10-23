@@ -1,7 +1,9 @@
 // Backfill script: migrate clients -> profiles by email
 // Usage: cd web && node scripts/backfill_clients_to_profiles.js
-require('dotenv').config({ path: './.env.local' });
-const { createClient } = require('@supabase/supabase-js');
+import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
+
+dotenv.config({ path: './.env.local' });
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 

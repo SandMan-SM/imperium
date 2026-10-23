@@ -23,7 +23,6 @@ const rateWindows =
 globalThis.__imperiumCaptureRateLimits = rateWindows;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __imperiumCaptureRateLimits: Map<string, RateWindow> | undefined;
 }
 

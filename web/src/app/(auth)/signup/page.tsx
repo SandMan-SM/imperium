@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Mail, Lock, User, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
@@ -14,7 +13,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { signUp } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +46,7 @@ export default function SignupPage() {
               Check Your Email
             </h1>
             <p className="text-white/40 font-light text-sm mb-6">
-              We've sent a confirmation link to <span className="text-white">{email}</span>.
+              We&#39;ve sent a confirmation link to <span className="text-white">{email}</span>.
               Click the link to activate your account.
             </p>
             <a

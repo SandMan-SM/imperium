@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { redirect } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import AdminDashboard from "../admin/page";
-import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, Gift, Loader2, LogOut } from "lucide-react";
+import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, Gift, LogOut } from "lucide-react";
 import Link from "next/link";
 import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
@@ -13,8 +14,9 @@ export default function PortalPage() {
     if (loading || (user && profile === null)) return null;
 
     if (!user) {
-        window.location.href = "/login";
-        return null;
+        // Internal navigation: use Next's redirect() instead of assigning
+        // window.location.href during render.
+        redirect("/login");
     }
 
     if (profile?.is_admin) {

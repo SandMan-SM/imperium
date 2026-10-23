@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ChevronLeft, Trash2, Minus, Plus, ShoppingBag, 
-  Check, AlertCircle, Loader2
+import {
+  ChevronLeft, Trash2, Minus, Plus, ShoppingBag,
+  Check, AlertCircle
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";
@@ -19,7 +18,6 @@ export default function CartPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoError, setPromoError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleApplyPromo = async () => {
     setPromoError(null);
@@ -55,7 +53,7 @@ export default function CartPage() {
           </motion.div>
           <h1 className="text-3xl text-white font-bold mb-4">Your Cart is Empty</h1>
           <p className="text-white/40 mb-8">
-            Looks like you haven't added anything to your cart yet.
+            Looks like you haven&#39;t added anything to your cart yet.
           </p>
           <button
             onClick={() => router.push("/shop")}

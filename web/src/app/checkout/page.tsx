@@ -3,9 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
+import {
   ChevronLeft, Lock, CreditCard, Truck, ShieldCheck,
-  AlertCircle, Check, X, Loader2
+  AlertCircle, Check, Loader2
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";
@@ -38,7 +38,6 @@ function CheckoutContent() {
   });
   
   const [shippingMethod, setShippingMethod] = useState("standard");
-  const [sameAsBilling, setSameAsBilling] = useState(true);
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoDiscount, setPromoDiscount] = useState(0);
@@ -119,7 +118,7 @@ function CheckoutContent() {
       if (data.url) {
         window.location.href = data.url;
       }
-    } catch (err) {
+    } catch {
       setError("Failed to process checkout. Please try again.");
     } finally {
       setLoading(false);
@@ -155,7 +154,7 @@ function CheckoutContent() {
           </motion.div>
           <h1 className="text-3xl text-white font-bold mb-4">Order Confirmed!</h1>
           <p className="text-white/60 mb-2">
-            Thank you for your order. We've sent a confirmation email to {formData.email || "your email"}.
+            Thank you for your order. We&#39;ve sent a confirmation email to {formData.email || "your email"}.
           </p>
           <p className="text-white/40 text-sm mb-8">
             Order #IMP-{Date.now().toString(36).toUpperCase()}

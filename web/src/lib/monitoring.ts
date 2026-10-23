@@ -33,10 +33,42 @@ interface UserFeedback {
     sessionId?: string;
     type: 'error' | 'confusion' | 'suggestion' | 'praise';
     message: string;
-    context?: any;
+    context?: unknown;
     timestamp: number;
     isResolved: boolean;
     priority: 'low' | 'medium' | 'high' | 'critical';
+}
+
+/**
+ * Aggregated performance statistics for a given time range.
+ */
+interface PerformanceStats {
+    metrics: PerformanceMetric[];
+    averages: Record<string, number>;
+    percentiles: Record<string, number>;
+    trends: Record<string, number>;
+}
+
+/**
+ * Navigation timing values this module reads from the browser's
+ * PerformanceNavigationTiming entry.
+ */
+interface NavigationTiming {
+    loadEventEnd: number;
+    fetchStart: number;
+    domContentLoadedEventEnd: number;
+}
+
+/**
+ * Chrome's non-standard `performance.memory` extension.
+ */
+interface PerformanceMemory {
+    usedJSHeapSize: number;
+    jsHeapSizeLimit: number;
+}
+
+interface PerformanceWithMemory extends Performance {
+    memory?: PerformanceMemory;
 }
 
 interface MonitoringConfig {
@@ -190,12 +222,7 @@ class MonitoringSystem {
     /**
      * Get performance statistics
      */
-    getPerformanceStats(timeRange?: { start: number; end: number }): {
-        metrics: PerformanceMetric[];
-        averages: Record<string, number>;
-        percentiles: Record<string, number>;
-        trends: Record<string, number>;
-    } {
+    getPerformanceStats(timeRange?: { start: number; end: number }): PerformanceStats {
         const metrics = timeRange
             ? this.performanceMetrics.filter(m => m.timestamp >= timeRange.start && m.timestamp <= timeRange.end)
             : this.performanceMetrics;
@@ -224,7 +251,7 @@ class MonitoringSystem {
      */
     getDashboardData(): {
         health: SystemHealth | null;
-        performance: any;
+        performance: PerformanceStats;
         feedback: { total: number; unresolved: number; byType: Record<string, number> };
         alerts: string[];
     } {
@@ -265,7 +292,7 @@ class MonitoringSystem {
             window.addEventListener('load', () => {
                 const navigationEntries = window.performance.getEntriesByType('navigation');
                 if (navigationEntries.length > 0) {
-                    const navigation = navigationEntries[0] as any;
+                    const navigation = navigationEntries[0] as unknown as NavigationTiming;
 
                     this.recordMetric({
                         name: 'page_load_time',
@@ -396,8 +423,11 @@ class MonitoringSystem {
 
     private getMemoryUsage(): number {
         // Simplified memory usage calculation
-        if (typeof performance !== 'undefined' && (performance as any).memory) {
-            const memory = (performance as any).memory;
+        const perf = typeof performance !== 'undefined'
+            ? (performance as PerformanceWithMemory)
+            : undefined;
+        if (perf?.memory) {
+            const memory = perf.memory;
             return (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
         }
         return 0;
@@ -547,7 +577,7 @@ class MonitoringSystem {
         }
     }
 
-    private triggerAlert(message: string, details: any): void {
+    private triggerAlert(message: string, details: unknown): void {
         console.error(`🚨 MONITORING ALERT: ${message}`, details);
 
         // In a real implementation, you might:

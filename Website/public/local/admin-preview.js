@@ -28,7 +28,7 @@
   function getPreview() {
     try {
       return localStorage.getItem(KEY);
-    } catch (e) {
+    } catch {
       return null;
     }
   }

@@ -6,6 +6,17 @@ import { getStripe } from '@/lib/stripe-helper';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+/** Narrows an unknown thrown value to a plain object so its fields can be read. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+/** Reads a `message` property off an unknown error value, mirroring `err?.message`. */
+function errorMessage(error: unknown): string | undefined {
+    const message = asRecord(error)?.message;
+    return typeof message === 'string' ? message : undefined;
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.text();
@@ -18,9 +29,10 @@ export async function POST(req: Request) {
         let event;
         try {
             event = getStripe().webhooks.constructEvent(body, signature, webhookSecret);
-        } catch (err: any) {
-            console.error(`Webhook Error: ${err.message}`);
-            return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+        } catch (err: unknown) {
+            const message = errorMessage(err);
+            console.error(`Webhook Error: ${message}`);
+            return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400 });
         }
 
         // Handle specific event types

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ChevronLeft, MapPin, Plus, Edit2, Trash2, X, Check
+import {
+  ChevronLeft, MapPin, Plus, Edit2, Trash2, X
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -51,6 +51,12 @@ const mockAddresses: Address[] = [
     is_default: false,
   },
 ];
+
+// Generated outside the render path so the impure Date.now() call is never
+// made while the component renders.
+function createAddressId(): string {
+  return `addr-${Date.now()}`;
+}
 
 export default function AddressesPage() {
   const router = useRouter();
@@ -99,7 +105,7 @@ export default function AddressesPage() {
         addr.id === editingAddress.id ? { ...formData, id: editingAddress.id } : addr
       ));
     } else {
-      const newAddress = { ...formData, id: `addr-${Date.now()}` };
+      const newAddress = { ...formData, id: createAddressId() };
       if (formData.is_default) {
         setAddresses(addresses.map(addr => ({ ...addr, is_default: false })).concat(newAddress));
       } else {

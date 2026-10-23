@@ -1,18 +1,48 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
+import type { CartItem } from "@/lib/cart-context";
 import { getStripe } from "@/lib/stripe-helper";
+
+/** Shipping details collected by the checkout form. */
+interface ShippingDetails {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
+/** Request body accepted by the checkout endpoint. */
+interface CheckoutRequestBody {
+  items?: CartItem[];
+  shipping: ShippingDetails;
+  discount: number;
+  email?: string;
+}
+
+/** Narrows an unknown thrown value to a plain object so its fields can be read. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+/** Reads a `message` property off an unknown error value, mirroring `error?.message`. */
+function errorMessage(error: unknown): string | undefined {
+  const message = asRecord(error)?.message;
+  return typeof message === 'string' ? message : undefined;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as CheckoutRequestBody;
     const { items, shipping, discount, email } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
 
-    const lineItems = items.map((item: any) => ({
+    const lineItems = items.map((item) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -31,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     const shippingCost = 0;
-    
+
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -76,10 +106,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Stripe error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create checkout session" },
+      { error: errorMessage(error) || "Failed to create checkout session" },
       { status: 500 }
     );
   }

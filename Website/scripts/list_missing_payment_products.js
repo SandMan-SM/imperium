@@ -1,6 +1,8 @@
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
-const { createClient } = require('@supabase/supabase-js');
+import path from 'node:path';
+import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
+
+dotenv.config({ path: path.join(import.meta.dirname, '..', '.env.local') });
 
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

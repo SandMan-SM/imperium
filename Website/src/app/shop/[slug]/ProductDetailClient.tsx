@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, ChevronRight, Minus, Plus, Star, 
@@ -99,7 +98,7 @@ const CATALOG: Product[] = [
 export default function ProductDetailClient({ slug }: { slug: string }) {
   const router = useRouter();
   
-  const { addItem, isCartOpen, setIsCartOpen } = useCart();
+  const { addItem, setIsCartOpen } = useCart();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,7 +132,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
         } else {
           setProduct(data);
         }
-      } catch (err) {
+      } catch {
         const catalogProduct = CATALOG.find(p => p.slug === slug);
         setProduct(catalogProduct || null);
       } finally {
@@ -202,7 +201,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-imperium-gold mx-auto mb-4" />
           <h1 className="text-2xl text-white mb-2">Product Not Found</h1>
-          <p className="text-white/40 mb-6">This product doesn't exist or has been removed.</p>
+          <p className="text-white/40 mb-6">This product doesn&apos;t exist or has been removed.</p>
           <button
             onClick={() => router.push("/shop")}
             className="px-6 py-3 bg-imperium-gold text-imperium-bg font-bold rounded-lg"
@@ -549,6 +548,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 onClick={() => router.push(`/shop/${relatedProduct.slug}`)}
               >
                 <div className="aspect-[4/5] relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- catalogue image URL comes from the database and is not on a configured remote domain */}
                   <img
                     src={relatedProduct.image_url || "/products/placeholder.svg"}
                     alt={relatedProduct.name}
@@ -618,7 +618,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 </tbody>
               </table>
               <p className="text-white/40 text-sm mt-4">
-                Measurements are in inches. For the best fit, we recommend sizing up if you're between sizes.
+                Measurements are in inches. For the best fit, we recommend sizing up if you&apos;re between sizes.
               </p>
             </motion.div>
           </motion.div>

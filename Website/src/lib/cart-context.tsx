@@ -32,6 +32,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // The cart is hydrated from localStorage after mount on purpose: the server
+        // renders an empty cart, so reading storage in a lazy useState initializer
+        // would produce a server/client hydration mismatch.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         const saved = localStorage.getItem("imperium_cart");
         if (saved) {

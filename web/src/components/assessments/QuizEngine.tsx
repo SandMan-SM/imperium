@@ -24,21 +24,26 @@ export function QuizEngine({
   const [answers, setAnswers] = useState<number[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Resume from a prior in-progress attempt.
+  // Resume from a prior in-progress attempt. The read is deferred to a
+  // macrotask so the state updates are not applied synchronously in the
+  // effect body (which would trigger a cascading render).
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as SavedState;
-        if (Array.isArray(parsed.answers)) {
-          setAnswers(parsed.answers);
-          setIndex(Math.min(parsed.index ?? 0, total - 1));
+    const timer = setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw) as SavedState;
+          if (Array.isArray(parsed.answers)) {
+            setAnswers(parsed.answers);
+            setIndex(Math.min(parsed.index ?? 0, total - 1));
+          }
         }
+      } catch {
+        /* ignore */
       }
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
+      setHydrated(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [storageKey, total]);
 
   // Persist progress.

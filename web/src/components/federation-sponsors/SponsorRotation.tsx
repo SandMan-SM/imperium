@@ -10,5 +10,7 @@ type Props = {
 };
 
 export default function SponsorRotation(_props: Props) {
+  // Props are accepted for API compatibility but intentionally unused.
+  void _props;
   return null;
 }

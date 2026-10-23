@@ -1,17 +1,23 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
+import type { CartItem } from "@/lib/cart-context";
 import { getStripe } from "@/lib/stripe-helper";
+
+/** Request body accepted by the checkout endpoint. */
+interface CheckoutRequestBody {
+    items?: CartItem[];
+}
 
 export async function POST(req: NextRequest) {
     try {
-        const { items } = await req.json();
+        const { items } = (await req.json()) as CheckoutRequestBody;
 
         if (!items || items.length === 0) {
             return NextResponse.json({ error: "No items in cart" }, { status: 400 });
         }
 
-        const lineItems = items.map((item: any) => ({
+        const lineItems = items.map((item) => ({
             price_data: {
                 currency: "usd",
                 product_data: {
