@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 23, 2026 12:20 AM
+> Synthetic Intelligence Memory | Updated: October 23, 2026 12:40 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -13,21 +13,23 @@
 ## 📊 Health Scores
 | Metric | Score | Bar |
 |---|---|---|
-| Build | 98/100 | █████████░ |
+| Build | 99/100 | █████████░ |
 | SEO | 93/100 | █████████░ |
 | Performance | 82/100 | ████████░░ |
-| Backend | 90/100 | █████████░ |
+| Backend | 92/100 | █████████░ |
 | Mobile | 95/100 | █████████░ |
-| **OVERALL** | **92/100** | █████████░ |
+| **OVERALL** | **93/100** | █████████░ |
 
 ## 🎯 This Session: Do These In Order
-1. **Close the commerce loop.** `subscriptions`, `referrals`, `affiliates`,
-   `transactions` and `user_interactions` are all EMPTY in the live database,
-   and the `products` table has no `slug` column, so the shop only ever
-   renders the hardcoded catalogue. The Stripe webhook now records purchases
-   into `inbound_imperium_events` (event_type `purchase_recorded`) — run one
-   real checkout and confirm the row lands, then decide whether the
-   subscription tables should be filled from Stripe events.
+1. **Close the commerce loop with one real checkout.** The write path is now
+   proven against the live schema (a `purchase_recorded` row was inserted and
+   removed again, and the `omni_businesses` row for slug `imperium` resolves),
+   and the Stripe webhook's replay guard finally works. What is still missing
+   is a payment: the Stripe account has **zero subscriptions and zero
+   checkouts**, and `transactions`, `subscriptions`, `referrals` and
+   `affiliates` are all empty. Run one real $20 checkout and confirm the
+   purchase lands in `inbound_imperium_events` and the profile flips to
+   premium.
 2. **Decide the storefront question.** `/28principles`, `/shop`, `/account`,
    `/cart`, `/checkout`, `/login`, `/signup`, `/portal` and `/subscribe` all
    301/redirect to `/archive/`. The backing routes and APIs are still there.
@@ -39,9 +41,10 @@
    `user_interactions`. Every fleet table has RLS enabled, so the policies —
    not the app — are what decide this. Any tightening is a migration and
    needs a council decision; do not change policies autonomously.
-4. **Clear the lint debt.** `npm run lint` reports 198 errors (mostly
-   `no-explicit-any` in `src/lib/monitoring.ts` and `src/lib/supabase.ts`).
-   The build is green, so this is hygiene, not breakage.
+4. **Decide what to do about `products.slug`.** The table has no `slug`
+   column, so `/shop/[slug]` can only resolve the three hardcoded catalogue
+   entries and the database catalogue is unreachable. Adding the column is a
+   migration and needs a council decision.
 5. **Keep Preview in step with Production.** Preview now carries the same
    fleet values as Production (17 vars). Any new Production env var must be
    added to Preview in the same session, or previews break silently again.
@@ -59,16 +62,39 @@
   The analytics endpoint read `revenue` (500 on every request) and the Stripe
   webhook inserted into `purchases` (silently discarded). Both now read and
   write tables that actually exist.
+- A second sweep found three more tables the code referenced that do not
+  exist: `client_health` (the admin Client Health tab and the metrics
+  refresh route), `newsletter_subscribers` (in a dead Gmail service), and
+  `revenue_analytics` (an unread query in the admin analytics tab). The
+  health tab now derives from `profiles`, the metrics route computes live,
+  and the dead Gmail service is deleted.
+- The Stripe webhook's replay guard never worked: the `events` table has no
+  `payload` column, so both the insert and the `payload->>stripe_event_id`
+  filter errored and were swallowed. It now uses `properties`, the column the
+  table actually has, with the required `actor_type` / `actor_id` fields.
+- `/api/subscriptions` wrote `Invalid Date` into `subscriptions`: Stripe moved
+  `current_period_start` / `current_period_end` onto the subscription *item*
+  in the pinned API version (2026-02-25.clover), so the insert would have
+  failed. It now reads the period off the first item.
+- `npm run lint` reported 279 errors across 56 files. It is now clean:
+  `no-explicit-any` replaced with real types, unused imports removed, JSX
+  entities escaped, React Compiler hook rules fixed properly.
 - Live visual audit at 375 / 768 / 1440 px: no horizontal overflow, no
   console errors, no dead internal links, every image reference resolves.
 
 ## 📚 Stats
-- Sessions: 46
-- Lines written: ~1400
+- Sessions: 47
+- Lines written: ~2200
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-23 | repo | Added `scripts/check-schema-refs.mjs`: every `.from('table')` in the source is checked against the live Supabase schema and the script exits non-zero on a phantom table (19 tables referenced, all present) | ~150 |
+| 2026-10-23 | backend | The Stripe webhook's replay guard now works: the `events` table has `properties`, not `payload`, and requires `actor_type` / `actor_id` / a null-able inet `ip_address` | ~40 |
+| 2026-10-23 | backend | `/api/subscriptions` reads the billing period off the subscription item (Stripe moved `current_period_start` onto the item) instead of writing `Invalid Date` | ~30 |
+| 2026-10-23 | backend | The admin Client Health tab derives health from the `profiles` columns instead of the non-existent `client_health` table; the metrics refresh route no longer writes to the non-updatable `live_retention_metrics` view | ~120 |
+| 2026-10-23 | lint | Cleared all 279 lint errors across 56 files: real types replace `any`, unused imports removed, JSX entities escaped, React Compiler hook rules fixed properly, `npm run lint` and `tsc --noEmit` are clean | ~900 |
+| 2026-10-23 | cleanup | Deleted `src/lib/gmail-service.ts` — unreferenced dead code from the pre-Resend era that wrote to the non-existent `newsletter_subscribers` table | ~290 |
 | 2026-10-22 | ops | Mirrored the Production env vars into the Vercel Preview environment (17 vars, sensitive, all branches) and verified with a live preview deployment | ~30 |
 | 2026-10-22 | repo | Mirrored `Website/` into `web/`, added `scripts/sync-trees.sh` (+ `--check`) and a CI guard so the two trees can never drift again | ~400 |
 | 2026-10-22 | repo | Updated the root `CLAUDE.md` to the real layout: production root is `Website/`, `web/` is a mirror, Archive rebrand routes, live route list | ~60 |
@@ -104,6 +130,14 @@
   editing anything. A session's fixes in the wrong tree ship as no-ops.
 - **mirror-not-fork** (Imperium) — one production root, one mirrored copy,
   one script, one CI check. Never fork the trees again.
+- **schema-truth-before-ship** (Imperium) — every `.from('<table>')` in the
+  app is a claim the table exists. Check the claim against the live schema
+  before shipping (`scripts/check-schema-refs.mjs`). A missing table does not
+  throw where the code reads it — it returns an error that gets swallowed and
+  the feature silently does nothing. Six tables have been wrong this way.
+  When an SDK moves a field (Stripe moved `current_period_start` onto the
+  subscription item), read the SDK's own types in `node_modules` rather than
+  trusting the shape the code was written against.
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -113,6 +147,8 @@
 - Never touch .env files
 - Never run Supabase migrations
 - Never edit a shared fleet table's schema or RLS policies
+- Run `node scripts/check-schema-refs.mjs` before shipping any change that
+  adds or renames a `.from()` call
 - Commit every logical unit: `git commit -m 'agent: [what]'`
 - Push when done
 - Take a federation lease before any deploy, migration, or DNS change, and
