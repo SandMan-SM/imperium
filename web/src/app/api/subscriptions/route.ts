@@ -194,14 +194,23 @@ export async function GET(request: Request) {
     }
 }
 
+/**
+ * The Stripe price for a tier.
+ *
+ * The fallback for `elite` is the live price behind the site's $20/month
+ * offer — `price_1T4KHvChZyGhfmDOhcHCBpat` on "Imperium Elite Mastermind",
+ * the same price the hard-coded payment link sells. The other two tiers have
+ * no price in the Stripe account, so they resolve to null until one is
+ * configured rather than to a price id that does not exist.
+ */
 function getPriceIdForTier(tier: string): string | null {
     switch (tier) {
         case 'foundation':
-            return process.env.STRIPE_PRICE_FOUNDATION || 'price_1QHf2JFj9oKErkMT11000000';
+            return process.env.STRIPE_PRICE_FOUNDATION || null;
         case 'elite':
-            return process.env.STRIPE_PRICE_ELITE || 'price_1QHf2JFj9oKErkMT22000000';
+            return process.env.STRIPE_PRICE_ELITE || 'price_1T4KHvChZyGhfmDOhcHCBpat';
         case 'sovereign':
-            return process.env.STRIPE_PRICE_SOVEREIGN || 'price_1QHf2JFj9oKErkMT33000000';
+            return process.env.STRIPE_PRICE_SOVEREIGN || null;
         default:
             return null;
     }
