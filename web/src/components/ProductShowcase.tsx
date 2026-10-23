@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Plus, Check } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { SafeImage } from "@/components/SafeImage";
 
 type Product = {
     id: string;
@@ -146,7 +147,7 @@ export function ProductShowcase() {
                                 {/* Image */}
                                 <div className="relative aspect-[4/5] overflow-hidden bg-imperium-surface">
                                     {product.image_url ? (
-                                        <img
+                                        <SafeImage
                                             src={product.image_url}
                                             alt={product.name}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-104 opacity-80 group-hover:opacity-95"

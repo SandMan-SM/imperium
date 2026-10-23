@@ -9,6 +9,7 @@ import {
   Check, AlertCircle, Loader2
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { SafeImage } from "@/components/SafeImage";
 
 export default function CartPage() {
   const router = useRouter();
@@ -103,7 +104,7 @@ export default function CartPage() {
                     onClick={() => router.push("/shop")}
                   >
                     {item.image_url ? (
-                      <img
+                      <SafeImage
                         src={item.image_url}
                         alt={item.name}
                         className="w-full h-full object-cover"

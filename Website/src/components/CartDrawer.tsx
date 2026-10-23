@@ -3,6 +3,7 @@
 import { useCart } from "@/lib/cart-context";
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SafeImage } from "@/components/SafeImage";
 
 export function CartDrawer() {
     const { items, isCartOpen, setIsCartOpen, removeItem, updateQuantity, total, clearCart } = useCart();
@@ -66,7 +67,7 @@ export function CartDrawer() {
                                     {items.map((item) => (
                                         <div key={item.id} className="flex gap-4 bg-white/[0.02] p-4 rounded-xl border border-white/[0.06]">
                                             {item.image_url && (
-                                                <img
+                                                <SafeImage
                                                     src={item.image_url}
                                                     alt={item.name}
                                                     className="w-20 h-20 object-cover rounded-lg"

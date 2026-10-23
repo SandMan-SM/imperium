@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img" aria-label="Imperium product image placeholder">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f131a"/>
+      <stop offset="1" stop-color="#030712"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#tile)"/>
+  <rect x="24" y="24" width="752" height="952" fill="none" stroke="#d4af37" stroke-opacity="0.28" stroke-width="2"/>
+  <text x="400" y="530" text-anchor="middle" font-family="Playfair Display, Georgia, serif" font-size="300" font-style="italic" fill="#d4af37" fill-opacity="0.18">I</text>
+  <text x="400" y="880" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" letter-spacing="10" fill="#d4af37" fill-opacity="0.45">IMPERIUM</text>
+</svg>

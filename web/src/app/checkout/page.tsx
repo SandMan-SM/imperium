@@ -8,6 +8,7 @@ import {
   AlertCircle, Check, X, Loader2
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { SafeImage } from "@/components/SafeImage";
 
 const SHIPPING_OPTIONS = [
   { id: "standard", name: "Standard Shipping", price: 0, days: "5-7 business days" },
@@ -471,7 +472,7 @@ function CheckoutContent() {
                   <div key={item.id} className="flex gap-4">
                     <div className="w-16 h-16 bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
                       {item.image_url && (
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        <SafeImage src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="flex-1">

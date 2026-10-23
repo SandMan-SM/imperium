@@ -9,6 +9,7 @@ import {
   CheckCircle, Clock, Truck, XCircle
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { SafeImage } from "@/components/SafeImage";
 
 type Order = {
   id: string;
@@ -232,7 +233,7 @@ export default function OrdersPage() {
                         <div key={idx} className="flex items-center gap-4">
                           <div className="w-16 h-16 bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
                             {item.image_url && (
-                              <img
+                              <SafeImage
                                 src={item.image_url}
                                 alt={item.name}
                                 className="w-full h-full object-cover"

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { createClient } from "@supabase/supabase-js";
 import ProductDetailClient from "./ProductDetailClient";
 
 const CATALOG_META: Record<string, { name: string; description: string; image: string }> = {
@@ -21,18 +20,9 @@ const CATALOG_META: Record<string, { name: string; description: string; image: s
 };
 
 async function getProductMeta(slug: string) {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data } = await supabase
-      .from("products")
-      .select("name, description, image_url")
-      .eq("slug", slug)
-      .single();
-    if (data) return { name: data.name, description: data.description, image: data.image_url };
-  } catch {}
+  // The products table has no `slug` column, so the catalogue below is the
+  // source of truth for the product pages (the detail view falls back to the
+  // same catalogue when the database has no matching row).
   return CATALOG_META[slug] || null;
 }
 
@@ -42,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const title = product ? `${product.name} — Imperium` : "Product — Imperium";
   const description = product?.description || "Premium apparel and gear for the sovereign operator.";
-  const image = product?.image || "/og-image.jpg";
+  const image = product?.image || "/opengraph-image";
 
   return {
     title,

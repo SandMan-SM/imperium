@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronLeft, Heart, ShoppingBag, Trash2, Share2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { SafeImage } from "@/components/SafeImage";
 
 type WishlistItem = {
   id: string;
@@ -132,7 +133,7 @@ export default function WishlistPage() {
               >
                 {/* Image */}
                 <div className="relative aspect-[4/5]">
-                  <img
+                  <SafeImage
                     src={item.image_url}
                     alt={item.name}
                     className="w-full h-full object-cover"
