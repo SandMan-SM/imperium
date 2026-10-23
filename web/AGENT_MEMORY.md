@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 23, 2026 12:40 AM
+> Synthetic Intelligence Memory | Updated: October 23, 2026 12:23 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -16,40 +16,62 @@
 | Build | 99/100 | █████████░ |
 | SEO | 93/100 | █████████░ |
 | Performance | 82/100 | ████████░░ |
-| Backend | 92/100 | █████████░ |
+| Backend | 94/100 | █████████░ |
 | Mobile | 95/100 | █████████░ |
 | **OVERALL** | **93/100** | █████████░ |
 
 ## 🎯 This Session: Do These In Order
-1. **Close the commerce loop with one real checkout.** The write path is now
-   proven against the live schema (a `purchase_recorded` row was inserted and
-   removed again, and the `omni_businesses` row for slug `imperium` resolves),
-   and the Stripe webhook's replay guard finally works. What is still missing
-   is a payment: the Stripe account has **zero subscriptions and zero
-   checkouts**, and `transactions`, `subscriptions`, `referrals` and
-   `affiliates` are all empty. Run one real $20 checkout and confirm the
-   purchase lands in `inbound_imperium_events` and the profile flips to
-   premium.
+1. **Close the commerce loop with one real checkout.** The write path is
+   proven and the Stripe webhook's replay guard works. The Stripe account is
+   **live**, so the last step needs a card: create a checkout session for
+   `price_1T4KHvChZyGhfmDOhcHCBpat` ($20/month, "Imperium Elite
+   Mastermind"), hand the URL to the operator, and confirm the purchase lands
+   in `inbound_imperium_events` and the profile flips to premium. Note the
+   real state of the account: **100+ checkout sessions, every one expired
+   and unpaid, zero customers, zero subscriptions.** 99 of those sessions
+   were created in a single second on 2026-10-18 against the $20 price.
+   Sessions are being created; nobody finishes them.
 2. **Decide the storefront question.** `/28principles`, `/shop`, `/account`,
    `/cart`, `/checkout`, `/login`, `/signup`, `/portal` and `/subscribe` all
    301/redirect to `/archive/`. The backing routes and APIs are still there.
    Either retire them for good (delete the routes and the redirects become
    permanent) or restore them behind a flag. Right now the site advertises a
    storefront that redirects away from it.
-3. **Review fleet RLS exposure.** The anon key can SELECT `profiles` (24 rows
-   with email + stripe ids), `products`, `transactions` and
-   `user_interactions`. Every fleet table has RLS enabled, so the policies —
-   not the app — are what decide this. Any tightening is a migration and
-   needs a council decision; do not change policies autonomously.
-4. **Decide what to do about `products.slug`.** The table has no `slug`
-   column, so `/shop/[slug]` can only resolve the three hardcoded catalogue
-   entries and the database catalogue is unreachable. Adding the column is a
-   migration and needs a council decision.
+3. **Put the four fleet findings in front of the council.** They are
+   security issues in shared tables, so they need a decision, not an
+   autonomous fix (see "Council items" below).
+4. **Decide what to do about `products.slug`.** The table still has no `slug`
+   column, so the app derives the URL slug from the product name. Adding the
+   column is a migration and needs a council decision.
 5. **Keep Preview in step with Production.** Preview now carries the same
    fleet values as Production (17 vars). Any new Production env var must be
    added to Preview in the same session, or previews break silently again.
 
 ## 🔬 Why
+- **The fleet's RLS policies, not the app, decided what the site could
+  read.** `profiles` has a policy that subqueries `profiles`, so every
+  authenticated read of that table dies with Postgres error 42P17 ("infinite
+  recursion detected in policy"), and an anonymous read is blocked outright.
+  `products` has only an UPDATE policy for `public`, so no browser read
+  returns a row. `newsletters` inherits the same recursion. The admin
+  console therefore showed blank tables, every premium check read `null`,
+  and `/api/subscriptions` answered "Unauthorized" to everybody. All of
+  those reads now happen server side with the service-role key, behind the
+  operator's session token.
+- `profiles.id` is a **different uuid** from `profiles.auth_id`, and the
+  `subscriptions` / `referrals` foreign keys point at `profiles(id)` while
+  their RLS policies compare them to `auth.uid()`. The two can never both be
+  true, so those tables are writable only with the service-role key.
+- The previous brief's claim that "the anon key can SELECT `profiles` (24
+  rows with email + stripe ids), `products`, `transactions` and
+  `user_interactions`" is **not reproducible** — an anon read returns zero
+  rows on all four. The real exposures are narrower and different; they are
+  listed under "Council items".
+- The schema guard checked table names only, so four phantom *columns*
+  (`profiles.referral_code`, `profiles.referred_by`, `referrals.email`,
+  `referrals.status`) slipped through and made the referral route fail on
+  every call. It now checks columns as well, and reports 19 tables and 48
+  column references.
 - The Preview environment had no Supabase, Stripe or Resend values for 240
   days; every preview data route 500'd. All 17 non-empty Production values
   are now mirrored into Preview (sensitive, all branches) and verified with a
@@ -72,23 +94,51 @@
   `payload` column, so both the insert and the `payload->>stripe_event_id`
   filter errored and were swallowed. It now uses `properties`, the column the
   table actually has, with the required `actor_type` / `actor_id` fields.
-- `/api/subscriptions` wrote `Invalid Date` into `subscriptions`: Stripe moved
-  `current_period_start` / `current_period_end` onto the subscription *item*
-  in the pinned API version (2026-02-25.clover), so the insert would have
-  failed. It now reads the period off the first item.
 - `npm run lint` reported 279 errors across 56 files. It is now clean:
   `no-explicit-any` replaced with real types, unused imports removed, JSX
   entities escaped, React Compiler hook rules fixed properly.
 - Live visual audit at 375 / 768 / 1440 px: no horizontal overflow, no
   console errors, no dead internal links, every image reference resolves.
 
+## 🚨 Council items — do not fix these autonomously
+These are findings in **shared fleet tables**, not in this app. Changing any
+of them is a migration and needs a council decision.
+1. **42P17 policy recursion on `profiles`.** `profiles_admin_modify_all`
+   (roles `{authenticated}`, cmd ALL) contains `EXISTS (SELECT 1 FROM profiles
+   me WHERE me.auth_id = auth.uid() AND me.is_admin = true)` — a self
+   reference. Every authenticated SELECT/UPDATE/INSERT on `profiles` fails,
+   and `newsletters` fails with it through its "premium users can read
+   private newsletters" policy. Reproduced with `set role authenticated` and
+   with a real signed-in token, admin token included.
+2. **Five tables have RLS disabled entirely**, so `anon` can read *and
+   write* them: `booking_submissions` (17 rows — name, email, phone,
+   business name, raw payload), `newsletter_star_credit_claims` (4),
+   `newsletter_star_credit_events` (4), `omni_program_credit_events` (3),
+   `omni_program_signatures` (5 — signer email, ip address, user agent).
+3. **`dashboard_crm_leads()` is anon-executable and `SECURITY DEFINER`.** It
+   returns 535 rows of cross-tenant lead PII (email and phone) across 28
+   tenant lead and contact tables, including Imperium's own
+   `inbound_imperium_leads`. Its internal `request.jwt.claims` guard does not
+   stop the anon path. `prime_iv_upsert_subscriber` is likewise anon-writable
+   — an anon call inserted a real row into
+   `inbound_prime_iv_newsletter_subscribers`.
+4. **`subscriptions` and `referrals` policies contradict their foreign
+   keys.** The policies compare `profile_id` / `referrer_id` with
+   `auth.uid()`, but the columns reference `profiles(id)`, and `profiles.id`
+   is a separate uuid from `profiles.auth_id`. No authenticated user can
+   write either table.
+
 ## 📚 Stats
-- Sessions: 47
-- Lines written: ~2200
+- Sessions: 48
+- Lines written: ~2600
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-23 | backend | The admin console, the premium gating and `/api/subscriptions` now read `profiles`, `products` and `newsletters` server side with the service-role key, because the fleet's RLS policies on `profiles` are self-referential (42P17) and `products` has no SELECT policy for `public` | ~800 |
+| 2026-10-23 | backend | `/api/profile` (the caller's own row), `/api/admin/console` (the console datasets and its writes), `/api/products` and `/api/products/[slug]` (the catalogue, with the slug derived from the product name) | ~450 |
+| 2026-10-23 | backend | `/api/subscriptions` resolves the caller from the bearer token and writes `profiles.id`; `/api/referrals` drops four columns that do not exist and keeps the code in `profiles.metadata` | ~300 |
+| 2026-10-23 | repo | `scripts/check-schema-refs.mjs` now validates column references as well as table names, and reports the file each bad column is in (19 tables, 48 columns checked) | ~330 |
 | 2026-10-23 | repo | Added `scripts/check-schema-refs.mjs`: every `.from('table')` in the source is checked against the live Supabase schema and the script exits non-zero on a phantom table (19 tables referenced, all present) | ~150 |
 | 2026-10-23 | backend | The Stripe webhook's replay guard now works: the `events` table has `properties`, not `payload`, and requires `actor_type` / `actor_id` / a null-able inet `ip_address` | ~40 |
 | 2026-10-23 | backend | `/api/subscriptions` reads the billing period off the subscription item (Stripe moved `current_period_start` onto the item) instead of writing `Invalid Date` | ~30 |
@@ -131,13 +181,27 @@
 - **mirror-not-fork** (Imperium) — one production root, one mirrored copy,
   one script, one CI check. Never fork the trees again.
 - **schema-truth-before-ship** (Imperium) — every `.from('<table>')` in the
-  app is a claim the table exists. Check the claim against the live schema
-  before shipping (`scripts/check-schema-refs.mjs`). A missing table does not
-  throw where the code reads it — it returns an error that gets swallowed and
-  the feature silently does nothing. Six tables have been wrong this way.
+  app is a claim the table exists, and every column named on it is a claim
+  the column exists. Check both against the live schema before shipping
+  (`scripts/check-schema-refs.mjs`, which now checks columns too). A missing
+  table does not throw where the code reads it — it returns an error that gets
+  swallowed and the feature silently does nothing. Six tables and four
+  columns have been wrong this way.
   When an SDK moves a field (Stripe moved `current_period_start` onto the
   subscription item), read the SDK's own types in `node_modules` rather than
   trusting the shape the code was written against.
+- **rls-recursion-breaks-the-client** (fleet, applies to every tenant) — a
+  fleet policy that subqueries its own table makes every authenticated read
+  of that table fail with Postgres error 42P17, and a policy that only grants
+  UPDATE makes an anonymous read return nothing. Neither raises in the
+  browser: the query fails, the error is swallowed, and the page renders
+  empty. **Read shared fleet tables server side with the service-role key
+  and gate the route on the caller's session**, never from a client
+  component. Check `pg_policies` before trusting any fleet read.
+- **profiles-id-is-not-auth-id** (fleet) — `profiles.id` is its own uuid and
+  `profiles.auth_id` points at `auth.users.id`. Any insert into a table
+  whose foreign key points at `profiles(id)` must use `profiles.id`.
+
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -147,8 +211,11 @@
 - Never touch .env files
 - Never run Supabase migrations
 - Never edit a shared fleet table's schema or RLS policies
+- Read shared fleet tables server side with the service-role key, never from a
+  client component — the fleet's own policies make browser reads fail
+  silently (see `rls-recursion-breaks-the-client`)
 - Run `node scripts/check-schema-refs.mjs` before shipping any change that
-  adds or renames a `.from()` call
+  adds or renames a `.from()` call, and run it again before every push
 - Commit every logical unit: `git commit -m 'agent: [what]'`
 - Push when done
 - Take a federation lease before any deploy, migration, or DNS change, and
