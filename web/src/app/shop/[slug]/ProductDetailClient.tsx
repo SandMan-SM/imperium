@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";
-import { supabase } from "@/lib/supabase";
 
 type Product = {
   id: string;
@@ -119,22 +118,45 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   useEffect(() => {
     async function fetchProduct() {
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("slug", slug)
-          .single();
+      const catalogProduct = CATALOG.find(p => p.slug === slug) || null;
 
-        if (error || !data) {
-          const catalogProduct = CATALOG.find(p => p.slug === slug);
-          setProduct(catalogProduct || null);
-        } else {
-          setProduct(data);
+      try {
+        // The `products` table has no slug column, so the lookup happens on
+        // the server, where the row is matched by its slugified name. The
+        // catalogue entry fills in the presentation fields the table does
+        // not carry (sizes, colours, long description).
+        const response = await fetch(`/api/products/${encodeURIComponent(slug)}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          setProduct(catalogProduct);
+          return;
         }
+
+        const payload = (await response.json()) as { product: Partial<Product> | null };
+        const row = payload.product;
+
+        if (!row) {
+          setProduct(catalogProduct);
+          return;
+        }
+
+        setProduct({
+          ...(catalogProduct || {
+            id: row.id || slug,
+            name: row.name || slug,
+            slug,
+            category: row.category || "Apparel",
+            description: row.description || "",
+            price: Number(row.price || 0),
+            in_stock: row.in_stock !== false,
+          }),
+          ...row,
+          slug,
+        } as Product);
       } catch {
-        const catalogProduct = CATALOG.find(p => p.slug === slug);
-        setProduct(catalogProduct || null);
+        setProduct(catalogProduct);
       } finally {
         setLoading(false);
       }

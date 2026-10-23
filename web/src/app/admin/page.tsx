@@ -74,6 +74,46 @@ interface LinkStatus {
 
 type LinkStatusMap = Record<string, LinkStatus>;
 
+/** The datasets the console renders, read through the admin API. */
+interface ConsolePayload {
+    profiles: ProfileRow[];
+    products: ProductRow[];
+    newsletters: NewsletterRow[];
+    newsletterSendEvents: NewsletterSendEvent[];
+    metrics: Metrics | null;
+    stats: { profiles: number; products: number; subs: number };
+}
+
+/**
+ * Calls the admin console API with the operator's access token.
+ *
+ * The console used to read and write `profiles`, `products` and `newsletters`
+ * from the browser with the anon key. Those reads come back empty under the
+ * fleet's RLS policies, so the console showed blank tables and its save
+ * buttons failed silently. The server reads them with the service-role key
+ * and checks the caller's session.
+ */
+async function consoleFetch<T>(input: string, init?: RequestInit): Promise<T> {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+
+    const response = await fetch(input, {
+        ...init,
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(init?.headers || {}),
+        },
+    });
+
+    if (!response.ok) {
+        const detail = await response.text().catch(() => "");
+        throw new Error(`Admin request failed (${response.status}) ${detail}`.trim());
+    }
+
+    return (await response.json()) as T;
+}
+
 /** Row shape used by the newsletter archive. */
 interface NewsletterRow {
     id: string;
@@ -201,26 +241,17 @@ export default function AdminDashboard() {
         // after the await instead of synchronously inside the effect body.
         (async () => {
             try {
-                const { data: metricsData } = await supabase
-                    .from("live_retention_metrics")
-                    .select("*")
-                    .limit(1)
-                    .single();
+                const payload = await consoleFetch<ConsolePayload>("/api/admin/console");
 
-                if (metricsData) {
-                    setMetrics(metricsData as Metrics);
+                if (payload.metrics) {
+                    setMetrics(payload.metrics);
                 }
 
-                const [
-                    { count: pCount },
-                    { count: prodCount },
-                    { count: sCount }
-                ] = await Promise.all([
-                    supabase.from("profiles").select("*", { count: 'exact', head: true }),
-                    supabase.from("products").select("*", { count: 'exact', head: true }),
-                    supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("is_subscribed", true)
-                ]);
-                setStats({ profiles: pCount || 0, products: prodCount || 0, subs: sCount || 0 });
+                setStats({
+                    profiles: payload.stats.profiles,
+                    products: payload.stats.products,
+                    subs: payload.stats.subs,
+                });
             } catch (err) {
                 console.error("Failed to load data:", err);
             }
@@ -597,17 +628,18 @@ function CRMView() {
         // The fetch runs inside an async callback so the state updates land
         // after the await instead of synchronously inside the effect body.
         (async () => {
-            // Load profiles
-            const { data: profilesData } = await supabase
-                .from("profiles")
-                .select("*")
-                .order("created_at", { ascending: false });
+            try {
+                const payload = await consoleFetch<ConsolePayload>("/api/admin/console");
+                const profilesData = payload.profiles || [];
 
-            setLeads((profilesData || []) as ProfileRow[]);
+                setLeads(profilesData);
 
-            // There is no `client_health` table, so health is derived from the
-            // profile rows themselves.
-            setClientHealth(deriveClientHealth((profilesData || []) as ProfileRow[], Date.now()));
+                // There is no `client_health` table, so health is derived from the
+                // profile rows themselves.
+                setClientHealth(deriveClientHealth(profilesData, Date.now()));
+            } catch (err) {
+                console.error("Failed to load profiles:", err);
+            }
         })();
     }, [activeList]);
 
@@ -910,7 +942,14 @@ function ProductManager() {
     const [form, setForm] = useState({ name: '', category: '', description: '', price: '', image_url: '', stripe_url: '', in_stock: true });
 
     useEffect(() => {
-        supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts((data || []) as ProductRow[]));
+        (async () => {
+            try {
+                const payload = await consoleFetch<ConsolePayload>("/api/admin/console");
+                setProducts(payload.products || []);
+            } catch (err) {
+                console.error("Failed to load products:", err);
+            }
+        })();
     }, []);
 
     const handleSyncStripe = async () => {
@@ -918,9 +957,9 @@ function ProductManager() {
         setSyncResult(null);
         setSyncError(null);
         try {
-            // fetch latest products from supabase to ensure fresh data
-            const { data: latest } = await supabase.from('products').select('*');
-            const latestRows = (latest || []) as ProductRow[];
+            // fetch latest products from the admin API to ensure fresh data
+            const payload = await consoleFetch<ConsolePayload>("/api/admin/console");
+            const latestRows = (payload.products || []) as ProductRow[];
             // Sync any product missing a payment_link_url. This includes rows that may already have stripe_url but lack payment_link_url.
             const toSync = latestRows.filter((p) => !p.payment_link_url);
 
@@ -948,8 +987,8 @@ function ProductManager() {
             const result = (await response.json()) as SyncResult;
             setSyncResult(result);
             if (result.results) {
-                const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-                const refreshedRows = (refreshed || []) as ProductRow[];
+                const refreshedPayload = await consoleFetch<ConsolePayload>("/api/admin/console");
+                const refreshedRows = (refreshedPayload.products || []) as ProductRow[];
                 setProducts(refreshedRows);
                 // After syncing, check link statuses for products
                 try {
@@ -1010,20 +1049,29 @@ function ProductManager() {
         };
 
         if (editProduct) {
-            await supabase.from('products').update(payload).eq('id', editProduct.id);
+            await consoleFetch('/api/admin/console', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'product.upsert', product: { ...payload, id: editProduct.id } }),
+            });
         } else {
-            await supabase.from('products').insert([{ ...payload, created_at: new Date().toISOString() }]);
+            await consoleFetch('/api/admin/console', {
+                method: 'POST',
+                body: JSON.stringify({ action: 'product.upsert', product: payload }),
+            });
         }
 
-        const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-        setProducts((refreshed || []) as ProductRow[]);
+        const refreshed = await consoleFetch<ConsolePayload>("/api/admin/console");
+        setProducts((refreshed.products || []) as ProductRow[]);
         setShowAddModal(false);
         setSaving(false);
     };
 
     const handleDeleteProduct = async (id: string) => {
         if (!confirm('Delete this product?')) return;
-        await supabase.from('products').delete().eq('id', id);
+        await consoleFetch('/api/admin/console', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'product.delete', id }),
+        });
         setProducts(prev => prev.filter(p => p.id !== id));
     };
 
@@ -1252,36 +1300,32 @@ function NewsletterStudio() {
     const [stats, setStats] = useState<{ free: number; premium: number; total: number }>({ free: 0, premium: 0, total: 0 });
 
     const loadData = useCallback(async () => {
-        const [{ data: profiles }, { data: newslettersData }, { data: sendEvents }] = await Promise.all([
-            supabase.from("profiles").select("is_premium, newsletter_subscribed").eq("newsletter_subscribed", true),
-            supabase.from("newsletters").select("*").order("created_at", { ascending: false }),
-            // `newsletters` has no sent_at / recipient_count columns in the live
-            // database, so the send record lives in the tenant event log.
-            supabase.from("inbound_imperium_events")
-                .select("target_id, payload, created_at")
-                .eq("event_type", "newsletter_sent")
-                .order("created_at", { ascending: false })
-                .limit(200)
-        ]);
+        // `newsletters` has no sent_at / recipient_count columns in the live
+        // database, so the send record lives in the tenant event log. Both
+        // reads go through the admin API, where the fleet's RLS policies do
+        // not apply.
+        const payload = await consoleFetch<ConsolePayload>("/api/admin/console");
 
-        const subs = (profiles || []) as SubscriberRow[];
+        const subs = (payload.profiles || []).filter(
+            (row) => (row as { newsletter_subscribed?: boolean | null }).newsletter_subscribed === true,
+        ) as SubscriberRow[];
         const free = subs.filter((s) => !s.is_premium).length;
         const premium = subs.filter((s) => s.is_premium).length;
         setStats({ free, premium, total: subs.length });
 
         const sentMap = new Map<string, { sent_at: string | null; recipient_count: number }>();
-        for (const event of (sendEvents || []) as NewsletterSendEvent[]) {
+        for (const event of (payload.newsletterSendEvents || []) as NewsletterSendEvent[]) {
             const targetId = event.target_id;
             if (!targetId || sentMap.has(targetId)) continue;
-            const payload = event.payload || {};
+            const eventPayload = event.payload || {};
             sentMap.set(targetId, {
-                sent_at: event.created_at || payload.sentAt || null,
-                recipient_count: Number(payload.recipientCount || 0),
+                sent_at: event.created_at || eventPayload.sentAt || null,
+                recipient_count: Number(eventPayload.recipientCount || 0),
             });
         }
 
         setNewsletters(
-            ((newslettersData || []) as NewsletterRow[]).map((nl) => {
+            ((payload.newsletters || []) as NewsletterRow[]).map((nl) => {
                 const sent = sentMap.get(nl.id);
                 return sent ? { ...nl, sent_at: sent.sent_at, recipient_count: sent.recipient_count } : nl;
             })
@@ -1303,12 +1347,18 @@ function NewsletterStudio() {
         if (!title.trim()) return;
         setSaving(true);
 
-        await supabase.from("newsletters").insert({
-            title,
-            content,
-            is_public: isPublic,
-            published: false,
-            created_at: new Date().toISOString(),
+        await consoleFetch('/api/admin/console', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'newsletter.create',
+                newsletter: {
+                    title,
+                    content,
+                    is_public: isPublic,
+                    published: false,
+                    created_at: new Date().toISOString(),
+                },
+            }),
         });
 
         setTitle("");
@@ -1381,7 +1431,10 @@ function NewsletterStudio() {
     };
 
     const handlePublish = async (id: string) => {
-        await supabase.from("newsletters").update({ published: true }).eq("id", id);
+        await consoleFetch('/api/admin/console', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'newsletter.publish', id }),
+        });
         await loadData();
     };
 

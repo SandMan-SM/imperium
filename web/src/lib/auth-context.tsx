@@ -36,6 +36,37 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Reads the signed-in person's profile from the server.
+ *
+ * The browser can no longer read `profiles` directly. The fleet's RLS
+ * policies on that table are self-referential (`profiles_admin_modify_all`
+ * subqueries `profiles`), so an authenticated read dies with Postgres error
+ * 42P17 and the query returns nothing at all — which left every premium
+ * check, tier badge and admin gate reading `null`. The server reads the row
+ * with the service-role key, where RLS does not apply, and hands it back.
+ */
+async function fetchProfileViaApi(): Promise<Profile | null> {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return null;
+
+    const response = await fetch("/api/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as { profile?: Profile | null };
+    return payload.profile ?? null;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -55,16 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("auth_id", userId)
-        .single();
+      const data = await fetchProfileViaApi();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
+      if (!data) {
         return null;
       }
 
@@ -133,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const v = e.newValue;
           setPreviewView(v);
           if (user) {
-            const p = await fetchProfile(user.id);
+            const p = await fetchProfile();
             setProfile(p);
           }
         } catch (err) {
@@ -153,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     (async () => {
       try {
-        const p = await fetchProfile(user.id);
+        const p = await fetchProfile();
         if (mounted) setProfile(p);
       } catch {
         /* ignore */
@@ -173,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setPreviewView(view);
       if (user) {
-        const p = await fetchProfile(user.id);
+        const p = await fetchProfile();
         setProfile(p);
       }
     } catch (e) {
@@ -183,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = async () => {
     if (user) {
-      const profileData = await fetchProfile(user.id);
+      const profileData = await fetchProfile();
       setProfile(profileData);
       setProfileLoaded(true);
     }
@@ -195,7 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchProfileRef.current(session.user.id)
+        fetchProfileRef.current()
           .then((profileData) => setProfile(profileData))
           .catch((err) => {
             console.error("Error fetching profile on init:", err);
@@ -218,7 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        fetchProfileRef.current(session.user.id)
+        fetchProfileRef.current()
           .then((profileData) => setProfile(profileData))
           .catch((err) => {
             console.error("Error fetching profile on auth change:", err);
@@ -248,31 +274,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, firstName?: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            // The database trigger that creates the profile row on signup
+            // cannot read auth metadata, so the name is carried here and
+            // copied onto the profile the first time the account is used.
+            first_name: firstName || null,
+          },
+        },
       });
 
       if (error) {
         return { error };
       }
 
-      if (data.user) {
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: crypto.randomUUID(),
-          auth_id: data.user.id,
-          email: email.toLowerCase(),
-          first_name: firstName || null,
-          is_premium: false,
-          is_admin: false,
-          is_subscribed: false,
-          created_at: new Date().toISOString(),
-        });
-
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
-        }
-      }
+      // The profile row is created by the `handle_new_user` trigger on
+      // `auth.users`. Writing it from the browser as well was always
+      // rejected — the unique index on `auth_id` and the insert policy both
+      // refuse the second row — so the trigger is the only writer.
 
       return { error: null };
     } catch (error) {
@@ -289,9 +311,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkPremiumStatus = async (email: string) => {
     try {
-      const { data, error } = await supabase.from("profiles").select("*").eq("email", email.toLowerCase()).single();
+      // The email argument is kept for the existing call sites, but the
+      // lookup now runs through the server: reading `profiles` by email
+      // from the browser returns nothing under the fleet's RLS policies.
+      const data = await fetchProfileViaApi();
 
-      if (error || !data) {
+      if (!data) {
+        return { isPremium: false, profile: null };
+      }
+
+      // The profile must belong to the account that asked for it.
+      if (email && data.email && data.email.toLowerCase() !== email.toLowerCase()) {
         return { isPremium: false, profile: null };
       }
 

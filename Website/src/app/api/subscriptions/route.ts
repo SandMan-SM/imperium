@@ -1,10 +1,10 @@
-
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import type { Stripe } from "stripe";
 import { getStripe } from "@/lib/stripe-helper";
+import { getAdminClient } from "@/lib/server/imperium-capture";
+import { resolveCaller } from "@/lib/server/request-user";
 
 /** Request body accepted by the subscription creation endpoint. */
 interface SubscriptionRequestBody {
@@ -45,14 +45,31 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
-        const { data: { user } } = await supabase.auth.getUser();
+        // The caller is resolved from the request's bearer token. The old
+        // version asked the anon client for "the current user" without ever
+        // forwarding that token, so it always answered "Unauthorized".
+        const caller = await resolveCaller(request);
 
-        if (!user) {
+        if (!caller) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const admin = getAdminClient();
+        if (!admin) {
+            return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+        }
+
+        // `subscriptions.profile_id` is a foreign key onto `profiles(id)`,
+        // and `profiles.id` is a separate uuid from the auth user id. The
+        // policy on the table compares it to `auth.uid()`, which can never
+        // match, so the row is written with the service-role key.
+        const profileId = caller.profile?.id ?? null;
+
+        if (!profileId) {
+            return NextResponse.json(
+                { error: "No profile is linked to this account yet" },
+                { status: 403 }
+            );
         }
 
         // Get or create Stripe customer
@@ -63,7 +80,7 @@ export async function POST(request: Request) {
             const newCustomer = await getStripe().customers.create({
                 email,
                 name: firstName && lastName ? `${firstName} ${lastName}` : undefined,
-                metadata: { user_id: user.id }
+                metadata: { user_id: caller.user.id }
             });
             customerId = newCustomer.id;
         }
@@ -82,7 +99,7 @@ export async function POST(request: Request) {
             payment_settings: { save_default_payment_method: 'on_subscription' },
             expand: ['latest_invoice.payment_intent'],
             metadata: {
-                user_id: user.id,
+                user_id: caller.user.id,
                 tier,
                 email
             }
@@ -98,10 +115,10 @@ export async function POST(request: Request) {
         const periodEnd = rawSubscription.current_period_end ?? firstItem?.current_period_end;
 
         // Create subscription record in database
-        const { data: subscriptionRecord, error: dbError } = await supabase
+        const { data: subscriptionRecord, error: dbError } = await admin
             .from('subscriptions')
             .insert({
-                profile_id: user.id,
+                profile_id: profileId,
                 tier,
                 status: subscription.status,
                 stripe_subscription_id: subscription.id,
@@ -140,22 +157,29 @@ export async function POST(request: Request) {
     }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
-        const { data: { user } } = await supabase.auth.getUser();
+        const caller = await resolveCaller(request);
 
-        if (!user) {
+        if (!caller) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { data: subscriptions, error } = await supabase
+        const admin = getAdminClient();
+        if (!admin) {
+            return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+        }
+
+        const profileId = caller.profile?.id ?? null;
+
+        if (!profileId) {
+            return NextResponse.json({ subscriptions: [] });
+        }
+
+        const { data: subscriptions, error } = await admin
             .from('subscriptions')
             .select('*')
-            .eq('profile_id', user.id)
+            .eq('profile_id', profileId)
             .order('created_at', { ascending: false });
 
         if (error) {

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { ShoppingBag, Plus, Check } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
@@ -53,28 +52,44 @@ export function ProductShowcase() {
     const [activeCategory, setActiveCategory] = useState("All");
     const [addedProduct, setAddedProduct] = useState<string | null>(null);
 
-    const categories = ["All", "Shirts", "Hoodies", "Sweats", "Hats", "Beanies"];
+    // The filter is built from the products that actually loaded. A fixed
+    // list used to offer "Hats" and "Beanies" buttons that matched nothing
+    // once the database catalogue took over, which is what rendered the
+    // empty grid on the shop page.
+    const categories = useMemo(() => {
+        const present = products
+            .map((product) => (product.category || "").trim().toLowerCase())
+            .filter(Boolean);
+
+        const unique = Array.from(new Set(present));
+        const labels = unique.map(
+            (category) => category.charAt(0).toUpperCase() + category.slice(1),
+        );
+
+        return ["All", ...labels];
+    }, [products]);
 
     const { addItem } = useCart();
 
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const { data, error } = await supabase
-                    .from("products")
-                    .select("*")
-                    .eq("in_stock", true)
-                    .order("created_at", { ascending: false });
+                // The catalogue is read through the server: the `products`
+                // table has no SELECT policy for `public`, so an anon read
+                // from the browser always came back empty.
+                const response = await fetch("/api/products", { cache: "no-store" });
 
-                if (error) {
-                    console.warn("Products: using local catalog fallback —", error.message);
+                if (!response.ok) {
+                    console.warn("Products: using local catalog fallback —", response.status);
                     setProducts(CATALOG);
                     setLoading(false);
                     return;
                 }
 
-                if (data && data.length > 0) {
-                    setProducts(data);
+                const payload = (await response.json()) as { products?: Product[] };
+
+                if (payload.products && payload.products.length > 0) {
+                    setProducts(payload.products);
                 } else {
                     setProducts(CATALOG);
                 }
