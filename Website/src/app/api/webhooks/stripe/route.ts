@@ -9,6 +9,17 @@ import { getAdminClient } from '@/lib/server/imperium-capture';
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const PURCHASE_EVENT_TYPE = 'purchase_recorded';
 
+/** Narrows an unknown thrown value to a plain object so its fields can be read. */
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+/** Reads a `message` property off an unknown error value, mirroring `err?.message`. */
+function errorMessage(error: unknown): string | undefined {
+  const message = asRecord(error)?.message;
+  return typeof message === 'string' ? message : undefined;
+}
+
 /**
  * The live database has no `purchases` table, so purchase history is written
  * to the tenant event log `inbound_imperium_events` — the same place the
@@ -93,25 +104,47 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
   try {
     event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('Stripe webhook signature verification failed:', err.message);
+  } catch (err: unknown) {
+    console.error('Stripe webhook signature verification failed:', errorMessage(err));
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
   try {
-    // Basic idempotency: skip if we've already recorded this Stripe event id in events table
+    // Basic idempotency: skip if we've already recorded this Stripe event id in events table.
+    // The events table stores free-form data in `properties` — there is no `payload`
+    // column, so the Stripe event id is read back out of `properties`.
     const existingEvent = await supabaseAdmin
       .from('events')
-      .select('*')
-      .filter("payload->>stripe_event_id", 'eq', event.id)
+      .select('id')
+      .filter('properties->>stripe_event_id', 'eq', event.id)
       .limit(1);
 
     if (existingEvent.data && existingEvent.data.length) {
       return NextResponse.json({ received: true });
     }
 
-    // Record the event
-    await supabaseAdmin.from('events').insert([{ event_type: event.type, payload: { stripe_event_id: event.id, raw: event }, created_at: new Date().toISOString() }]);
+    // Record the event. `actor_type`, `actor_id` and `ip_address` are required by
+    // the table; `ip_address` is an inet column, so it is left null rather than "".
+    const { error: logError } = await supabaseAdmin.from('events').insert([
+      {
+        actor_type: 'system',
+        actor_id: 'stripe',
+        event_type: event.type,
+        event_category: 'stripe',
+        action: 'received',
+        target_type: 'stripe_event',
+        target_id: event.id,
+        session_id: 'stripe-webhook',
+        ip_address: null,
+        user_agent: 'stripe-webhook',
+        properties: { stripe_event_id: event.id, type: event.type },
+        created_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (logError) {
+      console.error('Stripe webhook: could not record the event:', errorMessage(logError));
+    }
 
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -128,7 +161,9 @@ export async function POST(req: Request) {
           const amount = (li.amount_total ?? session.amount_total ?? 0) / 100;
           const qty = li.quantity ?? 1;
           // Try to resolve product by price/product IDs
-          const priceId = (li.price as any)?.id ?? (li.price as any)?.product ?? null;
+          const price = li.price;
+          const priceProduct = price?.product;
+          const priceId = price?.id ?? (typeof priceProduct === 'string' ? priceProduct : null);
           // Attempt to map product via stripe_price_id or stripe_product_id
           let productId = null;
           let productName = null;
@@ -162,7 +197,7 @@ export async function POST(req: Request) {
         }
 
         // If subscription mode, mark premium
-        if ((session.mode as any) === 'subscription' || (session.metadata && session.metadata['premium'] === 'true')) {
+        if (session.mode === 'subscription' || (session.metadata && session.metadata['premium'] === 'true')) {
           if (profile) {
             await supabaseAdmin.from('profiles').update({ is_premium: true, subscription_status: 'active', premium_since: new Date().toISOString() }).eq('id', profile.id);
           }
@@ -217,7 +252,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Webhook handler error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

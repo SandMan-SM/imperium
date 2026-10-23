@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import { Users, Package, Mail, Search, PlusCircle, ShieldCheck, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, Menu, X, ChevronLeft, ChevronRight, Settings, Send, RefreshCw, Check, AlertCircle, Eye, MousePointer } from "lucide-react";
+import { Users, Package, Mail, Search, PlusCircle, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, X, ChevronLeft, ChevronRight, Settings, Send, RefreshCw, Check, AlertCircle, Eye, MousePointer } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
 
 interface Metrics {
     total_users: number;
@@ -21,48 +20,186 @@ interface Metrics {
 type AdminTab = "crm" | "inventory" | "comms" | "principles" | "settings" | "analytics";
 type UserView = "free" | "premium" | "admin";
 
+/** Row shape used by the CRM profile list. */
+interface ProfileRow {
+    id: string;
+    email?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    is_premium?: boolean | null;
+    is_subscribed?: boolean | null;
+    subscription_status?: string | null;
+    purchase_count?: number | null;
+    total_spent?: number | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    last_purchase_at?: string | null;
+}
+
+/** Row shape used by the client health table. */
+interface ClientHealthRow {
+    id: string;
+    profile_id: string;
+    health_score?: number | null;
+    engagement_trend?: string | null;
+    purchases?: number | null;
+    lifetime_spend?: number | null;
+    last_activity_at?: string | null;
+    last_purchase_at?: string | null;
+    at_risk_score?: number | null;
+}
+
+/** Row shape used by the inventory table. */
+interface ProductRow {
+    id: string;
+    name?: string | null;
+    category?: string | null;
+    description?: string | null;
+    price?: number | null;
+    image_url?: string | null;
+    stripe_url?: string | null;
+    payment_link_url?: string | null;
+    in_stock?: boolean | null;
+    sold_count?: number | null;
+    available_stock?: number | null;
+    created_at?: string | null;
+}
+
+/** Payload returned by /api/check-payment-links for a single product. */
+interface LinkStatus {
+    active: boolean;
+    found: boolean;
+    url: string | null;
+}
+
+type LinkStatusMap = Record<string, LinkStatus>;
+
+/** Row shape used by the newsletter archive. */
+interface NewsletterRow {
+    id: string;
+    title: string;
+    content?: string | null;
+    image_url?: string | null;
+    is_public?: boolean | null;
+    published?: boolean | null;
+    created_at?: string | null;
+    sent_at?: string | null;
+    recipient_count?: number | null;
+}
+
+/** Minimal newsletter subscriber projection used for the stats counters. */
+interface SubscriberRow {
+    is_premium?: boolean | null;
+    newsletter_subscribed?: boolean | null;
+}
+
+/** Payload stored on a `newsletter_sent` event. */
+interface SendEventPayload {
+    sentAt?: string;
+    recipientCount?: number;
+}
+
+/** Row shape returned by the `inbound_imperium_events` newsletter_sent query. */
+interface NewsletterSendEvent {
+    target_id?: string | null;
+    payload?: SendEventPayload | null;
+    created_at?: string | null;
+}
+
+/** Body returned by /api/newsletter/send. */
+interface NewsletterSendResponse {
+    success?: boolean;
+    recipientCount?: number;
+    error?: string;
+}
+
+/** Result payload from the product sync endpoint. */
+interface SyncResult {
+    message?: string;
+    results?: unknown;
+    [key: string]: unknown;
+}
+
+/**
+ * Narrow an unknown thrown value to a displayable message, keeping the
+ * previous `error.message || fallback` semantics.
+ */
+function toErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.message) return error.message;
+    if (typeof error === "object" && error !== null && "message" in error) {
+        const message = (error as { message?: unknown }).message;
+        if (typeof message === "string" && message) return message;
+    }
+    return fallback;
+}
+
+/*
+ * Sidebar collapse state lives in localStorage. It is read through
+ * useSyncExternalStore so the initial value is derived from the store
+ * (server snapshot is always false) instead of being copied into state
+ * from an effect. The in-memory mirror keeps the "close the mobile drawer
+ * without persisting the preference" behaviour intact.
+ */
+const COLLAPSED_KEY = "cc_collapsed";
+const COLLAPSED_EVENT = "cc_collapsed_change";
+
+let collapsedSnapshot = false;
+let collapsedLoaded = false;
+
+function readCollapsed(): boolean {
+    if (collapsedLoaded) return collapsedSnapshot;
+    collapsedLoaded = true;
+    try {
+        collapsedSnapshot = localStorage.getItem(COLLAPSED_KEY) === "true";
+    } catch {
+        collapsedSnapshot = false;
+    }
+    return collapsedSnapshot;
+}
+
+function subscribeCollapsed(onStoreChange: () => void): () => void {
+    window.addEventListener(COLLAPSED_EVENT, onStoreChange);
+    return () => window.removeEventListener(COLLAPSED_EVENT, onStoreChange);
+}
+
+/** Collapse the sidebar for this session only (the preference is not saved). */
+function collapseSidebar(): void {
+    collapsedLoaded = true;
+    collapsedSnapshot = true;
+    window.dispatchEvent(new Event(COLLAPSED_EVENT));
+}
+
+/** Toggle the sidebar and save the preference, as the previous control did. */
+function toggleSidebar(): void {
+    const next = !readCollapsed();
+    collapsedLoaded = true;
+    collapsedSnapshot = next;
+    try {
+        localStorage.setItem(COLLAPSED_KEY, String(next));
+    } catch {
+        // storage unavailable
+    }
+    window.dispatchEvent(new Event(COLLAPSED_EVENT));
+}
+
 export default function AdminDashboard() {
     const { user, profile, signOut, loading } = useAuth();
-    const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [userView, setUserView] = useState<UserView | null>(null);
+    const userView = resolveUserView(user, profile, loading);
+    const collapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
+    const [menuOpen, setMenuOpen] = useState(false);
+
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [activeTab, setActiveTab] = useState<AdminTab>("analytics");
     const [stats, setStats] = useState({ profiles: 0, products: 0, subs: 0 });
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<"admin" | "preview">("admin");
 
-    useEffect(() => {
-        // determine userView only once profile/user loading is finished
-        if (loading) return;
-
-        if (user && profile) {
-            if (profile.is_admin) {
-                setUserView("admin");
-            } else if (profile.is_premium || profile.subscription_status === "active") {
-                setUserView("premium");
-            } else {
-                setUserView("free");
-            }
-        } else if (!user) {
-            setUserView("free");
-        }
-    }, [user, profile, loading]);
-
-    useEffect(() => {
-        // initialize collapsed state from localStorage
-        try {
-            const v = localStorage.getItem('cc_collapsed');
-            if (v !== null) setCollapsed(v === 'true');
-        } catch (e) {
-            // ignore
-        }
-    }, []);
+    const router = useRouter();
 
     useEffect(() => {
         if (userView !== "admin") return;
 
-        async function loadData() {
+        // The fetch runs inside an async callback so the state updates land
+        // after the await instead of synchronously inside the effect body.
+        (async () => {
             try {
                 const { data: metricsData } = await supabase
                     .from("live_retention_metrics")
@@ -71,7 +208,7 @@ export default function AdminDashboard() {
                     .single();
 
                 if (metricsData) {
-                    setMetrics(metricsData);
+                    setMetrics(metricsData as Metrics);
                 }
 
                 const [
@@ -87,15 +224,12 @@ export default function AdminDashboard() {
             } catch (err) {
                 console.error("Failed to load data:", err);
             }
-        }
-        loadData();
+        })();
     }, [userView]);
 
     const handleSignOut = async () => {
         await signOut();
     };
-
-    const router = useRouter();
 
     useEffect(() => {
         // only redirect after we've resolved the userView
@@ -128,7 +262,7 @@ export default function AdminDashboard() {
             {!collapsed && (
                 <div
                     className="md:hidden fixed inset-0 bg-black/40 z-40"
-                    onClick={() => setCollapsed(true)}
+                    onClick={() => collapseSidebar()}
                     aria-hidden={true}
                 />
             )}
@@ -142,12 +276,7 @@ export default function AdminDashboard() {
                     <h1 className={`text-lg sm:text-xl font-light text-white tracking-tight absolute left-2 sm:left-4 ${collapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'}`}>Command Center</h1>
                     <div className={`flex items-center ${collapsed ? 'w-full justify-center' : 'ml-auto'}`}>
                         <button
-                            onClick={() => {
-                                setCollapsed((s) => {
-                                    try { localStorage.setItem('cc_collapsed', String(!s)); } catch (e) { }
-                                    return !s;
-                                });
-                            }}
+                            onClick={() => toggleSidebar()}
                             className="flex items-center justify-center w-7 h-7 rounded-lg border border-imperium-gold/30 text-imperium-gold/60 hover:text-imperium-gold hover:border-imperium-gold/50"
                             aria-label={collapsed ? 'Expand menu' : 'Collapse menu'}
                         >
@@ -167,7 +296,7 @@ export default function AdminDashboard() {
                                 }}
                                 className={`
                                     flex items-center w-full text-[11px] font-medium tracking-wider uppercase rounded-lg
-                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-4'} 
+                                    ${collapsed ? 'px-1 justify-center aspect-square' : 'px-3 py-2.5 gap-4'}
                                     ${activeTab === tab.id
                                         ? "bg-imperium-gold/10 text-imperium-gold border border-imperium-gold/20"
                                         : "text-white/40 hover:text-white hover:bg-white/[0.02]"}
@@ -263,27 +392,89 @@ export default function AdminDashboard() {
     );
 }
 
+/**
+ * Resolve which kind of signed-in user is looking at the dashboard. The value
+ * is derived from the auth state instead of being mirrored into React state
+ * from an effect.
+ */
+function resolveUserView(
+    user: { id: string } | null,
+    profile: { is_admin: boolean; is_premium: boolean; subscription_status: string | null } | null,
+    loading: boolean
+): UserView | null {
+    if (loading) return null;
+
+    if (user && profile) {
+        if (profile.is_admin) return "admin";
+        if (profile.is_premium || profile.subscription_status === "active") return "premium";
+        return "free";
+    }
+
+    if (!user) return "free";
+
+    // Signed in but the profile is still loading — wait for it before deciding.
+    return null;
+}
+
+/**
+ * Client health derived from the profile row itself.
+ *
+ * There is no `client_health` table in the live database, so the score is
+ * computed from the columns `profiles` actually has: purchase count, lifetime
+ * spend, and how recently the account was active.
+ */
+function deriveClientHealth(profiles: ProfileRow[], now: number): ClientHealthRow[] {
+    const day = 24 * 60 * 60 * 1000;
+
+    return profiles
+        .filter((profile) => profile.is_premium || profile.subscription_status === 'active')
+        .map((profile) => {
+            const lastActivity = profile.updated_at ? new Date(profile.updated_at).getTime() : null;
+            const lastPurchase = profile.last_purchase_at ? new Date(profile.last_purchase_at).getTime() : null;
+            const purchases = profile.purchase_count || 0;
+            const spend = profile.total_spent || 0;
+
+            let score = 50;
+            score += Math.min(purchases * 10, 30);
+            if (lastPurchase !== null && now - lastPurchase <= 30 * day) score += 15;
+            if (lastActivity !== null && now - lastActivity <= 7 * day) score += 15;
+            if (lastActivity !== null && now - lastActivity > 30 * day) score -= 25;
+            score = Math.max(0, Math.min(100, score));
+
+            const trend = lastActivity === null
+                ? 'stable'
+                : now - lastActivity <= 7 * day
+                    ? 'growing'
+                    : now - lastActivity > 30 * day
+                        ? 'declining'
+                        : 'stable';
+
+            const atRisk = lastActivity !== null && now - lastActivity > 30 * day
+                ? 80
+                : lastActivity !== null && now - lastActivity > 14 * day
+                    ? 50
+                    : score < 30
+                        ? 60
+                        : 0;
+
+            return {
+                id: profile.id,
+                profile_id: profile.id,
+                health_score: score,
+                engagement_trend: trend,
+                purchases,
+                lifetime_spend: spend,
+                last_activity_at: profile.updated_at ?? null,
+                last_purchase_at: profile.last_purchase_at ?? null,
+                at_risk_score: atRisk,
+            };
+        })
+        .sort((a, b) => (a.health_score || 0) - (b.health_score || 0));
+}
+
 // Analytics View Component
 function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { profiles: number; products: number; subs: number } }) {
     const [loading, setLoading] = useState(false);
-    const [revenueData, setRevenueData] = useState<any>(null);
-
-    useEffect(() => {
-        loadRevenueData();
-    }, []);
-
-    const loadRevenueData = async () => {
-        // Try to load from revenue_analytics table
-        const { data } = await supabase
-            .from("revenue_analytics")
-            .select("*")
-            .order("date", { ascending: false })
-            .limit(30);
-        
-        if (data && data.length > 0) {
-            setRevenueData(data);
-        }
-    };
 
     const refreshMetrics = async () => {
         setLoading(true);
@@ -397,33 +588,28 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
 
 // CRM View Component with Smart Lists
 function CRMView() {
-    const [leads, setLeads] = useState<any[]>([]);
+    const [leads, setLeads] = useState<ProfileRow[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeList, setActiveList] = useState<'free' | 'subscribers' | 'clients' | 'nurture' | 'health'>('clients');
-    const [clientHealth, setClientHealth] = useState<any[]>([]);
+    const [clientHealth, setClientHealth] = useState<ClientHealthRow[]>([]);
 
     useEffect(() => {
-        loadCRMData();
-    }, [activeList]);
-
-    const loadCRMData = async () => {
-        // Load profiles
-        const { data: profilesData } = await supabase
-            .from("profiles")
-            .select("*")
-            .order("created_at", { ascending: false });
-        
-        setLeads(profilesData || []);
-
-        // Load client health for premium users
-        if (activeList === 'health' || activeList === 'clients') {
-            const { data: healthData } = await supabase
-                .from("client_health")
+        // The fetch runs inside an async callback so the state updates land
+        // after the await instead of synchronously inside the effect body.
+        (async () => {
+            // Load profiles
+            const { data: profilesData } = await supabase
+                .from("profiles")
                 .select("*")
-                .order("health_score", { ascending: true });
-            setClientHealth(healthData || []);
-        }
-    };
+                .order("created_at", { ascending: false });
+
+            setLeads((profilesData || []) as ProfileRow[]);
+
+            // There is no `client_health` table, so health is derived from the
+            // profile rows themselves.
+            setClientHealth(deriveClientHealth((profilesData || []) as ProfileRow[], Date.now()));
+        })();
+    }, [activeList]);
 
     // Filter leads based on active smart list
     // CRITICAL: Premium users (clients) are EXCLUDED from free, subscriber, and nurture lists
@@ -443,31 +629,31 @@ function CRMView() {
         switch (activeList) {
             case 'free':
                 // Free users: NOT premium, NOT subscribed, NO purchases
-                filtered = filtered.filter(l => 
-                    !l.is_premium && 
-                    l.subscription_status !== 'active' && 
+                filtered = filtered.filter(l =>
+                    !l.is_premium &&
+                    l.subscription_status !== 'active' &&
                     (l.purchase_count === 0 || !l.purchase_count)
                 );
                 break;
             case 'subscribers':
                 // Subscribers: subscribed but NOT premium (newsletter subscribers)
-                filtered = filtered.filter(l => 
-                    l.is_subscribed && 
-                    !l.is_premium && 
+                filtered = filtered.filter(l =>
+                    l.is_subscribed &&
+                    !l.is_premium &&
                     l.subscription_status !== 'active'
                 );
                 break;
             case 'clients':
                 // Clients (Premium Users): Active premium or subscription
-                filtered = filtered.filter(l => 
-                    l.is_premium || 
+                filtered = filtered.filter(l =>
+                    l.is_premium ||
                     l.subscription_status === 'active'
                 );
                 break;
             case 'nurture':
                 // Nurture: Free users with email but no purchase, not premium
-                filtered = filtered.filter(l => 
-                    !l.is_premium && 
+                filtered = filtered.filter(l =>
+                    !l.is_premium &&
                     l.subscription_status !== 'active' &&
                     l.email &&
                     (l.purchase_count === 0 || !l.purchase_count || l.total_spent === 0)
@@ -489,17 +675,11 @@ function CRMView() {
     };
 
     // Get health color based on score
-    const getHealthColor = (score: number) => {
-        if (score >= 70) return 'text-green-400';
-        if (score >= 40) return 'text-yellow-400';
+    const getHealthColor = (score: number | null | undefined) => {
+        const value = score ?? 0;
+        if (value >= 70) return 'text-green-400';
+        if (value >= 40) return 'text-yellow-400';
         return 'text-red-400';
-    };
-
-    // Stats for current list
-    const getListStats = () => {
-        const total = filteredLeads.length;
-        const premium = filteredLeads.filter(l => l.is_premium || l.subscription_status === 'active').length;
-        return { total, premium };
     };
 
     const listTabs = [
@@ -509,8 +689,6 @@ function CRMView() {
         { id: 'nurture' as const, label: 'Nurture', icon: BookOpen, count: leads.filter(l => !l.is_premium && l.subscription_status !== 'active' && l.email && (l.purchase_count === 0 || !l.purchase_count)).length },
         { id: 'health' as const, label: 'Client Health', icon: TrendingUp, count: clientHealth.length },
     ];
-
-    const stats = getListStats();
 
     // Client Health View
     if (activeList === 'health') {
@@ -535,15 +713,15 @@ function CRMView() {
                                     <th className="pb-3 font-bold">Client</th>
                                     <th className="pb-3 font-bold">Health Score</th>
                                     <th className="pb-3 font-bold">Trend</th>
-                                    <th className="pb-3 font-bold">30d Opens</th>
-                                    <th className="pb-3 font-bold">30d Clicks</th>
                                     <th className="pb-3 font-bold">Purchases</th>
+                                    <th className="pb-3 font-bold">Lifetime Spend</th>
                                     <th className="pb-3 font-bold">Last Active</th>
+                                    <th className="pb-3 font-bold">Last Purchase</th>
                                     <th className="pb-3 font-bold">At Risk</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.03]">
-                                {clientHealth.map((h: any) => {
+                                {clientHealth.map((h) => {
                                     const profile = leads.find(l => l.id === h.profile_id);
                                     return (
                                         <tr key={h.id} className="group hover:bg-white/[0.02] text-sm text-white/50">
@@ -554,8 +732,8 @@ function CRMView() {
                                                     </div>
                                                     <div>
                                                         <div className="text-white/80 font-medium">
-                                                            {profile?.first_name || profile?.last_name ? 
-                                                                `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 
+                                                            {profile?.first_name || profile?.last_name ?
+                                                                `${profile.first_name || ''} ${profile.last_name || ''}`.trim() :
                                                                 profile?.email || '—'}
                                                         </div>
                                                         <div className="text-white/20 text-xs">{profile?.email}</div>
@@ -575,11 +753,13 @@ function CRMView() {
                                                     {h.engagement_trend || 'stable'}
                                                 </span>
                                             </td>
-                                            <td className="py-3 sm:py-4">{h.email_opens_30d || 0}</td>
-                                            <td className="py-3 sm:py-4">{h.email_clicks_30d || 0}</td>
-                                            <td className="py-3 sm:py-4">{h.purchases_30d || 0}</td>
+                                            <td className="py-3 sm:py-4">{h.purchases || 0}</td>
+                                            <td className="py-3 sm:py-4">${(h.lifetime_spend || 0).toFixed(2)}</td>
                                             <td className="py-3 sm:py-4 text-xs">
                                                 {h.last_activity_at ? new Date(h.last_activity_at).toLocaleDateString() : '—'}
+                                            </td>
+                                            <td className="py-3 sm:py-4 text-xs">
+                                                {h.last_purchase_at ? new Date(h.last_purchase_at).toLocaleDateString() : '—'}
                                             </td>
                                             <td className="py-3 sm:py-4">
                                                 {(h.at_risk_score || 0) > 50 ? (
@@ -666,7 +846,7 @@ function CRMView() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/[0.03]">
-                            {filteredLeads.map((l: any) => {
+                            {filteredLeads.map((l) => {
                                 const health = getHealthForProfile(l.id);
                                 return (
                                     <tr key={l.id} className="group hover:bg-white/[0.02] text-sm text-white/50">
@@ -676,8 +856,8 @@ function CRMView() {
                                                     <Crown className="w-4 h-4 text-imperium-gold" />
                                                 ) : null}
                                                 <span className="font-medium text-white/80">
-                                                    {l.first_name || l.last_name ? 
-                                                        `${l.first_name || ''} ${l.last_name || ''}`.trim() : 
+                                                    {l.first_name || l.last_name ?
+                                                        `${l.first_name || ''} ${l.last_name || ''}`.trim() :
                                                         '—'}
                                                 </span>
                                                 {health && activeList === 'clients' && (
@@ -719,18 +899,18 @@ function CRMView() {
 
 // Product Manager Component
 function ProductManager() {
-    const [products, setProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<ProductRow[]>([]);
     const [syncing, setSyncing] = useState(false);
-    const [syncResult, setSyncResult] = useState<any | null>(null);
+    const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
     const [syncError, setSyncError] = useState<string | null>(null);
-    const [linkStatuses, setLinkStatuses] = useState<Record<string, { active: boolean; found: boolean; url: string | null }> | null>(null);
+    const [linkStatuses, setLinkStatuses] = useState<LinkStatusMap | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [editProduct, setEditProduct] = useState<any | null>(null);
+    const [editProduct, setEditProduct] = useState<ProductRow | null>(null);
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState({ name: '', category: '', description: '', price: '', image_url: '', stripe_url: '', in_stock: true });
 
     useEffect(() => {
-        supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts(data || []));
+        supabase.from("products").select("*").order("created_at", { ascending: false }).then(({ data }) => setProducts((data || []) as ProductRow[]));
     }, []);
 
     const handleSyncStripe = async () => {
@@ -740,15 +920,16 @@ function ProductManager() {
         try {
             // fetch latest products from supabase to ensure fresh data
             const { data: latest } = await supabase.from('products').select('*');
+            const latestRows = (latest || []) as ProductRow[];
             // Sync any product missing a payment_link_url. This includes rows that may already have stripe_url but lack payment_link_url.
-            const toSync = (latest || []).filter((p: any) => !p.payment_link_url);
+            const toSync = latestRows.filter((p) => !p.payment_link_url);
 
             if (toSync.length === 0) {
                 setSyncing(false);
                 setSyncResult({ message: 'No products to sync' });
                 // still check link statuses for display
-                const map: any = {};
-                (latest || []).forEach((p: any) => {
+                const map: LinkStatusMap = {};
+                latestRows.forEach((p) => {
                     map[p.id] = { active: !!p.payment_link_url, found: !!(p.payment_link_url || p.stripe_url), url: p.payment_link_url || p.stripe_url || null };
                 });
                 setLinkStatuses(map);
@@ -764,22 +945,23 @@ function ProductManager() {
                 const text = await response.text();
                 throw new Error(`Sync API error: ${response.status} ${text}`);
             }
-            const result = await response.json();
+            const result = (await response.json()) as SyncResult;
             setSyncResult(result);
             if (result.results) {
                 const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-                setProducts(refreshed || []);
+                const refreshedRows = (refreshed || []) as ProductRow[];
+                setProducts(refreshedRows);
                 // After syncing, check link statuses for products
                 try {
                     const checkRes = await fetch('/api/check-payment-links', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ products: refreshed || [] }),
+                        body: JSON.stringify({ products: refreshedRows }),
                     });
                     if (checkRes.ok) {
-                        const { results } = await checkRes.json();
-                        const map: any = {};
-                        results.forEach((r: any) => (map[r.id] = r));
+                        const { results } = (await checkRes.json()) as { results?: Array<LinkStatus & { id: string }> };
+                        const map: LinkStatusMap = {};
+                        results?.forEach((r) => (map[r.id] = r));
                         setLinkStatuses(map);
                     }
                 } catch (e) {
@@ -799,7 +981,7 @@ function ProductManager() {
         setShowAddModal(true);
     };
 
-    const openEdit = (product: any) => {
+    const openEdit = (product: ProductRow) => {
         setEditProduct(product);
         setForm({
             name: product.name || '',
@@ -834,7 +1016,7 @@ function ProductManager() {
         }
 
         const { data: refreshed } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-        setProducts(refreshed || []);
+        setProducts((refreshed || []) as ProductRow[]);
         setShowAddModal(false);
         setSaving(false);
     };
@@ -933,7 +1115,7 @@ function ProductManager() {
                             <button
                                 onClick={handleSaveProduct}
                                 disabled={saving || !form.name.trim() || !form.price}
-                                className="flex-1 py-3 bg-imperium-gold text-black text-xs font-bold tracking-widest uppercase rounded-lg hover:bg-white transition-all disabled:opacity-50"
+                                className="flex-1 py-3 bg-imperium-gold text-black text-xs font-bold tracking-widest uppercase rounded-lg hover:text-white transition-all disabled:opacity-50"
                             >
                                 {saving ? 'Saving...' : (editProduct ? 'Update' : 'Create')}
                             </button>
@@ -960,7 +1142,7 @@ function ProductManager() {
                     </button>
                     <button
                         onClick={openAdd}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-imperium-gold text-imperium-bg text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:bg-white transition-all"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-imperium-gold text-imperium-bg text-[10px] font-bold uppercase tracking-wider px-3 sm:px-4 py-2 rounded-lg hover:text-white transition-all"
                     >
                         <PlusCircle className="w-4 h-4" /> Add
                     </button>
@@ -1058,8 +1240,7 @@ function SettingsView() {
 
 // Newsletter Studio Component
 function NewsletterStudio() {
-    const [subscribers, setSubscribers] = useState<any[]>([]);
-    const [newsletters, setNewsletters] = useState<any[]>([]);
+    const [newsletters, setNewsletters] = useState<NewsletterRow[]>([]);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isPublic, setIsPublic] = useState(false);
@@ -1067,14 +1248,10 @@ function NewsletterStudio() {
     const [sending, setSending] = useState(false);
     const [sendingTest, setSendingTest] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-    const [selectedNewsletter, setSelectedNewsletter] = useState<any>(null);
+    const [selectedNewsletter, setSelectedNewsletter] = useState<NewsletterRow | null>(null);
     const [stats, setStats] = useState<{ free: number; premium: number; total: number }>({ free: 0, premium: 0, total: 0 });
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         const [{ data: profiles }, { data: newslettersData }, { data: sendEvents }] = await Promise.all([
             supabase.from("profiles").select("is_premium, newsletter_subscribed").eq("newsletter_subscribed", true),
             supabase.from("newsletters").select("*").order("created_at", { ascending: false }),
@@ -1087,30 +1264,35 @@ function NewsletterStudio() {
                 .limit(200)
         ]);
 
-        const subs = profiles || [];
-        const free = subs.filter((s: any) => !s.is_premium).length;
-        const premium = subs.filter((s: any) => s.is_premium).length;
+        const subs = (profiles || []) as SubscriberRow[];
+        const free = subs.filter((s) => !s.is_premium).length;
+        const premium = subs.filter((s) => s.is_premium).length;
         setStats({ free, premium, total: subs.length });
-        setSubscribers(subs);
 
-        const sentMap = new Map<string, { sent_at: string; recipient_count: number }>();
-        for (const event of sendEvents || []) {
-            const targetId = (event as any).target_id;
+        const sentMap = new Map<string, { sent_at: string | null; recipient_count: number }>();
+        for (const event of (sendEvents || []) as NewsletterSendEvent[]) {
+            const targetId = event.target_id;
             if (!targetId || sentMap.has(targetId)) continue;
-            const payload = (event as any).payload || {};
+            const payload = event.payload || {};
             sentMap.set(targetId, {
-                sent_at: (event as any).created_at || payload.sentAt || null,
+                sent_at: event.created_at || payload.sentAt || null,
                 recipient_count: Number(payload.recipientCount || 0),
             });
         }
 
         setNewsletters(
-            (newslettersData || []).map((nl: any) => {
+            ((newslettersData || []) as NewsletterRow[]).map((nl) => {
                 const sent = sentMap.get(nl.id);
                 return sent ? { ...nl, sent_at: sent.sent_at, recipient_count: sent.recipient_count } : nl;
             })
         );
-    };
+    }, []);
+
+    useEffect(() => {
+        // The reload runs inside an async callback so the state updates land
+        // after the await instead of synchronously inside the effect body.
+        (async () => { await loadData(); })();
+    }, [loadData]);
 
     const showToast = (type: 'success' | 'error', message: string) => {
         setToast({ type, message });
@@ -1151,7 +1333,7 @@ function NewsletterStudio() {
                 },
                 body: JSON.stringify({ newsletterId })
             });
-            const result = await response.json();
+            const result = (await response.json()) as NewsletterSendResponse;
 
             if (result.success) {
                 showToast('success', `Sent to ${result.recipientCount} subscribers`);
@@ -1159,8 +1341,8 @@ function NewsletterStudio() {
             } else {
                 showToast('error', result.error || 'Failed to send');
             }
-        } catch (error: any) {
-            showToast('error', error.message || 'Failed to send newsletter');
+        } catch (error: unknown) {
+            showToast('error', toErrorMessage(error, 'Failed to send newsletter'));
         }
         setSending(false);
     };
@@ -1185,15 +1367,15 @@ function NewsletterStudio() {
                     testEmail
                 })
             });
-            const result = await response.json();
-            
+            const result = (await response.json()) as NewsletterSendResponse;
+
             if (result.success) {
                 showToast('success', `Test sent to ${testEmail}`);
             } else {
                 showToast('error', result.error || 'Failed to send test');
             }
-        } catch (error: any) {
-            showToast('error', error.message || 'Failed to send test');
+        } catch (error: unknown) {
+            showToast('error', toErrorMessage(error, 'Failed to send test'));
         }
         setSendingTest(false);
     };
@@ -1203,7 +1385,7 @@ function NewsletterStudio() {
         await loadData();
     };
 
-    const handleSelectNewsletter = (nl: any) => {
+    const handleSelectNewsletter = (nl: NewsletterRow) => {
         setSelectedNewsletter(nl);
         setTitle(nl.title);
         setContent(nl.content || '');
@@ -1299,7 +1481,7 @@ function NewsletterStudio() {
                             <button
                                 onClick={() => handleSend(selectedNewsletter.id)}
                                 disabled={sending || !title.trim()}
-                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50 flex items-center gap-2"
+                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
                             >
                                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 Send Now
@@ -1308,7 +1490,7 @@ function NewsletterStudio() {
                             <button
                                 onClick={handleSave}
                                 disabled={saving || !title.trim()}
-                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-white transition-all disabled:opacity-50"
+                                className="px-5 py-2.5 bg-imperium-gold text-imperium-bg rounded-lg text-[10px] font-bold uppercase tracking-wider hover:text-white transition-all disabled:opacity-50"
                             >
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Publish'}
                             </button>
@@ -1351,12 +1533,12 @@ function NewsletterStudio() {
                     <h4 className="text-sm font-light tracking-wide uppercase text-white/40 mb-4 sm:mb-4">Archives</h4>
                     <div className="space-y-2">
                         {newsletters.map((nl) => (
-                            <div 
-                                key={nl.id} 
+                            <div
+                                key={nl.id}
                                 onClick={() => handleSelectNewsletter(nl)}
                                 className={`flex items-center justify-between bg-black/20 border p-4 rounded-lg cursor-pointer transition-all ${
-                                    selectedNewsletter?.id === nl.id 
-                                        ? 'border-imperium-gold/50 bg-imperium-gold/5' 
+                                    selectedNewsletter?.id === nl.id
+                                        ? 'border-imperium-gold/50 bg-imperium-gold/5'
                                         : 'border-white/5 hover:border-white/10'
                                 }`}
                             >
@@ -1378,8 +1560,8 @@ function NewsletterStudio() {
                                     ) : (
                                         <>
                                             <span className="text-[10px] text-white/30 uppercase">Draft</span>
-                                            <button 
-                                                onClick={(e) => { e.stopPropagation(); handlePublish(nl.id); }} 
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handlePublish(nl.id); }}
                                                 className="text-[10px] text-imperium-gold uppercase hover:underline"
                                             >
                                                 Publish
