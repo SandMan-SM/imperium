@@ -23,14 +23,19 @@
 ## 🎯 This Session: Do These In Order
 1. **Close the commerce loop with one real checkout.** The write path is
    proven and the Stripe webhook's replay guard works. The Stripe account is
-   **live**, so the last step needs a card: create a checkout session for
+   **live**, so the last step needs a card: a checkout session for
    `price_1T4KHvChZyGhfmDOhcHCBpat` ($20/month, "Imperium Elite
-   Mastermind"), hand the URL to the operator, and confirm the purchase lands
-   in `inbound_imperium_events` and the profile flips to premium. Note the
-   real state of the account: **100+ checkout sessions, every one expired
-   and unpaid, zero customers, zero subscriptions.** 99 of those sessions
-   were created in a single second on 2026-10-18 against the $20 price.
-   Sessions are being created; nobody finishes them.
+   Mastermind") is open at
+   `https://checkout.stripe.com/g/pay/cs_live_a1VU3AhBBFSEF9npTDwro3ZDUiZmWfW2Jl5lNznJaFEE92Kjkz6O1CpDvd`
+   — hand it to the operator and confirm the purchase lands in
+   `inbound_imperium_events` and the profile flips to premium. The webhook
+   endpoint now points at `https://secretimperium.com/api/webhooks/stripe`
+   and subscribes to all five events the handler supports, so a completed
+   checkout will be recorded. Note the real state of the account: **100+
+   checkout sessions, every one expired and unpaid, zero customers, zero
+   subscriptions.** 99 of those sessions were created in a single second on
+   2026-10-18 against the $20 price. Sessions are being created; nobody
+   finishes them.
 2. **Decide the storefront question.** `/28principles`, `/shop`, `/account`,
    `/cart`, `/checkout`, `/login`, `/signup`, `/portal` and `/subscribe` all
    301/redirect to `/archive/`. The backing routes and APIs are still there.
@@ -143,6 +148,7 @@ of them is a migration and needs a council decision.
 | 2026-10-23 | backend | The Stripe webhook's replay guard now works: the `events` table has `properties`, not `payload`, and requires `actor_type` / `actor_id` / a null-able inet `ip_address` | ~40 |
 | 2026-10-23 | backend | `/api/subscriptions` reads the billing period off the subscription item (Stripe moved `current_period_start` onto the item) instead of writing `Invalid Date` | ~30 |
 | 2026-10-23 | backend | The tier→price map in `/api/subscriptions` pointed at price ids that do not exist in the live Stripe account; `elite` now resolves to the live $20 price `price_1T4KHvChZyGhfmDOhcHCBpat` (and to `STRIPE_PRICE_ELITE` when set), and the other tiers resolve to null rather than to a fake id. `STRIPE_PRICE_ELITE` was added to Vercel Production and Preview | ~40 |
+| 2026-10-23 | ops | The Stripe webhook endpoint pointed at the stale alias `imperium-green.vercel.app` and listened for `checkout.session.completed` only, so renewals, cancellations and failed invoices never reached the app. It now points at `https://secretimperium.com/api/webhooks/stripe` with all five events the handler supports, its signing secret was rotated and re-published to Vercel Production and Preview, and the old endpoint was deleted. Verified by signing a probe event with the new secret: production answers `200 {"received":true}` | ~30 |
 | 2026-10-23 | backend | The admin Client Health tab derives health from the `profiles` columns instead of the non-existent `client_health` table; the metrics refresh route no longer writes to the non-updatable `live_retention_metrics` view | ~120 |
 | 2026-10-23 | lint | Cleared all 279 lint errors across 56 files: real types replace `any`, unused imports removed, JSX entities escaped, React Compiler hook rules fixed properly, `npm run lint` and `tsc --noEmit` are clean | ~900 |
 | 2026-10-23 | cleanup | Deleted `src/lib/gmail-service.ts` — unreferenced dead code from the pre-Resend era that wrote to the non-existent `newsletter_subscribers` table | ~290 |
@@ -210,6 +216,13 @@ of them is a migration and needs a council decision.
   trusting a hard-coded id, and let a `STRIPE_PRICE_<TIER>` env var
   override it. The same check applies to every payment link baked into
   a page.
+- **a-webhook-handler-is-not-a-webhook** (Imperium) — the Stripe handler in
+  `/api/webhooks/stripe` can be correct and still never fire, because the
+  account's endpoint points at a stale alias and subscribes to a subset of
+  the events the handler switches on. Check `stripe webhook_endpoints`
+  against the live domain *and* against the handler's `switch` before
+  debugging handler code, and make sure the endpoint's signing secret is
+  the one the app verifies with.
 
 
 ## ⚡ Rules
@@ -218,6 +231,11 @@ of them is a migration and needs a council decision.
 - Check patterns before writing new code
 - Build before and after every change
 - Never touch .env files
+- The local `Website/.env.local` still carries the pre-rotation
+  `STRIPE_WEBHOOK_SECRET`; the live value lives in Vercel (Production and
+  Preview) and was rotated on 2026-10-23 when the Stripe endpoint was
+  repointed at `secretimperium.com`. Do not read the local one as the
+  live one — verify against Vercel.
 - Never run Supabase migrations
 - Never edit a shared fleet table's schema or RLS policies
 - Read shared fleet tables server side with the service-role key, never from a
