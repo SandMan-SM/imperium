@@ -142,6 +142,7 @@ of them is a migration and needs a council decision.
 | 2026-10-23 | repo | Added `scripts/check-schema-refs.mjs`: every `.from('table')` in the source is checked against the live Supabase schema and the script exits non-zero on a phantom table (19 tables referenced, all present) | ~150 |
 | 2026-10-23 | backend | The Stripe webhook's replay guard now works: the `events` table has `properties`, not `payload`, and requires `actor_type` / `actor_id` / a null-able inet `ip_address` | ~40 |
 | 2026-10-23 | backend | `/api/subscriptions` reads the billing period off the subscription item (Stripe moved `current_period_start` onto the item) instead of writing `Invalid Date` | ~30 |
+| 2026-10-23 | backend | The tier→price map in `/api/subscriptions` pointed at price ids that do not exist in the live Stripe account; `elite` now resolves to the live $20 price `price_1T4KHvChZyGhfmDOhcHCBpat` (and to `STRIPE_PRICE_ELITE` when set), and the other tiers resolve to null rather than to a fake id. `STRIPE_PRICE_ELITE` was added to Vercel Production and Preview | ~40 |
 | 2026-10-23 | backend | The admin Client Health tab derives health from the `profiles` columns instead of the non-existent `client_health` table; the metrics refresh route no longer writes to the non-updatable `live_retention_metrics` view | ~120 |
 | 2026-10-23 | lint | Cleared all 279 lint errors across 56 files: real types replace `any`, unused imports removed, JSX entities escaped, React Compiler hook rules fixed properly, `npm run lint` and `tsc --noEmit` are clean | ~900 |
 | 2026-10-23 | cleanup | Deleted `src/lib/gmail-service.ts` — unreferenced dead code from the pre-Resend era that wrote to the non-existent `newsletter_subscribers` table | ~290 |
@@ -201,6 +202,14 @@ of them is a migration and needs a council decision.
 - **profiles-id-is-not-auth-id** (fleet) — `profiles.id` is its own uuid and
   `profiles.auth_id` points at `auth.users.id`. Any insert into a table
   whose foreign key points at `profiles(id)` must use `profiles.id`.
+- **a-price-id-that-looks-real-may-not-exist** (Imperium) — the tier→price
+  map in `/api/subscriptions` held three ids (`price_1QHf2JFj9oKErkMT…`)
+  that were never in the Stripe account, so every subscription attempt
+  failed at the Stripe call and no error ever surfaced to the operator.
+  Read the live price list (`stripe prices list --limit 100`) before
+  trusting a hard-coded id, and let a `STRIPE_PRICE_<TIER>` env var
+  override it. The same check applies to every payment link baked into
+  a page.
 
 
 ## ⚡ Rules
