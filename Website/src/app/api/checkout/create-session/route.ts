@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import type { CartItem } from "@/lib/cart-context";
 import { getStripe } from "@/lib/stripe-helper";
+import { BRAND } from "@/lib/brand";
 
 /** Shipping details collected by the checkout form. */
 interface ShippingDetails {
@@ -31,6 +32,18 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function errorMessage(error: unknown): string | undefined {
   const message = asRecord(error)?.message;
   return typeof message === 'string' ? message : undefined;
+}
+
+/**
+ * The origin Stripe sends the buyer back to. `NEXT_PUBLIC_BASE_URL` is not
+ * set in the Vercel environment, so the old fallback sent every completed
+ * order to `http://localhost:3000/checkout?success=true` — the buyer landed
+ * on a dead address and the order looked lost. The canonical site origin is
+ * the fallback.
+ */
+function siteOrigin(): string {
+  const configured = process.env.NEXT_PUBLIC_BASE_URL || process.env.WEBSITE_URL;
+  return (configured || BRAND.siteUrl).replace(/\/+$/, "");
 }
 
 export async function POST(request: NextRequest) {
@@ -66,8 +79,8 @@ export async function POST(request: NextRequest) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/cart`,
+      success_url: `${siteOrigin()}/checkout?success=true`,
+      cancel_url: `${siteOrigin()}/cart`,
       customer_email: email,
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "AU"],
