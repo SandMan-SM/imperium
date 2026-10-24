@@ -14,7 +14,7 @@
 .in-hero h1 > span { color: var(--in-bronze); }
 .in-hero-description { max-width: 500px; margin-top: 26px; font-size: 17px; line-height: 1.85; color: #d3d2c8; }
 .in-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 27px; margin-top: 29px; }
-.in-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 21px; border: 1px solid #aa9364; border-radius: 5px; padding: 14px 22px; background: linear-gradient(#29261d38,#29261d38), url('/editorial/button-bronze-v1.png') center / cover, #61543b; color: #fff8e7; font-size: 14px; font-weight: 500; transition: filter .2s; }
+.in-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 21px; border: 1px solid #aa9364; border-radius: 5px; padding: 14px 22px; background: linear-gradient(#29261d38,#29261d38), url('/editorial/button-bronze-v1.webp') center / cover, #61543b; color: #fff8e7; font-size: 14px; font-weight: 500; transition: filter .2s; }
 .in-button:hover { filter: brightness(1.12); }
 .in-button svg, .in-text-link svg, .in-paper-link svg { flex-shrink: 0; }
 .in-text-link { display: inline-flex; min-height: 48px; align-items: center; gap: 10px; color: #dfd3b8; font-size: 14px; text-decoration: underline; text-underline-offset: 6px; text-decoration-color: #bba37070; }

@@ -17,8 +17,19 @@ const principleAlt: Record<string, string> = {
   "the-long-game": "A weathered Greek temple above an expansive Mediterranean landscape",
 };
 
-export function getArchiveArtwork(entry: ArchiveEntry): { src: string; alt: string; position?: string } {
-  if (entry.category === "Principles") return { src: `/editorial/principles/${entry.slug}.png`, alt: principleAlt[entry.slug] || `Classical Greek architectural artwork for ${entry.title}` };
+/**
+ * The archive artwork ships as WebP for the page and as PNG for the Open Graph
+ * image. The page gets WebP because the original PNGs are 2-3 MB each and one
+ * archive listing was pulling 24 MB down a phone connection. The Open Graph
+ * generator embeds the file as a data URI and the renderer behind `next/og`
+ * cannot decode WebP, so it keeps the PNG.
+ */
+export function getArchiveArtwork(entry: ArchiveEntry): { src: string; ogSrc: string; alt: string; position?: string } {
+  if (entry.category === "Principles") {
+    const base = `/editorial/principles/${entry.slug}`;
+    return { src: `${base}.webp`, ogSrc: `${base}.png`, alt: principleAlt[entry.slug] || `Classical Greek architectural artwork for ${entry.title}` };
+  }
   const collection = collectionArtwork[entry.category];
-  return { src: `/editorial/collections/${collection.slug}.png`, alt: collection.alt };
+  const base = `/editorial/collections/${collection.slug}`;
+  return { src: `${base}.webp`, ogSrc: `${base}.png`, alt: collection.alt };
 }

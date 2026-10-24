@@ -30,7 +30,7 @@ export default function NewsletterPage() {
         </div>
         <figure className="in-hero-figure">
           <div className="in-hero-image">
-            <Image src="/editorial/collections/quotes.png" alt="A classical marble bust and a closed vellum book in a Greek arched alcove overlooking the Mediterranean." fill priority sizes="(max-width: 800px) calc(100vw - 40px), 48vw" />
+            <Image src="/editorial/collections/quotes.webp" alt="A classical marble bust and a closed vellum book in a Greek arched alcove overlooking the Mediterranean." fill priority sizes="(max-width: 800px) calc(100vw - 40px), 48vw" />
           </div>
           <figcaption>Imperium editorial artwork</figcaption>
         </figure>

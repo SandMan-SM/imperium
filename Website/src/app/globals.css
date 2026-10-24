@@ -381,11 +381,11 @@
 .archive-site { color: var(--ed-ink); background: var(--ed-paper); }
 .archive-wrap { width: min(1248px, calc(100% - 104px)); margin-inline: auto; }
 .editorial-kicker { color: #81704b; font-size: 10px; font-weight: 600; line-height: 1.6; letter-spacing: .17em; text-transform: uppercase; }
-.editorial-button { position: relative; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 25px; padding: 15px 24px; border: 1px solid #aa9364; border-radius: 5px; background: linear-gradient(#29261d38,#29261d38), url('/editorial/button-bronze-v1.png') center / cover, #61543b; color: #fff8e7; font-size: 13px; font-weight: 550; box-shadow: inset 0 1px #eddbb444, 0 3px 10px #13181313; transition: transform .2s, filter .2s; }
+.editorial-button { position: relative; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 25px; padding: 15px 24px; border: 1px solid #aa9364; border-radius: 5px; background: linear-gradient(#29261d38,#29261d38), url('/editorial/button-bronze-v1.webp') center / cover, #61543b; color: #fff8e7; font-size: 13px; font-weight: 550; box-shadow: inset 0 1px #eddbb444, 0 3px 10px #13181313; transition: transform .2s, filter .2s; }
 .editorial-button:hover { filter: brightness(1.12); transform: translateY(-2px); }
 .editorial-button svg { flex-shrink: 0; }
-.editorial-button-outline { background-image: linear-gradient(#f3eee5ed,#f3eee5ed), url('/editorial/button-bronze-v1.png'); color: #4b4534; border-color: #b7ac90; box-shadow: none; }
-.editorial-button-outline:hover { background-image: linear-gradient(#e5dbc7dd,#e5dbc7dd), url('/editorial/button-bronze-v1.png'); }
+.editorial-button-outline { background-image: linear-gradient(#f3eee5ed,#f3eee5ed), url('/editorial/button-bronze-v1.webp'); color: #4b4534; border-color: #b7ac90; box-shadow: none; }
+.editorial-button-outline:hover { background-image: linear-gradient(#e5dbc7dd,#e5dbc7dd), url('/editorial/button-bronze-v1.webp'); }
 .editorial-underlined { display: inline-flex; align-items: center; gap: 16px; padding-block: 12px; border-bottom: 1px solid #b8a372; font-size: 14px; }
 .luxury-hero { position: relative; isolation: isolate; min-height: 620px; display: flex; align-items: center; overflow: hidden; color: #f5f0e4; background: #303531; }
 .luxury-hero-background { object-fit: cover; object-position: 60% 50%; z-index: -3; }
@@ -409,7 +409,7 @@
 .archive-section-top h2 { margin-top: 13px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(29px, 3.1vw, 42px); line-height: 1.2; letter-spacing: -.03em; }
 .archive-section-description { color: #6c6f63; font-size: 13px; line-height: 1.8; max-width: 315px; }
 .archive-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
-.archive-entry { display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d1d0c5; border-radius: 6px; background: linear-gradient(#f6f3ebee,#f6f3ebee), url('/editorial/card-marble-v1.png') center / cover, #f6f3eb; transition: border-color .25s, box-shadow .25s, transform .25s; }
+.archive-entry { display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d1d0c5; border-radius: 6px; background: linear-gradient(#f6f3ebee,#f6f3ebee), url('/editorial/card-marble-v1.webp') center / cover, #f6f3eb; transition: border-color .25s, box-shadow .25s, transform .25s; }
 .archive-entry:hover { border-color: #a39779; box-shadow: 0 13px 24px #3e3d2a0b; transform: translateY(-4px); }
 .archive-entry-image { aspect-ratio: 1.6; position: relative; overflow: hidden; background: #a39f90; }
 .archive-entry-image img { object-fit: cover; transition: transform .65s; }
@@ -477,11 +477,11 @@
 .editorial-public .editorial-header [aria-label='Imperium home'] > span:last-child { color: #b4b6a7; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
 .editorial-public .editorial-header nav > a { color: #d0d1c1; font-size: 13px; }
 .editorial-public .editorial-header nav > a[aria-current='page'] { color: #e4d1a4; border-color: #a99970; }
-.editorial-public .editorial-header-inner > a:last-of-type { background: linear-gradient(#1c1f1a44,#1c1f1a44), url('/editorial/button-bronze-v1.png') center / cover,#64583e; border: 1px solid #a18e63; color: #f5e9cd; font-size: 12px; border-radius: 4px; }
+.editorial-public .editorial-header-inner > a:last-of-type { background: linear-gradient(#1c1f1a44,#1c1f1a44), url('/editorial/button-bronze-v1.webp') center / cover,#64583e; border: 1px solid #a18e63; color: #f5e9cd; font-size: 12px; border-radius: 4px; }
 .editorial-public .editorial-header button { border-color: #a994673e; color: #e8dfc9; background-color: transparent; }
 .editorial-public .editorial-header #mobile-navigation { background: #29312a; border-color: #b4a27730; }
 .editorial-public .editorial-header #mobile-navigation > a { border-color: #b4a27725; }
-.editorial-public .editorial-header #mobile-navigation > a:last-child { background: url('/editorial/button-bronze-v1.png') center/cover,#66583b; color: #f8eed7; }
+.editorial-public .editorial-header #mobile-navigation > a:last-child { background: url('/editorial/button-bronze-v1.webp') center/cover,#66583b; color: #f8eed7; }
 .editorial-public .editorial-footer { background: #242b25; border-color: #c8b47a35; color: #c6caba; }
 .editorial-public .editorial-footer [class*='text-'] { color: inherit; }
 .editorial-public .editorial-footer a:hover { color: #e7cea0; }
@@ -558,9 +558,9 @@
  .archive-endnote p { font-size: 15px; line-height: 1.7; }
 }
 .editorial-library-intro { position: relative; isolation: isolate; padding-right: 36%; padding-bottom: 30px; }
-.editorial-library-intro::before { content: ''; position: absolute; z-index: -1; right: 0; top: 28px; bottom: 0; width: 52%; background: linear-gradient(90deg, #f1eee6, #f1eee622), url('/editorial/principles/the-discipline-of-attention.png') center / cover; border-radius: 5px; }
+.editorial-library-intro::before { content: ''; position: absolute; z-index: -1; right: 0; top: 28px; bottom: 0; width: 52%; background: linear-gradient(90deg, #f1eee6, #f1eee622), url('/editorial/principles/the-discipline-of-attention.webp') center / cover; border-radius: 5px; }
 @media (max-width: 640px) {
  .luxury-hero h1 { font-size: clamp(46px,15vw,82px); }
  .editorial-library-intro { padding-right: 0; padding-bottom: 10px; }
- .editorial-library-intro::before { width: 100%; opacity: .15; background-image: linear-gradient(90deg, #f1eee6, #f1eee680), url('/editorial/principles/the-discipline-of-attention.png'); }
+ .editorial-library-intro::before { width: 100%; opacity: .15; background-image: linear-gradient(90deg, #f1eee6, #f1eee680), url('/editorial/principles/the-discipline-of-attention.webp'); }
 }

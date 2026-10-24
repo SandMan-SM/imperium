@@ -26,7 +26,7 @@ export default function PartnersPage() {
   return (
     <div className="ip-partner-page">
       <section className="ip-partner-page-hero" aria-labelledby="partners-title">
-        <Image src="/editorial/hero-acropolis-v1.png" alt="" fill priority sizes="100vw" />
+        <Image src="/editorial/hero-acropolis-v1.webp" alt="" fill priority sizes="100vw" />
         <div className="ip-partner-page-hero-shade" />
         <div className="archive-wrap ip-partner-page-hero-inner">
           <p className="ip-partner-page-kicker">THE IMPERIUM DIRECTORY</p>

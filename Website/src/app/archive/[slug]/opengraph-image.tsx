@@ -16,7 +16,7 @@ export default async function ArchiveOpenGraphImage({ params }: { params: Promis
   if (!entry) notFound();
 
   const artwork = getArchiveArtwork(entry);
-  const imageFile = await readFile(join(process.cwd(), "public", artwork.src.replace(/^\/+/, "")));
+  const imageFile = await readFile(join(process.cwd(), "public", artwork.ogSrc.replace(/^\/+/, "")));
   const imageSrc = `data:image/png;base64,${imageFile.toString("base64")}`;
 
   return new ImageResponse(

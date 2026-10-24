@@ -60,7 +60,7 @@ export default function MissionStatementPage() {
 
       <figure className="about-artwork mx-auto max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
         <div className="relative aspect-[16/8] overflow-hidden rounded-sm bg-[#292d2c]">
-          <Image src="/editorial/hero-acropolis-v1.png" alt="Photographic artwork of an imagined Greek colonnade, with warm stone columns and bronze sunlight against charcoal shadows." fill priority sizes="(min-width: 1280px) 1152px, calc(100vw - 40px)" className="object-cover" />
+          <Image src="/editorial/hero-acropolis-v1.webp" alt="Photographic artwork of an imagined Greek colonnade, with warm stone columns and bronze sunlight against charcoal shadows." fill priority sizes="(min-width: 1280px) 1152px, calc(100vw - 40px)" className="object-cover" />
         </div>
         <figcaption className="mt-3 text-[12px] text-[#aaa79e]">Imagined Greek architecture · Imperium editorial artwork</figcaption>
       </figure>
