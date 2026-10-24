@@ -467,7 +467,7 @@
 .archive-endnote { display: flex; align-items: center; justify-content: space-between; gap: 25px; border-top: 1px solid #cdd0c0; padding-block: 26px; margin-top: 37px; }
 .archive-endnote p { font-family: var(--font-serif); font-style: italic; font-size: 15px; color: #6c745f; }
 .archive-endnote a { white-space: nowrap; padding: 10px 0; color: #6c745f; font-size: 11px; }
-.membership-cta { padding-block: 60px; border-block: 1px solid #d2d1c7; background: var(--ed-paper, #f1eee6); }
+.membership-cta { padding-block: 60px; border-block: 1px solid #d2d1c7; background: var(--ed-paper, #f1eee6); scroll-margin-top: 110px; }
 .membership-cta-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 54px; align-items: center; }
 .membership-cta h2 { margin-top: 13px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.2; letter-spacing: -.03em; color: #2b2f28; }
 .membership-cta-copy > p:not(.editorial-kicker) { margin-top: 20px; max-width: 46ch; font-size: 15px; line-height: 1.9; color: #6c7063; }

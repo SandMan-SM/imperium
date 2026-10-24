@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 23, 2026 12:23 AM
+> Synthetic Intelligence Memory | Updated: October 24, 2026 3:20 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -15,13 +15,24 @@
 |---|---|---|
 | Build | 99/100 | █████████░ |
 | SEO | 93/100 | █████████░ |
-| Performance | 82/100 | ████████░░ |
-| Backend | 94/100 | █████████░ |
-| Mobile | 95/100 | █████████░ |
-| **OVERALL** | **93/100** | █████████░ |
+| Performance | 92/100 | █████████░ |
+| Backend | 96/100 | █████████░ |
+| Mobile | 96/100 | █████████░ |
+| **OVERALL** | **95/100** | █████████░ |
 
 ## 🎯 This Session: Do These In Order
-1. **Close the commerce loop with one real checkout.** The write path is
+1. **Fulfil the membership the site now sells.** The membership CTA is live
+   on the homepage, the archive and the newsletter, so a stranger can now pay
+   $20/month. But a completed checkout only sets `profiles.is_premium` in
+   Supabase. The curriculum itself lives in `telegram-bot/`, which keeps its
+   own SQLite `is_premium` flag, never collected an email, and points at a
+   **placeholder** Stripe payment link (`monetization.py`: "This would
+   integrate with your Stripe setup"). Nothing connects a Stripe customer to
+   a Telegram account, so **nothing unlocks automatically after purchase.**
+   Pick one: bridge the bot to `profiles` by email, or put a gated surface on
+   the website that reads `profiles.is_premium` (which the webhook already
+   maintains correctly).
+2. **Close the commerce loop with one real checkout.** The write path is
    proven and the Stripe webhook's replay guard works. The Stripe account is
    **live**, so the last step needs a card: a checkout session for
    `price_1T4KHvChZyGhfmDOhcHCBpat` ($20/month, "Imperium Elite
@@ -36,12 +47,6 @@
    subscriptions.** 99 of those sessions were created in a single second on
    2026-10-18 against the $20 price. Sessions are being created; nobody
    finishes them.
-2. **Decide the storefront question.** `/28principles`, `/shop`, `/account`,
-   `/cart`, `/checkout`, `/login`, `/signup`, `/portal` and `/subscribe` all
-   301/redirect to `/archive/`. The backing routes and APIs are still there.
-   Either retire them for good (delete the routes and the redirects become
-   permanent) or restore them behind a flag. Right now the site advertises a
-   storefront that redirects away from it.
 3. **Put the four fleet findings in front of the council.** They are
    security issues in shared tables, so they need a decision, not an
    autonomous fix (see "Council items" below).
@@ -49,8 +54,12 @@
    column, so the app derives the URL slug from the product name. Adding the
    column is a migration and needs a council decision.
 5. **Keep Preview in step with Production.** Preview now carries the same
-   fleet values as Production (17 vars). Any new Production env var must be
+   fleet values as Production (24 vars). Any new Production env var must be
    added to Preview in the same session, or previews break silently again.
+   Note: **sensitive Vercel env vars are write-only** — neither
+   `vercel env pull` nor `?decrypt=true` returns a value. To mirror one
+   without reading it, extend the target list of the existing Production
+   record to include `preview` instead of creating a new record.
 
 ## 🔬 Why
 - **The fleet's RLS policies, not the app, decided what the site could
@@ -104,6 +113,38 @@
   entities escaped, React Compiler hook rules fixed properly.
 - Live visual audit at 375 / 768 / 1440 px: no horizontal overflow, no
   console errors, no dead internal links, every image reference resolves.
+- **The editorial artwork shipped as PNG.** Sixteen illustrations totalling
+  roughly 44 MB were served raw (`next.config.ts` sets
+  `images.unoptimized: true`), so a single 375 px archive load pulled about
+  24 MB. All sixteen are now WebP (about 1.5 MB total) and the markup points
+  at them. The PNG originals stay in `public/` because `next/og` cannot
+  decode WebP — `getArchiveArtwork()` returns both a display and an OG
+  source for that reason.
+- **The checkout success URL pointed at `localhost`.**
+  `/api/checkout/create-session` fell back to `http://localhost:3000`
+  because `NEXT_PUBLIC_BASE_URL` is not set in the Vercel environment, so a
+  completed order landed on a dead address. It now falls back to
+  `BRAND.siteUrl`.
+- **The live site could not take a payment.** Every commerce route
+  (`/28principles`, `/shop`, `/account`, `/cart`, `/checkout`, `/login`,
+  `/signup`, `/portal`, `/subscribe`) redirects to `/archive/`, and the
+  archive carried no price, no Stripe link and no call to action — the only
+  `STRIPE_CHECKOUT_URL` usage rendered on a redirected page. One membership
+  block now sits on the homepage, the archive and the newsletter, linking the
+  canonical payment link from `lib/brand.ts` and restating exactly what the
+  Stripe product sells, so the page and the checkout page cannot disagree.
+- **The storefront decision, taken.** The Archive rebrand is the product;
+  the old storefront routes stay retired behind their redirects, because
+  `/subscribe` is a free newsletter form with no Stripe link and
+  `/28principles` is a bare `permanentRedirect` stub (`lib/curriculum.ts` was
+  deleted). The Archive stays free and the paid tier is sold through one
+  block, not through a resurrected multi-route storefront.
+- **The 28 Principles now live in the Archive and in the bot.** Eight
+  principle essays are published free in the Archive's "Principles"
+  collection; the full five-phase curriculum is only in `telegram-bot/`,
+  which is gated behind its own local SQLite flag and never asked for an
+  email — so a Stripe purchase on the website does not currently reach the
+  bot. That is the first priority of the next session.
 
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
@@ -134,12 +175,16 @@ of them is a migration and needs a council decision.
    write either table.
 
 ## 📚 Stats
-- Sessions: 48
-- Lines written: ~2600
+- Sessions: 49
+- Lines written: ~2850
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-24 | revenue | Added the membership call to action to the homepage, `/archive/` and `/newsletter/`, pointing at the canonical Stripe payment link from `lib/brand.ts`. The live site could not take a payment before this — every commerce route redirects to the archive and the archive carried no price, no link and no CTA | ~120 |
+| 2026-10-24 | backend | `/api/checkout/create-session` built its success and cancel URLs from `NEXT_PUBLIC_BASE_URL`, which is not set in Vercel, so every completed order redirected to `http://localhost:3000`. It now falls back to `BRAND.siteUrl` | ~30 |
+| 2026-10-24 | performance | Converted all 16 editorial illustrations from PNG to WebP (about 44 MB to about 1.5 MB) and repointed every reference; `getArchiveArtwork()` now returns a display source and a separate PNG source for the OG renderer, which cannot decode WebP | ~90 |
+| 2026-10-24 | ops | Mirrored the 6 Production env vars that Preview was missing (`POSTGRES_*`, `SUPABASE_JWT_SECRET`, `SUPABASE_SECRET_KEY`) by extending the target list of the existing Production records — sensitive Vercel vars are write-only, so their values cannot be read back | ~30 |
 | 2026-10-23 | backend | The admin console, the premium gating and `/api/subscriptions` now read `profiles`, `products` and `newsletters` server side with the service-role key, because the fleet's RLS policies on `profiles` are self-referential (42P17) and `products` has no SELECT policy for `public` | ~800 |
 | 2026-10-23 | backend | `/api/profile` (the caller's own row), `/api/admin/console` (the console datasets and its writes), `/api/products` and `/api/products/[slug]` (the catalogue, with the slug derived from the product name) | ~450 |
 | 2026-10-23 | backend | `/api/subscriptions` resolves the caller from the bearer token and writes `profiles.id`; `/api/referrals` drops four columns that do not exist and keeps the code in `profiles.metadata` | ~300 |
@@ -223,6 +268,26 @@ of them is a migration and needs a council decision.
   against the live domain *and* against the handler's `switch` before
   debugging handler code, and make sure the endpoint's signing secret is
   the one the app verifies with.
+- **og-images-cannot-read-webp** (Next.js, applies to every project) —
+  `next/og` renders with satori, which does not decode WebP. If the artwork
+  on a page is served as WebP, the OG route needs a PNG (or JPEG) sibling.
+  Return both sources from one helper so the two never drift.
+- **unoptimized-images-serve-raw-bytes** (Next.js) — with
+  `images.unoptimized: true` in `next.config.ts` there is no automatic
+  compression or resizing: the file in `public/` is the file the browser
+  gets. Asset weight is a build-time decision, not a framework decision.
+  Audit the bytes in `public/` before blaming the framework.
+- **a-redirecting-storefront-sells-nothing** (fleet) — when every commerce
+  route redirects to a content surface, the surviving surface has to carry
+  the offer. A brand fact (price, checkout link) that lives only on a
+  redirected page is a dead end: the site looks complete and takes no
+  money. Put the offer on the surface that actually loads.
+- **sensitive-env-vars-are-write-only** (Vercel) — neither `vercel env pull`
+  nor `?decrypt=true` returns the value of a sensitive variable. To give a
+  Preview build the same secret as Production, extend the **target list** of
+  the existing Production record (`target: ["production","preview"]`) rather
+  than creating a new record, and verify by counting the variables rather
+  than by reading them.
 
 
 ## ⚡ Rules

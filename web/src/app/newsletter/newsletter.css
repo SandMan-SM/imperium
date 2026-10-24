@@ -72,5 +72,6 @@
 }
 @media (max-width: 350px) {
   .in-wrap { width: calc(100% - 32px); }
+  .membership-cta .archive-wrap { width: calc(100% - 32px); }
   .in-hero h1 { font-size: 41px; }
 }
