@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, Mail } from "lucide-react";
 import { PartnerDirectory, PartneredWith } from "@/components/Partners";
+import { MembershipCta } from "@/components/MembershipCta";
 import "./newsletter.css";
 
 /**
@@ -54,6 +55,8 @@ export default function NewsletterPage() {
           </div>
         </div>
       </section>
+
+      <MembershipCta id="membership" />
 
       <section id="partners" className="in-partner-directory" aria-labelledby="newsletter-partners-heading">
         <div className="in-wrap">

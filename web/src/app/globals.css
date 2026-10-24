@@ -467,6 +467,16 @@
 .archive-endnote { display: flex; align-items: center; justify-content: space-between; gap: 25px; border-top: 1px solid #cdd0c0; padding-block: 26px; margin-top: 37px; }
 .archive-endnote p { font-family: var(--font-serif); font-style: italic; font-size: 15px; color: #6c745f; }
 .archive-endnote a { white-space: nowrap; padding: 10px 0; color: #6c745f; font-size: 11px; }
+.membership-cta { padding-block: 60px; border-block: 1px solid #d2d1c7; background: var(--ed-paper, #f1eee6); }
+.membership-cta-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 54px; align-items: center; }
+.membership-cta h2 { margin-top: 13px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.2; letter-spacing: -.03em; color: #2b2f28; }
+.membership-cta-copy > p:not(.editorial-kicker) { margin-top: 20px; max-width: 46ch; font-size: 15px; line-height: 1.9; color: #6c7063; }
+.membership-cta-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 22px; margin-top: 30px; }
+.membership-cta-note { font-size: 11px; line-height: 1.6; color: #818275; }
+.membership-cta-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid #d2d1c7; }
+.membership-cta-list li { display: flex; gap: 12px; align-items: flex-start; padding-block: 14px; border-bottom: 1px solid #d2d1c7; font-size: 13px; line-height: 1.75; color: #6c7063; }
+.membership-cta-list li strong { font-weight: 600; color: #3f4636; }
+.membership-cta-list svg { flex-shrink: 0; margin-top: 4px; color: #92784e; }
 .editorial-library-intro { padding-block: 56px 0; }
 .editorial-library-intro h1 { margin-top: 23px; font-family: var(--font-serif); font-weight: 400; font-size: 65px; line-height: 1.08; letter-spacing: -.035em; color: #2a3425; }
 .editorial-library-intro h1 em { color: #85805d; }
@@ -509,6 +519,8 @@
  .featured-archive-grid .archive-entry p { font-size: 12px; }
  .featured-archive-grid .archive-entry-bottom { flex-wrap: wrap; }
  .editorial-topics { grid-template-columns: repeat(3,minmax(0,1fr)); row-gap: 28px; }
+ .membership-cta { padding-block: 48px; }
+ .membership-cta-grid { grid-template-columns: minmax(0, 1fr); gap: 34px; }
 }
 @media (max-width: 640px) {
  .archive-wrap { width: calc(100% - 40px); }

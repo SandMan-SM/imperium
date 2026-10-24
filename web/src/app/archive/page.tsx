@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArchiveLibrary } from "@/components/ArchiveLibrary";
+import { MembershipCta } from "@/components/MembershipCta";
 import { archiveCategories } from "@/lib/archive";
 
 export const metadata: Metadata = {
@@ -13,5 +14,5 @@ export const metadata: Metadata = {
 export default async function ArchivePage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const params = await searchParams;
   const category = archiveCategories.includes(params.category as typeof archiveCategories[number]) ? params.category! : "All";
-  return <div className="archive-site archive-dedicated"><div className="archive-wrap editorial-library-intro"><p className="editorial-kicker">THE IMPERIUM RESOURCE LIBRARY</p><h1>Find your next<br /><em>useful idea.</em></h1><p>Browse the collection by subject, or search for something on your mind.<br className="hidden md:block" /> Every resource is free to read, with a practical idea to take away.</p></div><ArchiveLibrary key={category} initialCategory={category} /></div>;
+  return <div className="archive-site archive-dedicated"><div className="archive-wrap editorial-library-intro"><p className="editorial-kicker">THE IMPERIUM RESOURCE LIBRARY</p><h1>Find your next<br /><em>useful idea.</em></h1><p>Browse the collection by subject, or search for something on your mind.<br className="hidden md:block" /> Every resource is free to read, with a practical idea to take away.</p></div><ArchiveLibrary key={category} initialCategory={category} /><MembershipCta /></div>;
 }

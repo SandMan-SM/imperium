@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { ArchiveCard } from "@/components/ArchiveCard";
+import { MembershipCta } from "@/components/MembershipCta";
 import { PartneredWith } from "@/components/Partners";
 import { archiveCategories, archiveEntries } from "@/lib/archive";
 import { getArchiveArtwork } from "@/lib/archive-art";
@@ -33,6 +34,8 @@ export default function Home() {
     <section className="editorial-featured archive-wrap" aria-labelledby="featured-title"><div className="archive-section-top"><div><p className="editorial-kicker">SELECTED FROM THE ARCHIVE</p><h2 id="featured-title">Three places to begin.</h2></div><p className="archive-section-description">A principle to live by. A standard to build.<br className="hidden sm:block" /> A clearer way to see the next step.</p></div><div className="archive-grid featured-archive-grid">{featured.map((entry) => <ArchiveCard key={entry.slug} entry={entry} />)}</div><div className="archive-view-all"><Link href="/archive/" className="editorial-button editorial-button-outline">See the full archive <ArrowRight size={18} aria-hidden="true" /></Link><span>{archiveEntries.length} resources across five subjects</span></div></section>
 
     <section id="collections" className="editorial-collections" aria-labelledby="collections-title"><div className="archive-wrap"><div className="archive-section-top"><div><p className="editorial-kicker">FOLLOW YOUR CURIOSITY</p><h2 id="collections-title">A subject for every season.</h2></div><p className="archive-section-description">Pick what speaks to where you are.</p></div><div className="editorial-topics">{archiveCategories.map((category) => { const entries = archiveEntries.filter((entry) => entry.category === category); const art = getArchiveArtwork(entries[0]); return <Link key={category} href={`/archive/?category=${encodeURIComponent(category)}`} className="editorial-topic"><div className="editorial-topic-image"><Image src={art.src} alt={art.alt} fill sizes="(max-width: 640px) 50vw, 20vw" /></div><div className="editorial-topic-title"><h3>{category}</h3><ArrowUpRight size={17} aria-hidden="true" /></div><p>{topicDescriptions[category]}</p><span>{entries.length} readings</span></Link>; })}</div></div></section>
+
+    <MembershipCta />
 
     <section className="editorial-closing"><Image src="/editorial/hero-acropolis-v1.webp" alt="" fill sizes="100vw" /><div className="editorial-closing-shade" /><div className="archive-wrap editorial-closing-content"><p className="editorial-kicker">THE IDEA BEHIND IMPERIUM</p><h2>Read something.<br /><em>Live it a little.</em></h2><p>Good ideas earn their place in the way we think, work, and treat the world around us. The Archive brings them together—so you can find one worth taking with you.</p><Link href="/mission-statement/" className="editorial-underlined">About the library <ArrowUpRight size={18} aria-hidden="true" /></Link></div></section>
   </div>;
