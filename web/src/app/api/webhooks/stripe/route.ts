@@ -83,10 +83,15 @@ async function upsertProfileByEmail(email: string | null, stripeCustomerId?: str
     .from('profiles')
     .select('*')
     .or(filter)
-    .limit(1);
+    .limit(10);
 
-  if (existing && existing[0]) {
-    const profile = existing[0];
+  // An address can hold two rows — the one this webhook wrote, and the one
+  // the signup trigger wrote for the person's account. The account row is
+  // the one the site reads, so the Stripe id belongs on that one.
+  const candidates = existing ?? [];
+  const profile = candidates.find((row) => row.auth_id) ?? candidates[0];
+
+  if (profile) {
 
     // The customer id has to be written onto the row, or the renewal and
     // cancellation events — which look a profile up by `stripe_customer_id`
@@ -109,6 +114,58 @@ async function upsertProfileByEmail(email: string | null, stripeCustomerId?: str
   const insert = { email, stripe_customer_id: stripeCustomerId, created_at: new Date().toISOString() };
   const { data } = await supabaseAdmin.from('profiles').insert([insert]).select().limit(1);
   return data?.[0] ?? null;
+}
+
+/**
+ * Finds the profile that belongs to a Stripe customer.
+ *
+ * The customer id is the reliable key, but it is only written onto the
+ * profile when a checkout session arrives — and a customer can exist before
+ * its first checkout, or a subscription can be started from the Stripe
+ * dashboard. When that happens the id is missing, so the address on the
+ * Stripe customer is used to find the row instead, and the id is written
+ * onto it so the next event finds it directly.
+ */
+async function findProfileByCustomer(customerId: string) {
+  const { data: byId } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .eq('stripe_customer_id', customerId)
+    .limit(1);
+
+  if (byId && byId[0]) return byId[0];
+
+  let email: string | null = null;
+  try {
+    const customer = await getStripe().customers.retrieve(customerId);
+    if (!('deleted' in customer) && customer.email) email = customer.email;
+  } catch (error) {
+    console.error('Stripe webhook: could not read the customer:', errorMessage(error));
+  }
+
+  if (!email) return null;
+
+  const { data: byEmail } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .ilike('email', email)
+    .limit(10);
+
+  // An address can hold two rows — the one the Stripe webhook wrote, and the
+  // one the signup trigger wrote for the account. The account row is the one
+  // the site reads, so the Stripe id belongs on that one.
+  const candidates = byEmail ?? [];
+  const profile = candidates.find((row) => row.auth_id) ?? candidates[0];
+  if (!profile) return null;
+
+  const { data: linked } = await supabaseAdmin
+    .from('profiles')
+    .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
+    .eq('id', profile.id)
+    .select()
+    .limit(1);
+
+  return linked?.[0] ?? profile;
 }
 
 export async function POST(req: Request) {
@@ -228,21 +285,20 @@ export async function POST(req: Request) {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        const { data: profiles } = await supabaseAdmin.from('profiles').select('*').eq('stripe_customer_id', customerId).limit(1);
-        const profile = profiles?.[0];
+        const profile = await findProfileByCustomer(customerId);
         if (profile) {
           await supabaseAdmin.from('profiles').update({ is_premium: true, subscription_status: 'active', premium_since: profile.premium_since ?? new Date().toISOString() }).eq('id', profile.id);
         }
         break;
       }
 
+      case 'customer.subscription.created':
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
         const status = sub.status;
-        const { data: profiles } = await supabaseAdmin.from('profiles').select('*').eq('stripe_customer_id', customerId).limit(1);
-        const profile = profiles?.[0];
+        const profile = await findProfileByCustomer(customerId);
         if (profile) {
           const isPremium = status === 'active' || status === 'trialing';
           await supabaseAdmin.from('profiles').update({ is_premium: isPremium, subscription_status: status, updated_at: new Date().toISOString() }).eq('id', profile.id);
@@ -253,8 +309,7 @@ export async function POST(req: Request) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        const { data: profiles } = await supabaseAdmin.from('profiles').select('*').eq('stripe_customer_id', customerId).limit(1);
-        const profile = profiles?.[0];
+        const profile = await findProfileByCustomer(customerId);
         if (profile) {
           // Mark subscription as past_due on payment failure
           await supabaseAdmin.from('profiles').update({

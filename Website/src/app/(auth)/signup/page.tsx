@@ -42,6 +42,16 @@ function SignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Supabase requires a password that mixes character classes. Say so
+    // before the request goes out, rather than after it is refused.
+    const strong =
+      /[a-z]/.test(password) && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
+    if (!strong) {
+      setError("Use a password with a lowercase letter, an uppercase letter, a number and a symbol.");
+      return;
+    }
+
     setLoading(true);
 
     if (sessionId) {
@@ -175,7 +185,7 @@ function SignupForm() {
               required
               minLength={8}
             />
-            <p className="auth-hint">At least 8 characters.</p>
+            <p className="auth-hint">At least 8 characters, with a lowercase letter, an uppercase letter, a number and a symbol.</p>
           </div>
 
           {error && <div className="auth-error" role="alert">{error}</div>}

@@ -121,6 +121,17 @@ export async function POST(request: Request) {
                     { status: 409 },
                 );
             }
+
+            // Supabase enforces a password that mixes character classes. Say
+            // so plainly — a generic "try again" sends the person round in
+            // circles with a password they cannot guess is wrong.
+            if (error && error.code === 'weak_password') {
+                return NextResponse.json(
+                    { error: 'Use a password with a lowercase letter, an uppercase letter, a number and a symbol.' },
+                    { status: 400 },
+                );
+            }
+
             console.error('Account creation failed:', error);
             return NextResponse.json({ error: 'The account could not be created. Try again.' }, { status: 500 });
         }
