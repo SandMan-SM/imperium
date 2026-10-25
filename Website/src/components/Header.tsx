@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 const navigation = [
     { label: "The Archive", href: "/archive/" },
+    { label: "The 28 Principles", href: "/principles/" },
     { label: "Newsletter", href: "/newsletter/" },
     { label: "About", href: "/mission-statement/" },
     { label: "Partners", href: "/partners/" },
@@ -16,6 +18,10 @@ export function Header() {
     const pathname = usePathname().replace(/\/$/, "") || "/";
     const [open, setOpen] = useState(false);
     const menuButton = useRef<HTMLButtonElement>(null);
+    const { user } = useAuth();
+
+    const accountHref = user ? "/principles/" : "/login/";
+    const accountLabel = user ? "My curriculum" : "Sign in";
 
     useEffect(() => {
         if (!open) return;
@@ -52,9 +58,17 @@ export function Header() {
                     ))}
                 </nav>
 
-                <Link href="/archive/" className="hidden min-h-11 items-center justify-center rounded-md border border-[#252820] bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:border-[#454c37] hover:bg-[#454c37] md:inline-flex">
-                    Browse resources
-                </Link>
+                <div className="hidden items-center gap-4 md:flex">
+                    <Link
+                        href={accountHref}
+                        className="flex min-h-11 items-center text-[14px] text-[#565c50] transition-colors hover:text-[#252820]"
+                    >
+                        {accountLabel}
+                    </Link>
+                    <Link href="/archive/" className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#252820] bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:border-[#454c37] hover:bg-[#454c37]">
+                        Browse resources
+                    </Link>
+                </div>
 
                 <button
                     ref={menuButton}
@@ -82,6 +96,9 @@ export function Header() {
                             {item.label}
                         </Link>
                     ))}
+                    <Link href={accountHref} onClick={() => setOpen(false)} className="flex min-h-12 items-center border-b border-[#e4e3da] py-3 text-[16px] text-[#565c50] transition-colors hover:text-[#525a3d]">
+                        {accountLabel}
+                    </Link>
                     <Link href="/archive/" onClick={() => setOpen(false)} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:bg-[#454c37]">
                         Browse resources
                     </Link>
