@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 25, 2026 01:55 AM
+> Synthetic Intelligence Memory | Updated: October 25, 2026 02:45 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -16,52 +16,90 @@
 | Build | 99/100 | █████████░ |
 | SEO | 93/100 | █████████░ |
 | Performance | 92/100 | █████████░ |
-| Backend | 96/100 | █████████░ |
-| Mobile | 96/100 | █████████░ |
-| **OVERALL** | **95/100** | █████████░ |
+| Backend | 98/100 | █████████░ |
+| Mobile | 97/100 | █████████░ |
+| **OVERALL** | **96/100** | █████████░ |
+
+## ✅ What Last Session Shipped
+The membership the site sells is now a **working product**, not a promise:
+- `/principles/` is the gated member surface. The 28 lessons live in
+  `lib/curriculum.ts` (server-only); `/api/principles` releases the free
+  unit to anonymous readers and all 28 to a paying member. A locked unit has
+  **no body on the client at all** — it was never sent.
+- `/api/account/register` opens an account for someone who has already
+  paid: the checkout session id proves the address, so the account is
+  created confirmed and the member signs in immediately (see the
+  `paid-path-registration-without-email-confirmation` runbook).
+- The Stripe webhook now links a member's `stripe_customer_id` onto the
+  **account** row, and finds the profile by Stripe customer id with a
+  fallback to the customer's email, so renewals and cancellations land on
+  the right person.
+- `/login` and `/signup` are reachable again, restyled to the live
+  editorial theme, and linked from the header.
 
 ## 🎯 This Session: Do These In Order
-1. **Fulfil the membership the site now sells.** The membership CTA is live
-   on the homepage, the archive and the newsletter, so a stranger can now pay
-   $20/month. But a completed checkout only sets `profiles.is_premium` in
-   Supabase. The curriculum itself lives in `telegram-bot/`, which keeps its
-   own SQLite `is_premium` flag, never collected an email, and points at a
-   **placeholder** Stripe payment link (`monetization.py`: "This would
-   integrate with your Stripe setup"). Nothing connects a Stripe customer to
-   a Telegram account, so **nothing unlocks automatically after purchase.**
-   Pick one: bridge the bot to `profiles` by email, or put a gated surface on
-   the website that reads `profiles.is_premium` (which the webhook already
-   maintains correctly).
-2. **Close the commerce loop with one real checkout.** The write path is
-   proven and the Stripe webhook's replay guard works. The Stripe account is
-   **live**, so the last step needs a card: a checkout session for
-   `price_1T4KHvChZyGhfmDOhcHCBpat` ($20/month, "Imperium Elite
-   Mastermind") is open at
-   `https://checkout.stripe.com/g/pay/cs_live_a1VU3AhBBFSEF9npTDwro3ZDUiZmWfW2Jl5lNznJaFEE92Kjkz6O1CpDvd`
-   — hand it to the operator and confirm the purchase lands in
-   `inbound_imperium_events` and the profile flips to premium. The webhook
-   endpoint now points at `https://secretimperium.com/api/webhooks/stripe`
-   and subscribes to all five events the handler supports, so a completed
-   checkout will be recorded. Note the real state of the account: **100+
-   checkout sessions, every one expired and unpaid, zero customers, zero
-   subscriptions.** 99 of those sessions were created in a single second on
-   2026-10-18 against the $20 price. Sessions are being created; nobody
-   finishes them.
-3. **Put the four fleet findings in front of the council.** They are
-   security issues in shared tables, so they need a decision, not an
-   autonomous fix (see "Council items" below).
-4. **Decide what to do about `products.slug`.** The table still has no `slug`
-   column, so the app derives the URL slug from the product name. Adding the
-   column is a migration and needs a council decision.
-5. **Keep Preview in step with Production.** Preview now carries the same
-   fleet values as Production (24 vars). Any new Production env var must be
+1. **Get the operator's own card through the checkout once.** The whole
+   write path is proven — the webhook fires, the purchase lands in
+   `inbound_imperium_events`, the profile flips to premium, the curriculum
+   opens. What has never happened is a **real** purchase: the account still
+   shows **100+ checkout sessions, every one expired and unpaid, zero
+   customers, zero subscriptions** (99 created in a single second on
+   2026-10-18 against the $20 price). Sessions are being created; nobody
+   finishes them. The canonical link is
+   `https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07`
+   (`lib/brand.ts` → `STRIPE_CHECKOUT_URL`), and it now redirects to
+   `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
+   Watch the funnel: if sessions are created and abandoned, the checkout
+   page is the problem, not the site.
+2. **Bring the Telegram bot into the same membership.** The bot still keeps
+   its own SQLite `is_premium` flag and never collected an email, so a
+   member who buys on the website gets nothing in Telegram. The bridge now
+   exists on the website side (`profiles` + Stripe); the bot needs to look
+   the same address up instead of its local flag.
+3. **The council items are recorded, not fixed.** They are written up in
+   omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
+   (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
+   functions, the `subscriptions`/`referrals` policy contradiction) and
+   `products.slug` (the migration decision). Both need a council decision,
+   not an autonomous fix. **Do not change shared fleet tables.**
+4. **Keep Preview in step with Production.** Both carry the same 24 vars
+   (verified by name this session). Any new Production env var must be
    added to Preview in the same session, or previews break silently again.
    Note: **sensitive Vercel env vars are write-only** — neither
    `vercel env pull` nor `?decrypt=true` returns a value. To mirror one
    without reading it, extend the target list of the existing Production
    record to include `preview` instead of creating a new record.
+5. **The newsletter still has no member.** The membership buys the
+   curriculum and progress, but the weekly letter — the thing the price
+   page promises — is still a separate free signup. Decide whether the
+   membership should carry it, and if so, how a paying member's address
+   reaches the send list.
 
 ## 🔬 Why
+- **The membership had no product behind it.** The Stripe webhook set
+  `profiles.is_premium` and nothing read it. The curriculum lived only in
+  `telegram-bot/` behind a local SQLite flag that no checkout could reach.
+  Now `lib/curriculum.ts` is a server module and `/api/principles` is the
+  only way out of it, so the content is gated by the ledger rather than by
+  the UI: a locked unit is never sent to the browser at all.
+- **The email confirmation was the last thing standing between a paying
+  member and the curriculum.** Supabase runs this project with
+  `mailer_autoconfirm: false` on a rate-limited default SMTP, so a new
+  account sat dormant until a confirmation email arrived — and on the one
+  weekend that matters, it does not arrive. The paid path no longer waits
+  for it: the checkout session proves the address.
+- **A Stripe subscription can exist before its first checkout session**, and
+  a customer can exist without one. A renewal or a cancellation was looked
+  up by `stripe_customer_id` alone, so an event for a member whose profile
+  row had never been stamped with the customer id went nowhere. The lookup
+  now falls back to the customer's email and writes the id onto the account
+  row.
+- **The account row and the purchase row are two different rows.** The
+  signup trigger creates a row with `auth_id` for the same address that the
+  webhook already wrote a row for, and `profiles.email` has no unique
+  constraint. Every read of "the member's profile" therefore has to read
+  all rows for the address, and the Stripe id belongs on the row that
+  carries `auth_id` — that is the row the site reads.
 - **The fleet's RLS policies, not the app, decided what the site could
   read.** `profiles` has a policy that subqueries `profiles`, so every
   authenticated read of that table dies with Postgres error 42P17 ("infinite
@@ -139,16 +177,20 @@
   `/28principles` is a bare `permanentRedirect` stub (`lib/curriculum.ts` was
   deleted). The Archive stays free and the paid tier is sold through one
   block, not through a resurrected multi-route storefront.
-- **The 28 Principles now live in the Archive and in the bot.** Eight
-  principle essays are published free in the Archive's "Principles"
-  collection; the full five-phase curriculum is only in `telegram-bot/`,
-  which is gated behind its own local SQLite flag and never asked for an
-  email — so a Stripe purchase on the website does not currently reach the
-  bot. That is the first priority of the next session.
+- **The 28 Principles now live in the Archive, on the website and in the
+  bot.** Eight principle essays are published free in the Archive's
+  "Principles" collection. The full five-phase curriculum is now a gated
+  website surface at `/principles/`, and `telegram-bot/` still carries its
+  own copy behind a local SQLite flag that no checkout reaches — that
+  bridge is the next priority.
 
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
-of them is a migration and needs a council decision.
+of them is a migration and needs a council decision. They are written up in
+full in omni-memory under
+`client.imperium / council-items-2026-10-25-fleet-security-and-schema`,
+with the `products.slug` migration decision in the same entry. **Recorded
+2026-10-25 — do not re-raise without a decision.**
 1. **42P17 policy recursion on `profiles`.** `profiles_admin_modify_all`
    (roles `{authenticated}`, cmd ALL) contains `EXISTS (SELECT 1 FROM profiles
    me WHERE me.auth_id = auth.uid() AND me.is_admin = true)` — a self
@@ -175,12 +217,19 @@ of them is a migration and needs a council decision.
    write either table.
 
 ## 📚 Stats
-- Sessions: 49
-- Lines written: 2850
+- Sessions: 50
+- Lines written: 3900
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-25 | revenue | `/api/account/register`: a paid Stripe checkout session proves the address, so the account is created confirmed and the member signs in immediately instead of waiting on a rate-limited confirmation email. An existing account is never modified. The signup form branches on `session_id` and falls back to `supabase.auth.signUp` for the unpaid path | ~190 |
+| 2026-10-25 | backend | The Stripe webhook now finds a member's profile by Stripe customer id and falls back to the customer's email, writing the id onto the row that carries `auth_id` — so a renewal or a cancellation lands on the right account row even when no checkout session ever stamped the id | ~120 |
+| 2026-10-25 | commerce | The Stripe webhook endpoint now also subscribes to `customer.subscription.created`, and the handler switched on it | ~10 |
+| 2026-10-25 | auth | `/login` and `/signup` were restored from the archive redirect, restyled to the live editorial theme, and given a `redirect` parameter so a member lands back on the curriculum. The header now links The 28 Principles and Sign in | ~260 |
+| 2026-10-25 | curriculum | `lib/curriculum.ts`: the 28 units as a typed server-only module (5 phases, quotes, lesson prose, sub-points, reflections), and `/api/principles` as the only exit — the free unit for anonymous readers, all 28 for a paying member, with progress written to the account's `completed_units` | ~900 |
+| 2026-10-25 | commerce | The $20/month membership was registered in the `products` table against its live Stripe price and product ids, so the webhook can attribute the purchase | ~20 |
+| 2026-10-25 | ops | The Stripe payment link now redirects to `/principles/?activated=1&session_id=…` after checkout, and `/api/membership/session` names the address the membership is attached to | ~90 |
 | 2026-10-24 | revenue | Added the membership call to action to the homepage, `/archive/` and `/newsletter/`, pointing at the canonical Stripe payment link from `lib/brand.ts`. The live site could not take a payment before this — every commerce route redirects to the archive and the archive carried no price, no link and no CTA | ~120 |
 | 2026-10-24 | backend | `/api/checkout/create-session` built its success and cancel URLs from `NEXT_PUBLIC_BASE_URL`, which is not set in Vercel, so every completed order redirected to `http://localhost:3000`. It now falls back to `BRAND.siteUrl` | ~30 |
 | 2026-10-24 | performance | Converted all 16 editorial illustrations from PNG to WebP (about 44 MB to about 1.5 MB) and repointed every reference; `getArchiveArtwork()` now returns a display source and a separate PNG source for the OG renderer, which cannot decode WebP | ~90 |
@@ -288,6 +337,25 @@ of them is a migration and needs a council decision.
   the existing Production record (`target: ["production","preview"]`) rather
   than creating a new record, and verify by counting the variables rather
   than by reading them.
+- **the-payment-can-prove-the-email** (fleet, applies to every paid site) —
+  a checkout session id is an unguessable secret that proves the address was
+  paid for. When the mailer is rate limited or autoconfirm is off, let the
+  payment stand in for the confirmation email: verify the session is paid,
+  verify the address matches `customer_details.email`, then create the
+  account confirmed. Never modify an existing account on this path — no
+  password reset, no confirmation flip. Runbook:
+  `runbook.imperium / paid-path-registration-without-email-confirmation`.
+- **stripe-is-the-ledger-not-the-flag** (fleet) — a boolean on a profile row
+  is written once and never updated, so it goes stale on cancellation. When a
+  Stripe customer exists for an address, the subscription decides whether the
+  member is in, whatever the row says. And the customer id may not be on the
+  row at all: a customer can exist before its first checkout, so look it up
+  by the customer's email and stamp the id onto the row that carries
+  `auth_id`.
+- **gate-the-content-server-side-not-the-ui** (fleet) — a locked lesson that
+  is sent to the browser and hidden with CSS is a lesson anyone can read in
+  the network tab. Keep the paid content in a server module and release it
+  through an API that checks membership before it writes a single byte.
 
 
 ## ⚡ Rules
