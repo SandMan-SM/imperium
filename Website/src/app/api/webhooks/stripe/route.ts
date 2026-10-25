@@ -85,7 +85,26 @@ async function upsertProfileByEmail(email: string | null, stripeCustomerId?: str
     .or(filter)
     .limit(1);
 
-  if (existing && existing[0]) return existing[0];
+  if (existing && existing[0]) {
+    const profile = existing[0];
+
+    // The customer id has to be written onto the row, or the renewal and
+    // cancellation events — which look a profile up by `stripe_customer_id`
+    // and by nothing else — never find it again. A member who opened an
+    // account before paying has a profile row that carries no Stripe id.
+    if (stripeCustomerId && !profile.stripe_customer_id) {
+      const { data: linked } = await supabaseAdmin
+        .from('profiles')
+        .update({ stripe_customer_id: stripeCustomerId, updated_at: new Date().toISOString() })
+        .eq('id', profile.id)
+        .select()
+        .limit(1);
+
+      return linked?.[0] ?? profile;
+    }
+
+    return profile;
+  }
 
   const insert = { email, stripe_customer_id: stripeCustomerId, created_at: new Date().toISOString() };
   const { data } = await supabaseAdmin.from('profiles').insert([insert]).select().limit(1);
