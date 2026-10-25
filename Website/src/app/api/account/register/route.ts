@@ -73,7 +73,19 @@ export async function POST(request: Request) {
 
     try {
         const stripe = getStripe();
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        let session;
+        try {
+            session = await stripe.checkout.sessions.retrieve(sessionId);
+        } catch {
+            // Stripe throws when the id does not exist. That is a bad link,
+            // not a server fault, and the member should be told to retry
+            // from the purchase confirmation rather than shown an error.
+            return NextResponse.json(
+                { error: 'That purchase could not be found. Open the link from your checkout receipt.' },
+                { status: 404 },
+            );
+        }
 
         if (!isPaidSession(session)) {
             return NextResponse.json({ error: 'That checkout has not been paid.' }, { status: 402 });
@@ -88,20 +100,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // An existing account is never modified. The person can sign in with
-        // the password they already have, or use the password reset.
-        const { data: existing } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-        const alreadyRegistered = (existing?.users ?? []).some(
-            (candidate) => (candidate.email ?? '').trim().toLowerCase() === email,
-        );
-
-        if (alreadyRegistered) {
-            return NextResponse.json(
-                { error: 'An account already exists for that address. Sign in, or reset your password.' },
-                { status: 409 },
-            );
-        }
-
+        // An existing account is never modified. Supabase refuses to create a
+        // second account for the same address, and that refusal is caught
+        // below — the person signs in with the password they already have,
+        // or uses the password reset.
         const { data, error } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
@@ -110,6 +112,15 @@ export async function POST(request: Request) {
         });
 
         if (error || !data?.user) {
+            // Supabase refuses to create a second account for the same
+            // address. That is the same situation as an existing account, so
+            // the member is told to sign in rather than shown a server fault.
+            if (error && /already|registered|exists/i.test(error.message)) {
+                return NextResponse.json(
+                    { error: 'An account already exists for that address. Sign in, or reset your password.' },
+                    { status: 409 },
+                );
+            }
             console.error('Account creation failed:', error);
             return NextResponse.json({ error: 'The account could not be created. Try again.' }, { status: 500 });
         }
