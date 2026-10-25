@@ -1,4 +1,5 @@
-import { ArrowRight, Check } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 /**
@@ -46,6 +47,10 @@ export function MembershipCta({ id = "membership" }: { id?: string }) {
               Join Imperium Elite — {BRAND.priceMonthly}
               <ArrowRight size={18} aria-hidden="true" />
             </a>
+            <Link className="membership-cta-preview" href="/principles/">
+              Preview the curriculum
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
             <span className="membership-cta-note">Secure checkout by Stripe. Cancel any time.</span>
           </div>
         </div>

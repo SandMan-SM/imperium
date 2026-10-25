@@ -576,3 +576,79 @@
  .editorial-library-intro { padding-right: 0; padding-bottom: 10px; }
  .editorial-library-intro::before { width: 100%; opacity: .15; background-image: linear-gradient(90deg, #f1eee6, #f1eee680), url('/editorial/principles/the-discipline-of-attention.webp'); }
 }
+
+/* Imperium Elite: the member area for the 28 Principles. */
+.member-hero { padding-block: 58px 42px; border-bottom: 1px solid var(--ed-line); background: linear-gradient(180deg, #f6f4ec, var(--ed-paper)); }
+.member-hero h1 { font-family: var(--font-serif); font-weight: 400; font-size: clamp(42px, 5.4vw, 74px); line-height: 1.06; letter-spacing: -.04em; margin-top: 16px; color: var(--ed-ink); }
+.member-hero h1 em { font-style: italic; color: var(--ed-bronze); }
+.member-hero-deck { margin-top: 18px; max-width: 640px; color: var(--ed-muted); font-size: 15px; line-height: 1.85; }
+.member-section { padding-block: 46px 64px; }
+.member-shell { display: flex; flex-direction: column; gap: 34px; }
+.member-loading { display: flex; min-height: 240px; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--ed-muted); font-size: 14px; }
+.member-status { display: flex; align-items: flex-end; justify-content: space-between; gap: 34px; flex-wrap: wrap; }
+.member-status-copy { max-width: 620px; }
+.member-status h2 { font-family: var(--font-serif); font-weight: 400; font-size: clamp(28px, 3.1vw, 40px); line-height: 1.16; letter-spacing: -.03em; margin-top: 12px; color: var(--ed-ink); }
+.member-status-note { margin-top: 12px; color: var(--ed-muted); font-size: 14px; line-height: 1.8; }
+.member-progress-block { min-width: 240px; flex: 1 1 240px; max-width: 360px; }
+.member-progress-track { height: 5px; border-radius: 99px; background: #dedcd1; overflow: hidden; }
+.member-progress-fill { height: 100%; border-radius: 99px; background: var(--ed-bronze); transition: width .4s ease; }
+.member-progress-label { display: block; margin-top: 9px; color: var(--ed-muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.member-error { border: 1px solid #b8563f; border-radius: 4px; padding: 12px 15px; background: #b8563f14; color: #8c3a27; font-size: 13px; }
+.member-gate { display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; border: 1px solid #d9c8a4; border-radius: 6px; padding: 24px 26px; background: linear-gradient(120deg, #f7f2e6, #f1eee6); }
+.member-gate p:not(.editorial-kicker) { margin-top: 9px; max-width: 520px; color: #5d6155; font-size: 14px; line-height: 1.8; }
+.member-gate-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 11px; }
+.member-gate-note { color: #6d7065; font-size: 12px; line-height: 1.6; }
+.member-gate-note a { color: var(--ed-bronze); text-decoration: underline; text-underline-offset: 3px; }
+.member-columns { display: grid; grid-template-columns: minmax(230px, 300px) minmax(0, 1fr); gap: 40px; align-items: start; }
+.member-index { display: flex; flex-direction: column; gap: 26px; position: sticky; top: 106px; max-height: calc(100dvh - 130px); overflow-y: auto; padding-right: 6px; }
+.member-phase-title { color: #81704b; font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; padding-bottom: 9px; border-bottom: 1px solid var(--ed-line); }
+.member-phase ul { margin-top: 7px; display: flex; flex-direction: column; }
+.member-unit { display: flex; width: 100%; align-items: center; gap: 11px; min-height: 40px; padding: 7px 9px; border: 1px solid transparent; border-radius: 4px; background: none; color: #4f5449; font-size: 13px; text-align: left; cursor: pointer; transition: background .18s, border-color .18s, color .18s; }
+.member-unit:hover { background: #e9e6dc; color: var(--ed-ink); }
+.member-unit.is-open { border-color: #c8b184; background: #efe9dc; color: var(--ed-ink); font-weight: 500; }
+.member-unit.is-locked { color: #8b8c80; }
+.member-unit-number { min-width: 20px; color: #9a9a8d; font-size: 11px; font-variant-numeric: tabular-nums; }
+.member-unit-title { flex: 1; }
+.member-unit-state { flex-shrink: 0; color: var(--ed-bronze); }
+.member-lesson { border: 1px solid var(--ed-line); border-radius: 6px; padding: 34px 36px 38px; background: linear-gradient(#f8f6f0f2, #f8f6f0f2), url('/editorial/card-marble-v1.webp') center / cover, #f6f3eb; }
+.member-lesson h3 { font-family: var(--font-serif); font-weight: 400; font-size: clamp(27px, 3vw, 38px); line-height: 1.15; letter-spacing: -.025em; margin-top: 12px; color: var(--ed-ink); }
+.member-quote { margin: 24px 0 4px; border-left: 2px solid var(--ed-bronze); padding-left: 18px; font-family: var(--font-serif); font-size: 19px; line-height: 1.55; font-style: italic; color: #4a4f42; }
+.member-body { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; }
+.member-body p { color: #4b4f44; font-size: 15px; line-height: 1.86; }
+.member-points { margin-top: 26px; border-top: 1px solid var(--ed-line); padding-top: 18px; }
+.member-points-title { color: #81704b; font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 12px; }
+.member-points ul { display: flex; flex-direction: column; gap: 7px; }
+.member-points li { position: relative; padding-left: 16px; color: #5d6155; font-size: 13.5px; line-height: 1.7; }
+.member-points li::before { content: ''; position: absolute; left: 0; top: 9px; width: 5px; height: 5px; border-radius: 50%; background: #b9a274; }
+.member-reflection { margin-top: 24px; border: 1px solid #dccfb0; border-radius: 5px; padding: 20px 22px; background: #f7f2e6; }
+.member-reflection p:last-child { color: #4f5347; font-size: 14.5px; line-height: 1.82; }
+.member-complete { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; margin-top: 26px; padding: 0 20px; border: 1px solid #aa9364; border-radius: 5px; background: linear-gradient(#29261d38,#29261d38), url('/editorial/button-bronze-v1.webp') center / cover, #61543b; color: #fff8e7; font-size: 13px; font-weight: 550; cursor: pointer; transition: filter .2s, transform .2s; }
+.member-complete:hover { filter: brightness(1.12); transform: translateY(-2px); }
+.member-complete:disabled { opacity: .65; cursor: progress; transform: none; }
+.member-locked { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; margin-top: 26px; padding: 28px 26px; border: 1px dashed #cdc7b4; border-radius: 6px; background: #f2efe6; color: #6d7065; }
+.member-locked-title { font-family: var(--font-serif); font-size: 20px; color: var(--ed-ink); }
+.member-locked-body { font-size: 14px; line-height: 1.8; }
+.member-skeleton-kicker { width: 180px; height: 11px; border-radius: 4px; background: #e0ded3; }
+.member-skeleton-title { width: min(420px, 80%); height: 46px; margin-top: 18px; border-radius: 5px; background: #e0ded3; }
+.member-skeleton-line { width: min(560px, 92%); height: 14px; margin-top: 18px; border-radius: 4px; background: #e6e4da; }
+.member-skeleton-panel { height: 420px; border-radius: 6px; background: #eceade; }
+@media (max-width: 900px) {
+ .member-columns { grid-template-columns: 1fr; gap: 26px; }
+ .member-index { position: static; max-height: none; flex-direction: row; flex-wrap: wrap; gap: 18px; }
+ .member-phase { flex: 1 1 260px; }
+ .member-lesson { padding: 26px 22px 30px; }
+ .member-status { align-items: flex-start; }
+}
+@media (max-width: 640px) {
+ .member-hero { padding-block: 38px 30px; }
+ .member-hero-deck { font-size: 14px; }
+ .member-section { padding-block: 30px 44px; }
+ .member-gate { padding: 20px; }
+ .member-gate-actions { align-items: stretch; }
+ .member-gate-actions .editorial-button { width: 100%; }
+ .member-unit { min-height: 44px; }
+}
+.membership-cta-preview { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; border-bottom: 1px solid #b8a372; color: #4b5142; font-size: 13px; transition: color .2s, border-color .2s; }
+.membership-cta-preview:hover { color: #92784e; border-color: #92784e; }
+.member-activation { display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap; border: 1px solid #b9c8a6; border-radius: 6px; padding: 24px 26px; background: linear-gradient(120deg, #eef2e6, #f2f1e6); }
+.member-activation p:not(.editorial-kicker) { margin-top: 9px; max-width: 560px; color: #4f5449; font-size: 14px; line-height: 1.8; }
