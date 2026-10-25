@@ -210,12 +210,12 @@ export function PrinciplesLibrary() {
                         </p>
                     </div>
                     <div className="member-gate-actions">
-                        <Link className="editorial-button" href="/login/">
+                        <Link className="editorial-button" href={`/login/${sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : ""}`}>
                             Sign in
                             <ArrowRight size={18} aria-hidden="true" />
                         </Link>
                         {!payload?.authenticated && (
-                            <Link className="member-gate-note" href="/signup/">
+                            <Link className="member-gate-note" href={`/signup/${sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : ""}`}>
                                 No account yet? Create one with the same address.
                             </Link>
                         )}
