@@ -117,6 +117,67 @@ async function upsertProfileByEmail(email: string | null, stripeCustomerId?: str
 }
 
 /**
+ * Grants a paid membership on a profile row.
+ *
+ * The membership carries the weekly letter: the price page promises it, so
+ * the member's address has to reach the send list the newsletter cron reads
+ * (`profiles` where `newsletter_subscribed` is true).
+ *
+ * A member who has unsubscribed stays unsubscribed. The one-click
+ * unsubscribe writes the address to the global suppression list, so that
+ * list is what decides — not the flag, which the signup trigger writes as
+ * `false` on every new row and therefore cannot express "never asked".
+ *
+ * `includeNewsletter` is false for a renewal: a member who cancels the
+ * letter after joining must not have it handed back by the next invoice.
+ */
+async function grantMembership(
+  profile: { id: string; email?: string | null },
+  status: 'active' | 'trialing',
+  includeNewsletter: boolean
+) {
+  const patch: Record<string, unknown> = {
+    is_premium: true,
+    subscription_status: status,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data: current } = await supabaseAdmin
+    .from('profiles')
+    .select('premium_since')
+    .eq('id', profile.id)
+    .limit(1);
+
+  if (!current?.[0]?.premium_since) {
+    patch.premium_since = new Date().toISOString();
+  }
+
+  if (includeNewsletter && profile.email) {
+    const email = profile.email.trim().toLowerCase();
+    const { data: suppressed } = await supabaseAdmin
+      .from('omni_suppressions')
+      .select('email')
+      .ilike('email', email)
+      .limit(1);
+
+    if (suppressed && suppressed.length > 0) {
+      console.log('Stripe webhook: member had unsubscribed from the letter; leaving it off.');
+    } else {
+      patch.newsletter_subscribed = true;
+    }
+  }
+
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .update(patch)
+    .eq('id', profile.id);
+
+  if (error) {
+    console.error('Stripe webhook: could not grant the membership:', error.message);
+  }
+}
+
+/**
  * Finds the profile that belongs to a Stripe customer.
  *
  * The customer id is the reliable key, but it is only written onto the
@@ -275,7 +336,7 @@ export async function POST(req: Request) {
         // If subscription mode, mark premium
         if (session.mode === 'subscription' || (session.metadata && session.metadata['premium'] === 'true')) {
           if (profile) {
-            await supabaseAdmin.from('profiles').update({ is_premium: true, subscription_status: 'active', premium_since: new Date().toISOString() }).eq('id', profile.id);
+            await grantMembership(profile, 'active', true);
           }
         }
 
@@ -287,7 +348,9 @@ export async function POST(req: Request) {
         const customerId = invoice.customer as string;
         const profile = await findProfileByCustomer(customerId);
         if (profile) {
-          await supabaseAdmin.from('profiles').update({ is_premium: true, subscription_status: 'active', premium_since: profile.premium_since ?? new Date().toISOString() }).eq('id', profile.id);
+          // A renewal keeps the membership but does not touch the letter: a
+          // member who cancelled the letter after joining keeps it cancelled.
+          await grantMembership(profile, 'active', false);
         }
         break;
       }
@@ -301,7 +364,13 @@ export async function POST(req: Request) {
         const profile = await findProfileByCustomer(customerId);
         if (profile) {
           const isPremium = status === 'active' || status === 'trialing';
-          await supabaseAdmin.from('profiles').update({ is_premium: isPremium, subscription_status: status, updated_at: new Date().toISOString() }).eq('id', profile.id);
+          if (isPremium) {
+            // A subscription started outside a checkout session still carries
+            // the letter — the membership is the same product.
+            await grantMembership(profile, status as 'active' | 'trialing', event.type === 'customer.subscription.created');
+          } else {
+            await supabaseAdmin.from('profiles').update({ is_premium: false, subscription_status: status, updated_at: new Date().toISOString() }).eq('id', profile.id);
+          }
         }
         break;
       }
