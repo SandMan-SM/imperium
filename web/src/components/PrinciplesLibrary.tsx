@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Check, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { TelegramConnect } from "@/components/TelegramConnect";
 import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 /**
@@ -379,6 +380,8 @@ export function PrinciplesLibrary() {
                     )}
                 </article>
             </div>
+
+            {payload?.premium && <TelegramConnect />}
         </div>
     );
 }

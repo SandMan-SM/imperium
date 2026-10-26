@@ -7,15 +7,15 @@ import { supabase } from "@/lib/supabase";
 /**
  * Connects a member's Telegram account to their membership.
  *
- * The bot cannot ask Supabase who somebody is, so the website signs a code
- * that names the member's address. The member sends that code to the bot
- * with `/link`, and the bot opens every phase for that account. The code is
- * the proof — the address itself is never the credential.
+ * The bot cannot ask Supabase who somebody is, so the website issues a code.
+ * The member sends that code to the bot with `/link`, and the bot trades it
+ * for an answer from the website. The code is the proof — the address itself
+ * is never the credential, and it never reaches the bot.
  */
 
 type LinkState = {
     status: "idle" | "loading" | "ready" | "error";
-    code?: string;
+    token?: string;
     telegramUrl?: string | null;
     message?: string;
 };
@@ -35,10 +35,21 @@ export function TelegramConnect() {
                 return;
             }
 
-            const response = await fetch("/api/telegram/link-code", {
-                headers: { Authorization: `Bearer ${token}` },
-                cache: "no-store",
-            });
+            // The button must never hang: the request is given a deadline and
+            // the button returns to its resting state when it passes.
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 15000);
+
+            let response: Response;
+            try {
+                response = await fetch("/api/telegram/link-code", {
+                    headers: { Authorization: `Bearer ${token}` },
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+            } finally {
+                window.clearTimeout(timeout);
+            }
 
             if (response.status === 402) {
                 setState({ status: "error", message: "This address does not have an active membership." });
@@ -50,22 +61,22 @@ export function TelegramConnect() {
                 return;
             }
 
-            const body = (await response.json()) as { code?: string; telegramUrl?: string | null };
-            if (!body.code) {
+            const body = (await response.json()) as { token?: string; telegramUrl?: string | null };
+            if (!body.token) {
                 setState({ status: "error", message: "The access code could not be created. Try again in a moment." });
                 return;
             }
 
-            setState({ status: "ready", code: body.code, telegramUrl: body.telegramUrl ?? null });
+            setState({ status: "ready", token: body.token, telegramUrl: body.telegramUrl ?? null });
         } catch {
             setState({ status: "error", message: "The access code could not be created. Try again in a moment." });
         }
     };
 
     const copy = async () => {
-        if (!state.code) return;
+        if (!state.token) return;
         try {
-            await navigator.clipboard.writeText(state.code);
+            await navigator.clipboard.writeText(state.token);
             setCopied(true);
             window.setTimeout(() => setCopied(false), 2000);
         } catch {
@@ -84,9 +95,9 @@ export function TelegramConnect() {
                 </p>
             </div>
             <div className="member-gate-actions">
-                {state.status === "ready" && state.code && (
+                {state.status === "ready" && state.token && (
                     <>
-                        <code className="member-code">{state.code}</code>
+                        <code className="member-code">{state.token}</code>
                         <button type="button" className="editorial-button editorial-button-outline" onClick={() => void copy()}>
                             {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
                             {copied ? "Copied" : "Copy the code"}
@@ -95,7 +106,7 @@ export function TelegramConnect() {
                 )}
 
                 {state.status === "ready" && state.telegramUrl && (
-                    <a className="editorial-button" href={state.telegramUrl}>
+                    <a className="editorial-button" href={state.telegramUrl} target="_blank" rel="noopener noreferrer">
                         <Send size={16} aria-hidden="true" />
                         Open the bot
                     </a>
@@ -119,7 +130,9 @@ export function TelegramConnect() {
 
                 {state.status === "ready" && (
                     <span className="member-gate-note">
-                        Send the code to the bot with /link, or open the bot and pass the code to /start.
+                        {state.telegramUrl
+                            ? "Open the bot and the code is passed for you. Or send it to the bot with /link."
+                            : "Send the code to the bot with /link."}
                     </span>
                 )}
             </div>
