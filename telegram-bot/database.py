@@ -7,9 +7,10 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "imperium.db")
 # Columns added after the first release. They are added to an existing
 # database on start, so a deploy never loses the progress already recorded.
 MEMBERSHIP_COLUMNS = (
-    ("email", "TEXT"),
     ("is_member", "BOOLEAN DEFAULT 0"),
     ("member_checked_at", "REAL"),
+    ("free_unit", "INTEGER DEFAULT 1"),
+    ("unit_count", "INTEGER DEFAULT 0"),
 )
 
 
@@ -24,9 +25,10 @@ async def init_db():
                 progress_percentage INTEGER DEFAULT 0,
                 join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 completion_status BOOLEAN DEFAULT 0,
-                email TEXT,
                 is_member BOOLEAN DEFAULT 0,
-                member_checked_at REAL
+                member_checked_at REAL,
+                free_unit INTEGER DEFAULT 1,
+                unit_count INTEGER DEFAULT 0
             )
         ''')
 
@@ -77,12 +79,19 @@ async def reset_user(user_id: int) -> None:
         ''', (user_id,))
         await db.commit()
 
-async def set_membership(user_id: int, email: Optional[str], is_member: bool, checked_at: float) -> None:
-    """Records the address on file and whether it holds a paid membership."""
+async def set_membership(
+    user_id: int,
+    is_member: bool,
+    checked_at: float,
+    free_unit: int = 1,
+    unit_count: int = 0,
+) -> None:
+    """Records whether this account holds a paid membership, and the
+    curriculum allowance the site reported."""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''
             UPDATE users
-            SET email = ?, is_member = ?, member_checked_at = ?
+            SET is_member = ?, member_checked_at = ?, free_unit = ?, unit_count = ?
             WHERE user_id = ?
-        ''', (email, int(is_member), checked_at, user_id))
+        ''', (int(is_member), checked_at, free_unit, unit_count, user_id))
         await db.commit()

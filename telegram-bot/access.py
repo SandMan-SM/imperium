@@ -10,6 +10,9 @@ Two rules decide access:
   2. Membership — a paying member reads every unit. Membership is confirmed
      by the site, which holds the Stripe ledger, and the answer is cached for
      an hour so a cancelled subscription is picked up within the hour.
+
+The bot asks about its own Telegram account. It never holds the member's
+address, so there is nothing for a stranger to guess.
 """
 
 import logging
@@ -28,8 +31,8 @@ FALLBACK_FREE_UNIT = membership.DEFAULT_FREE_UNIT
 MEMBERSHIP_HELP = (
     "Phases II to V are part of Imperium Elite.\n\n"
     "Join here: {checkout}\n\n"
-    "Already a member? Send /link with the email address you paid with and "
-    "the bot will open the sequence for you."
+    "Already a member? Send /link with the code from your Imperium account "
+    "and the bot will open the sequence for you."
 )
 
 
@@ -38,7 +41,7 @@ async def resolve_access(user: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     Works out what this account may read.
 
     Returns:
-        member      - whether the address holds a paid membership
+        member      - whether the Telegram account holds a paid membership
         free_unit   - the number of units anyone may read
         unit_count  - the size of the curriculum
         error       - why membership could not be confirmed, if it could not
@@ -52,13 +55,15 @@ async def resolve_access(user: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         }
 
     user_id = user.get("user_id")
-    email = user.get("email")
     is_member = bool(user.get("is_member"))
-    free_unit = FALLBACK_FREE_UNIT
-    unit_count = 0
+    # The numbers the site last reported, kept so a cached answer still shows
+    # the real curriculum size instead of a hardcoded one.
+    free_unit = int(user.get("free_unit") or FALLBACK_FREE_UNIT)
+    unit_count = int(user.get("unit_count") or 0)
+    checked_at = user.get("member_checked_at")
     error = None
 
-    if membership.cache_is_fresh(user_id):
+    if checked_at and (time.time() - float(checked_at)) < membership.CACHE_SECONDS:
         # The answer is still good; use what is on file.
         return {
             "member": is_member,
@@ -67,22 +72,23 @@ async def resolve_access(user: Optional[Dict[str, Any]]) -> Dict[str, Any]:
             "error": None,
         }
 
-    if not email:
+    if user_id is None:
         return {
             "member": False,
             "free_unit": free_unit,
             "unit_count": unit_count,
-            "error": "no_address",
+            "error": "no_account",
         }
 
-    result = membership.check_membership(email, user_id, user.get("username"))
+    result = membership.check_membership(user_id, user.get("username"))
 
     if result.get("ok"):
         is_member = bool(result.get("premium"))
         free_unit = int(result.get("freeUnit") or FALLBACK_FREE_UNIT)
         unit_count = int(result.get("unitCount") or 0)
-        membership.mark_checked(user_id)
-        await database.set_membership(user_id, email, is_member, time.time())
+        await database.set_membership(
+            user_id, is_member, time.time(), free_unit, unit_count
+        )
     else:
         # The bridge could not answer. Keep whatever was on file rather than
         # locking a paying member out because the site was briefly down.

@@ -9,6 +9,9 @@ env/
 *.sqlite
 telegram-bot/imperium.db
 
+# Local hand-off of the shared membership secret. Never commit it.
+telegram-bot/.membership-secret
+
 # Python cache
 __pycache__/
 *.pyc

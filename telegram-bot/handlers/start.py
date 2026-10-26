@@ -15,7 +15,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text, reply_markup=get_main_menu_keyboard())
 
     # A deep link from the website arrives as `/start <code>`. The code is
-    # signed by the site and proves which membership this account opens.
+    # issued by the site and proves which membership this account opens.
     args = context.args or []
     if args:
         await connect_account(update, args[0].strip())
