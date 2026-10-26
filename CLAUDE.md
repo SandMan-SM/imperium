@@ -166,7 +166,7 @@ When run as the Omni Synthetic Intelligence Agent on the `imperium` project:
 - **The Arsenal** — the `/shop` route (merch). Note: subs pay $20/mo for the courses, not the merch.
 - **Imperium Inner Circle** — top-tier offer: personal profile on Imperium, lifetime network access, a "$25K digital asset", exclusive cross-platform offers.
 - **Omni AI** — the user's umbrella AI ops layer; site is expected to be "connected to omni ai" (Supabase project `odvxtychuxxsudfpcqqs`).
-- **Tyrone Ngouamo** — a coach with a profile/referral page (`/tyronengouamo`, `/tyronengouamo/referral`); offerings: personal training (hourly), meal-by-meal nutrition / meal-prep plan, payment-plan tier (Stripe links via Imperium account), Inner Circle referral, share card. Built by cloning the `28principles` landing pattern.
+- **Tyrone Ngouamo** — a coach whose profile/referral pages (`/tyronengouamo`, `/tyronengouamo/referral`) were **specified but never implemented**; neither route exists in the source or the sitemap and both 404. Intended offerings: personal training (hourly), meal-by-meal nutrition / meal-prep plan, payment-plan tier (Stripe links via Imperium account), Inner Circle referral, share card. To be built by cloning the `28principles` landing pattern.
 - **Prime IV (Amanda phone agent)** — a separate sales-call script asset ("Amanda – Prime IV Sales Agent" at "Prime IV Hydration & Wellness - Sandy"). Constraints when editing: no emojis; one question then move to schedule an appointment; check if caller is an existing customer — if new, offer the **$85 introductory offer** (typically $200+); if not new, just schedule the appointment; deliver in copy-paste format.
 
 ### 28 Principles curriculum outline (rubric/spec — elaborate, do not paste verbatim)
