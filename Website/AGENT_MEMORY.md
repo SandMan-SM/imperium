@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 25, 2026 02:45 AM
+> Synthetic Intelligence Memory | Updated: October 26, 2026 12:18 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,61 +21,87 @@
 | **OVERALL** | **96/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The membership the site sells is now a **working product**, not a promise:
-- `/principles/` is the gated member surface. The 28 lessons live in
-  `lib/curriculum.ts` (server-only); `/api/principles` releases the free
-  unit to anonymous readers and all 28 to a paying member. A locked unit has
-  **no body on the client at all** — it was never sent.
-- `/api/account/register` opens an account for someone who has already
-  paid: the checkout session id proves the address, so the account is
-  created confirmed and the member signs in immediately (see the
-  `paid-path-registration-without-email-confirmation` runbook).
-- The Stripe webhook now links a member's `stripe_customer_id` onto the
-  **account** row, and finds the profile by Stripe customer id with a
-  fallback to the customer's email, so renewals and cancellations land on
-  the right person.
-- `/login` and `/signup` are reachable again, restyled to the live
-  editorial theme, and linked from the header.
+The Telegram bot now sits **inside the same membership** as the site, and
+the membership now carries the weekly letter:
+- **One membership, two surfaces.** The bot no longer keeps a premium flag
+  of its own. It asks the website, which holds the Stripe ledger, and a
+  cancelled subscription closes the paid phases within the hour.
+- **The bot never learns a member's address.** A member signs in on the
+  site, asks for a short code, and sends it to the bot with `/link` (or
+  opens the deep link). The bot trades the code for a yes-or-no answer, so
+  guessing somebody's email address buys nothing.
+- **The code is short enough for a deep link.** Telegram allows at most 64
+  characters of `A-Za-z0-9_-` in a `?start=` parameter. The first attempt
+  minted a 109-character signed code, which Telegram would have rejected —
+  the one-tap connect could never have worked. The code is now a random
+  24-character string kept in `profiles.metadata.telegram_connect`, the
+  same place the referral code lives.
+- **The weekly letter rides with the membership.** A completed checkout
+  subscribes the address; `omni_suppressions` is honoured, and a renewal
+  never resurrects a letter somebody unsubscribed from.
+- **Env parity restored.** Production and Preview now carry the same 25
+  variable names, including `IMPERIUM_MEMBERSHIP_SECRET`.
 
 ## 🎯 This Session: Do These In Order
-1. **Get the operator's own card through the checkout once.** The whole
-   write path is proven — the webhook fires, the purchase lands in
-   `inbound_imperium_events`, the profile flips to premium, the curriculum
-   opens. What has never happened is a **real** purchase: the account still
-   shows **100+ checkout sessions, every one expired and unpaid, zero
-   customers, zero subscriptions** (99 created in a single second on
-   2026-10-18 against the $20 price). Sessions are being created; nobody
-   finishes them. The canonical link is
-   `https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07`
-   (`lib/brand.ts` → `STRIPE_CHECKOUT_URL`), and it now redirects to
+1. **Get the operator's own card through the checkout once.** This is the
+   only thing left that turns the product into revenue. Everything around
+   it is now proven: a signed probe event returned `200` and wrote the
+   `events` row; the payment link is configured as a $20/month
+   subscription redirecting to
    `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
-   Watch the funnel: if sessions are created and abandoned, the checkout
-   page is the problem, not the site.
-2. **Bring the Telegram bot into the same membership.** The bot still keeps
-   its own SQLite `is_premium` flag and never collected an email, so a
-   member who buys on the website gets nothing in Telegram. The bridge now
-   exists on the website side (`profiles` + Stripe); the bot needs to look
-   the same address up instead of its local flag.
-3. **The council items are recorded, not fixed.** They are written up in
+   **The "100+ abandoned sessions" diagnosis was wrong** — 99 of them were
+   created in a single second on 2026-10-18, so they were programmatic, not
+   human, and they are not evidence of a broken checkout page. The account
+   still shows zero customers and zero subscriptions, which means no human
+   has ever finished a payment. The operator's own card is what proves the
+   rest.
+2. **Give the bot a working token.** There is **no valid Telegram token
+   anywhere**: the one in `Website/.env.local` and the one committed in
+   `AGENTS.md` both answer `401 Unauthorized`. Until BotFather issues a
+   real one the bot cannot be run, and none of the Telegram work can be
+   seen live. The committed token in `AGENTS.md` should be rotated and
+   removed from version control at the same time.
+3. **Set `TELEGRAM_BOT_USERNAME`** on Vercel (Production and Preview, in
+   the same session). With it, `/api/telegram/link-code` returns a deep
+   link and a member is connected in one tap; without it the member copies
+   the code and sends `/link`, which also works.
+4. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
    functions, the `subscriptions`/`referrals` policy contradiction) and
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
-4. **Keep Preview in step with Production.** Both carry the same 24 vars
+5. **Keep Preview in step with Production.** Both carry the same 25 vars
    (verified by name this session). Any new Production env var must be
    added to Preview in the same session, or previews break silently again.
    Note: **sensitive Vercel env vars are write-only** — neither
    `vercel env pull` nor `?decrypt=true` returns a value. To mirror one
    without reading it, extend the target list of the existing Production
    record to include `preview` instead of creating a new record.
-5. **The newsletter still has no member.** The membership buys the
-   curriculum and progress, but the weekly letter — the thing the price
-   page promises — is still a separate free signup. Decide whether the
-   membership should carry it, and if so, how a paying member's address
-   reaches the send list.
 
 ## 🔬 Why
+- **A deep link is not a URL parameter.** Telegram allows at most 64
+  characters of `A-Za-z0-9_-` in the `start` payload of `t.me/<bot>?start=`.
+  The first code minted for the bot was a 109-character signed string, so the
+  one-tap connect could never have worked no matter what the operator did —
+  and nothing in the code said so. A code that will be carried by a deep
+  link has to be **short and random**, which points at the pattern the
+  referral code already uses: a random string kept in `profiles.metadata`
+  and found with a `.contains()` lookup.
+- **The bot should not hold an address.** A bot that asks "is this email a
+  member?" has an address to protect, and a member's address is the one
+  thing worth guessing. A bot that asks "is this Telegram account a
+  member?" has nothing to protect, and the website — which already holds
+  the ledger — can answer for a Telegram id it wrote onto the member's own
+  row. The address never crosses the bridge.
+- **The bot had no membership at all.** There was no `is_premium` column
+  and no flag of any kind: the bot handed the whole 28-unit sequence to
+  anybody who pressed a button, and `monetization.py` was dead code that
+  could not even be imported. The paid product was free in Telegram.
+- **"100+ abandoned sessions" was the wrong diagnosis.** 99 of them were
+  created in a single second on 2026-10-18, so they were programmatic, not
+  human. A funnel that has never had a human in it cannot say anything
+  about the checkout page.
 - **The membership had no product behind it.** The Stripe webhook set
   `profiles.is_premium` and nothing read it. The curriculum lived only in
   `telegram-bot/` behind a local SQLite flag that no checkout could reach.
@@ -217,12 +243,17 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 50
+- Sessions: 51
 - Lines written: 3900
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-26 | telegram | The Telegram bridge was rebuilt. `/api/telegram/link-code` mints a short opaque token for a signed-in member and stores it in `profiles.metadata.telegram_connect`; `/api/telegram/membership` trades that token — or a Telegram id already written onto the member's row — for a yes-or-no membership answer over a shared secret. The bot now learns whether somebody has paid without ever learning their address | ~400 |
+| 2026-10-26 | telegram | The link code could never have worked in a deep link: it was 109 characters and Telegram allows 64 of `A-Za-z0-9_-`. `lib/server/telegram-link.ts` now mints a random 24-character token, following the codebase's own referral-code pattern, and `TELEGRAM_BOT_USERNAME` turns it into a one-tap `t.me` link | ~120 |
+| 2026-10-26 | telegram | `telegram-bot/`: `membership.py` speaks the new bridge over stdlib HTTP with a request deadline and parses the site's error body; `access.py` asks the site about the bot's own Telegram account and keeps the answer in the persisted row instead of an in-memory cache a restart threw away; `database.py` dropped the email column and stores the member flag, the free unit and the unit count | ~260 |
+| 2026-10-26 | security | `telegram-bot/.membership-secret` — the hand-off of the shared membership secret — is now gitignored, and the secret is compared in constant time and fails closed when unset | ~20 |
+| 2026-10-26 | visual | The visual audit ran clean over 27 routes at 375 / 768 / 1440 px: no overflow, no dead links, no missing alt text, no console errors, no light backgrounds breaking the theme. The only 404s were three routes that exist in neither the source nor the sitemap — `/archive/the-28-principles`, `/tyronengouamo` and `/tyronengouamo/referral` — so `CLAUDE.md`'s glossary entry for `/tyronengouamo` is stale | ~40 |
 | 2026-10-25 | revenue | `/api/account/register`: a paid Stripe checkout session proves the address, so the account is created confirmed and the member signs in immediately instead of waiting on a rate-limited confirmation email. An existing account is never modified. The signup form branches on `session_id` and falls back to `supabase.auth.signUp` for the unpaid path | ~190 |
 | 2026-10-25 | backend | The Stripe webhook now finds a member's profile by Stripe customer id and falls back to the customer's email, writing the id onto the row that carries `auth_id` — so a renewal or a cancellation lands on the right account row even when no checkout session ever stamped the id | ~120 |
 | 2026-10-25 | commerce | The Stripe webhook endpoint now also subscribes to `customer.subscription.created`, and the handler switched on it | ~10 |
