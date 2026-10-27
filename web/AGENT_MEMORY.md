@@ -133,6 +133,13 @@ added so the operator can see the whole chain the moment the card runs:
   had a `[` and a `]` on their own lines inside the JSX, outside any
   expression — they rendered as literal characters on the page. A loading
   skeleton is still content; it ships to the reader.
+- **A catch-all `catch` turns a wrong link into a broken site.** Every
+  Stripe failure in `/api/membership/session` became a `500`, so a stale
+  session link told a member the site was down. Stripe distinguishes "I
+  cannot find this session" (an invalid request for a missing resource)
+  from "I could not answer" — and the first is a `404`, not a `500`.
+  `/api/account/register` already got this right; the session-lookup route
+  did not.
 - **A payment link's URL token is not its id.** `GET /v1/payment_links/
   4gM4gyfOs2V64an8Dd5AQ07` returns `resource_missing`, because
   `buy.stripe.com/<token>` is not a `plink_…` id. The site's link is
@@ -314,6 +321,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-26 | revenue | `/login` and `/signup` now carry the checkout `session_id` through the redirect, so a member who signs in after paying still sees the "PAYMENT RECEIVED" confirmation instead of a bare form | ~30 |
 | 2026-10-26 | visual | Six route skeletons were wearing the wrong theme: `/partners` and `/resources` had paper skeletons over dark pages, `/resources/[slug]` had a paper skeleton over the dark resource module, `/login` and `/signup` had dark skeletons over the light `.auth-shell`. All six now match the page they stand in for | ~220 |
 | 2026-10-26 | visual | `/archive/[slug]/loading.tsx` rendered literal `[` and `]` characters as page text — a stray bracket outside any JSX expression. The skeleton now mirrors the real entry: dark reading chrome around the light paper article, with the artwork block and the practice panel | ~60 |
+| 2026-10-26 | backend | `/api/membership/session` caught every Stripe failure and answered `500`, so a member who followed a stale session link was told the site was broken. Stripe reports an unknown session as an invalid request for a missing resource; that is now `404`, and a malformed id is `400` | ~40 |
 | 2026-10-26 | telegram | The Telegram bridge was rebuilt. `/api/telegram/link-code` mints a short opaque token for a signed-in member and stores it in `profiles.metadata.telegram_connect`; `/api/telegram/membership` trades that token — or a Telegram id already written onto the member's row — for a yes-or-no membership answer over a shared secret. The bot now learns whether somebody has paid without ever learning their address | ~400 |
 | 2026-10-26 | telegram | The link code could never have worked in a deep link: it was 109 characters and Telegram allows 64 of `A-Za-z0-9_-`. `lib/server/telegram-link.ts` now mints a random 24-character token, following the codebase's own referral-code pattern, and `TELEGRAM_BOT_USERNAME` turns it into a one-tap `t.me` link | ~120 |
 | 2026-10-26 | telegram | `telegram-bot/`: `membership.py` speaks the new bridge over stdlib HTTP with a request deadline and parses the site's error body; `access.py` asks the site about the bot's own Telegram account and keeps the answer in the persisted row instead of an in-memory cache a restart threw away; `database.py` dropped the email column and stores the member flag, the free unit and the unit count | ~260 |
