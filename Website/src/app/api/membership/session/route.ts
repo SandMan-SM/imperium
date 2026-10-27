@@ -40,7 +40,24 @@ export async function GET(request: Request) {
             status: session.status,
         });
     } catch (error) {
+        // An unknown or expired session id is a wrong link, not a broken
+        // site. Stripe answers 404 for it, and that must not read as a
+        // server fault — the member who followed a stale link is told the
+        // session is not there, not that something failed.
+        if (isUnknownSession(error)) {
+            return NextResponse.json({ error: 'Unknown session' }, { status: 404 });
+        }
+
         console.error('Membership session lookup failed:', error);
         return NextResponse.json({ error: 'Could not read the checkout session' }, { status: 500 });
     }
+}
+
+/** Stripe reports a session it cannot find as an invalid request for a missing resource. */
+function isUnknownSession(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null) return false;
+    const candidate = error as { statusCode?: unknown; code?: unknown; type?: unknown };
+    if (candidate.statusCode === 404) return true;
+    if (candidate.code === 'resource_missing') return true;
+    return candidate.type === 'StripeInvalidRequestError' && candidate.statusCode === 404;
 }
