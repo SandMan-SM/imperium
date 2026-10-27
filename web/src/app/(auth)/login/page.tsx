@@ -28,6 +28,13 @@ function LoginForm() {
   const destination = searchParams.get("redirect") || "/principles/";
   const sessionId = searchParams.get("session_id");
 
+  // The checkout session travels with the member. Without it the curriculum
+  // cannot say "your membership is attached to this address", and a member
+  // who has just paid would sign in to a page that says nothing about it.
+  const returnTo = sessionId && !destination.includes("session_id=")
+    ? `${destination}${destination.includes("?") ? "&" : "?"}session_id=${encodeURIComponent(sessionId)}`
+    : destination;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -39,7 +46,7 @@ function LoginForm() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push(destination);
+      router.push(returnTo);
       router.refresh();
     }
   };
@@ -101,7 +108,7 @@ function LoginForm() {
 
         <p className="auth-alt">
           No account yet?{" "}
-          <Link href={`/signup/?redirect=${encodeURIComponent(destination)}${sessionId ? `&session_id=${encodeURIComponent(sessionId)}` : ""}`}>Create one</Link>
+          <Link href={`/signup/?redirect=${encodeURIComponent(returnTo)}${sessionId ? `&session_id=${encodeURIComponent(sessionId)}` : ""}`}>Create one</Link>
         </p>
         <p className="auth-note">
           Already a member? Sign in with the same address you used at checkout and the curriculum opens straight away.

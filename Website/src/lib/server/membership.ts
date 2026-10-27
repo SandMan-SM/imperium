@@ -65,34 +65,89 @@ export async function resolveMembership(email: string | null | undefined): Promi
     // Stripe is the ledger. If a customer exists for this address, the
     // subscription decides — not a flag that was written once and never
     // updated.
+    //
+    // Every customer that could belong to this address is considered, not
+    // just the first one Stripe returns. An address can hold more than one
+    // customer — a second card, a second checkout — and a member is a member
+    // if *any* of them carries a live subscription. Reading only the first
+    // would lock a paying member out the moment the first customer they ever
+    // opened was closed.
+    let stripe: ReturnType<typeof getStripe> | null = null;
     try {
-        const stripe = getStripe();
-        const customers = await stripe.customers.list({ email, limit: 10 });
+        stripe = getStripe();
+    } catch (error) {
+        // Stripe is not configured on this deployment. The database flag is
+        // then the only thing left, so a paying member is not locked out.
+        console.error('Membership check could not reach Stripe:', error);
+    }
 
-        if (customers.data.length > 0) {
-            const customer = customers.data[0];
-            const subscriptions = await stripe.subscriptions.list({
-                customer: customer.id,
-                status: 'all',
-                limit: 10,
-            });
+    // The customer id the webhook stamped onto the account row is the most
+    // reliable key of all: it does not depend on how the address was spelled.
+    const candidateIds = new Set<string>();
+    for (const row of profiles) {
+        const customerId = row.stripe_customer_id as string | undefined;
+        if (customerId) candidateIds.add(customerId);
+    }
 
-            const live = subscriptions.data.find((subscription) =>
-                ACTIVE_STATUSES.has(subscription.status),
-            );
+    // The address is the fallback for a customer whose id never reached the
+    // profile — a customer created before its first checkout, say. Stripe
+    // matches the address exactly, so the lower-cased spelling is tried too:
+    // Supabase lower-cases addresses and Stripe keeps them as they were typed.
+    if (stripe) {
+        try {
+            for (const variant of new Set([email, email.toLowerCase()])) {
+                const customers = await stripe.customers.list({ email: variant, limit: 10 });
+                for (const customer of customers.data) candidateIds.add(customer.id);
+            }
+        } catch (error) {
+            // The address lookup is a convenience, not the source of truth. A
+            // failure here must not stop the stamped ids from being checked.
+            console.error('Membership check could not list Stripe customers:', error);
+        }
+    }
+
+    if (stripe && candidateIds.size > 0) {
+        const client = stripe;
+        try {
+            let liveStatus: string | null = null;
+            let liveCustomerId: string | null = null;
+            let latestStatus: string | null = null;
+            let latestCustomerId: string | null = null;
+
+            for (const customerId of candidateIds) {
+                const subscriptions = await client.subscriptions.list({
+                    customer: customerId,
+                    status: 'all',
+                    limit: 10,
+                });
+
+                const live = subscriptions.data.find((subscription) =>
+                    ACTIVE_STATUSES.has(subscription.status),
+                );
+
+                if (live && !liveStatus) {
+                    liveStatus = live.status;
+                    liveCustomerId = customerId;
+                }
+
+                if (!latestStatus && subscriptions.data[0]) {
+                    latestStatus = subscriptions.data[0].status;
+                    latestCustomerId = customerId;
+                }
+            }
 
             return {
-                premium: Boolean(live),
+                premium: liveStatus !== null,
                 source: 'stripe',
-                customerId: customer.id,
-                subscriptionStatus: live?.status ?? subscriptions.data[0]?.status ?? null,
+                customerId: liveCustomerId ?? latestCustomerId,
+                subscriptionStatus: liveStatus ?? latestStatus,
                 profileId,
             };
+        } catch (error) {
+            // Stripe is unreachable or not configured. Fall through to the
+            // database flag rather than locking a paying member out.
+            console.error('Membership check could not reach Stripe:', error);
         }
-    } catch (error) {
-        // Stripe is unreachable or not configured. Fall through to the
-        // database flag rather than locking a paying member out.
-        console.error('Membership check could not reach Stripe:', error);
     }
 
     return {

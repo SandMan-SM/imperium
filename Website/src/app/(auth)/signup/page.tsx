@@ -29,6 +29,12 @@ function SignupForm() {
   const destination = searchParams.get("redirect") || "/principles/";
   const sessionId = searchParams.get("session_id");
 
+  // The checkout session travels with the member, so the curriculum can name
+  // the address the membership is attached to once they are signed in.
+  const returnTo = sessionId && !destination.includes("session_id=")
+    ? `${destination}${destination.includes("?") ? "&" : "?"}session_id=${encodeURIComponent(sessionId)}`
+    : destination;
+
   /**
    * Two paths, and the difference matters.
    *
@@ -79,7 +85,7 @@ function SignupForm() {
           return;
         }
 
-        router.push(destination);
+        router.push(returnTo);
         router.refresh();
         return;
       } catch {
