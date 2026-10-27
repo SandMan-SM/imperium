@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 26, 2026 12:18 AM
+> Synthetic Intelligence Memory | Updated: October 26, 2026 11:37 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,40 +21,64 @@
 | **OVERALL** | **96/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The Telegram bot now sits **inside the same membership** as the site, and
-the membership now carries the weekly letter:
-- **One membership, two surfaces.** The bot no longer keeps a premium flag
-  of its own. It asks the website, which holds the Stripe ledger, and a
-  cancelled subscription closes the paid phases within the hour.
-- **The bot never learns a member's address.** A member signs in on the
-  site, asks for a short code, and sends it to the bot with `/link` (or
-  opens the deep link). The bot trades the code for a yes-or-no answer, so
-  guessing somebody's email address buys nothing.
-- **The code is short enough for a deep link.** Telegram allows at most 64
-  characters of `A-Za-z0-9_-` in a `?start=` parameter. The first attempt
-  minted a 109-character signed code, which Telegram would have rejected —
-  the one-tap connect could never have worked. The code is now a random
-  24-character string kept in `profiles.metadata.telegram_connect`, the
-  same place the referral code lives.
-- **The weekly letter rides with the membership.** A completed checkout
-  subscribes the address; `omni_suppressions` is honoured, and a renewal
-  never resurrects a letter somebody unsubscribed from.
-- **Env parity restored.** Production and Preview now carry the same 25
-  variable names, including `IMPERIUM_MEMBERSHIP_SECRET`.
+The money path was hardened end to end, and a **one-command proof** was
+added so the operator can see the whole chain the moment the card runs:
+- **A member can no longer be locked out by their own history.**
+  `resolveMembership` read `stripe.customers.list(...).data[0]` — one
+  customer, the first one. A member whose *first* Stripe customer was
+  closed (a failed card, a replaced card, a second account) was locked out
+  of paid content even with a live subscription on another customer. It now
+  gathers every customer id for the address — from the profile rows and from
+  a Stripe lookup by email in both cases — and asks Stripe for the
+  subscription on each. The ledger decides, not the first page of a list.
+- **A member who just paid keeps their confirmation.** The checkout session
+  id survived the trip to `/login` and `/signup`, so a member who signs in
+  after paying still sees "PAYMENT RECEIVED" instead of a bare form.
+  Without it the session id was dropped and the member landed on the
+  curriculum with no idea the payment had landed.
+- **`scripts/check_payment_chain.mjs` answers "did my card make me a
+  member?"** One command, no guesswork: it prints PASS/FAIL for each link
+  in the chain — Stripe customer, live subscription, webhook receipt,
+  purchase record, the profile carrying the membership, the Stripe id
+  stamped on the profile, and the site's own conclusion. Exit code 0 means
+  the chain is complete, 1 means a link is broken and names it.
+- **Six route skeletons now wear the theme of the page they stand in for.**
+  `/partners` and `/resources` had paper skeletons standing in for dark
+  pages (and the reverse for `/login` and `/signup`), so a reader saw a
+  light flash and then a dark page. The `/archive/[slug]` skeleton also
+  rendered **literal `[` and `]` characters as page text** — a real
+  rendering bug, not a styling one.
+- **The Telegram bot now sits inside the same membership as the site**, and
+  the membership now carries the weekly letter:
+  - **One membership, two surfaces.** The bot no longer keeps a premium
+    flag of its own. It asks the website, which holds the Stripe ledger,
+    and a cancelled subscription closes the paid phases within the hour.
+  - **The bot never learns a member's address.** A member signs in on the
+    site, asks for a short code, and sends it to the bot with `/link` (or
+    opens the deep link). The bot trades the code for a yes-or-no answer.
+  - **The code is short enough for a deep link.** Telegram allows at most
+    64 characters of `A-Za-z0-9_-`; the first attempt minted a
+    109-character signed code, so the one-tap connect could never have
+    worked. It is now a random 24-character string kept in
+    `profiles.metadata.telegram_connect`.
+  - **Env parity restored.** Production and Preview carry the same 25
+    variable names, including `IMPERIUM_MEMBERSHIP_SECRET`.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** This is the
-   only thing left that turns the product into revenue. Everything around
-   it is now proven: a signed probe event returned `200` and wrote the
-   `events` row; the payment link is configured as a $20/month
-   subscription redirecting to
+   only thing left that turns the product into revenue, and it is
+   **operator-blocked — the agent cannot do it.** Everything around it is
+   now proven: a signed probe event returned `200` and wrote the `events`
+   row; the payment link is configured as a $20/month subscription
+   redirecting to
    `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
+   The Stripe account still shows **zero customers and zero subscriptions**;
+   the only paid session is a $0 verification session. When the card runs,
+   prove it in one command:
+   `node scripts/check_payment_chain.mjs <the-address>`.
    **The "100+ abandoned sessions" diagnosis was wrong** — 99 of them were
    created in a single second on 2026-10-18, so they were programmatic, not
-   human, and they are not evidence of a broken checkout page. The account
-   still shows zero customers and zero subscriptions, which means no human
-   has ever finished a payment. The operator's own card is what proves the
-   rest.
+   human, and they are not evidence of a broken checkout page.
 2. **Give the bot a working token.** There is **no valid Telegram token
    anywhere**: the one in `Website/.env.local` and the one committed in
    `AGENTS.md` both answer `401 Unauthorized`. Until BotFather issues a
@@ -64,7 +88,9 @@ the membership now carries the weekly letter:
 3. **Set `TELEGRAM_BOT_USERNAME`** on Vercel (Production and Preview, in
    the same session). With it, `/api/telegram/link-code` returns a deep
    link and a member is connected in one tap; without it the member copies
-   the code and sends `/link`, which also works.
+   the code and sends `/link`, which also works. **Do not set a placeholder**
+   — absent degrades gracefully to the copy-the-code path, a placeholder
+   produces a deep link that opens a dead bot.
 4. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
@@ -80,6 +106,40 @@ the membership now carries the weekly letter:
    record to include `preview` instead of creating a new record.
 
 ## 🔬 Why
+- **A member can have more than one Stripe customer.** `customers.list`
+  returns every customer that ever used the address, and `.data[0]` is the
+  one that matched first — not the one with the live subscription. A
+  member who replaced a failed card, or who signed up twice, ends up with
+  two customers; if the *first* is closed, membership resolution reads
+  "no live subscription" and locks a paying member out of the curriculum
+  with no error anywhere. The rule: **ask about every customer the
+  address can have, and let any live subscription win.**
+- **The money path has no dashboard.** Nothing on the site can say "your
+  card did not reach us". Each link in the chain (Stripe → webhook →
+  purchase record → profile → the site's own conclusion) can fail alone and
+  invisibly, which is exactly the outcome the operator most needs to see.
+  A script that prints the chain is worth more than a status badge.
+- **A checkout session id is a secret, and it gets lost in the redirect.**
+  The member paid, was sent to `/login`, and the session id was dropped on
+  the way — so the site could not prove the payment to the person who had
+  just made it, even though it held the proof. Carry the id through the
+  sign-in and the confirmation survives.
+- **A skeleton is a promise about the page.** Six route skeletons wore the
+  wrong theme — paper skeletons for dark pages and dark skeletons for
+  light ones — so a reader saw a light flash and then a dark page, or the
+  reverse. The theme mismatch is as visible as a broken layout, and the
+  fix is to read the page the skeleton stands in for before writing it.
+- **A stray bracket in JSX is page text.** `/archive/[slug]/loading.tsx`
+  had a `[` and a `]` on their own lines inside the JSX, outside any
+  expression — they rendered as literal characters on the page. A loading
+  skeleton is still content; it ships to the reader.
+- **A payment link's URL token is not its id.** `GET /v1/payment_links/
+  4gM4gyfOs2V64an8Dd5AQ07` returns `resource_missing`, because
+  `buy.stripe.com/<token>` is not a `plink_…` id. The site's link is
+  `plink_1T4KHzChZyGhfmDOmrYtnoEV` → `price_1T4KHvChByGhfmDOhcHCBpat`
+  ($20/month, active, correct redirect). **A "the checkout link is dead"
+  finding produced this way is a false positive** — list the links and
+  match on price id before acting on it.
 - **A deep link is not a URL parameter.** Telegram allows at most 64
   characters of `A-Za-z0-9_-` in the `start` payload of `t.me/<bot>?start=`.
   The first code minted for the bot was a 109-character signed string, so the
@@ -243,12 +303,17 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 51
-- Lines written: 3900
+- Sessions: 52
+- Lines written: 4300
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-26 | revenue | `resolveMembership` now asks Stripe about **every** customer the address can have — from the profile rows and from a lookup by email in both cases — instead of `customers.list(...).data[0]`. A member whose first Stripe customer was closed was locked out of the curriculum despite a live subscription elsewhere. A live subscription on any candidate now wins; Stripe failures degrade to the database flag instead of throwing | ~90 |
+| 2026-10-26 | revenue | `scripts/check_payment_chain.mjs`: one command proves the whole chain — Stripe customer, live subscription, webhook receipt, purchase record, the profile carrying the membership, the Stripe id stamped on the profile, and the site's own conclusion. Exit 0 complete / 1 broken / 3 error. Reads credentials from the environment, then `Website/.env.local`. Runbook: `runbook.imperium / proving-a-payment-became-a-membership` | ~250 |
+| 2026-10-26 | revenue | `/login` and `/signup` now carry the checkout `session_id` through the redirect, so a member who signs in after paying still sees the "PAYMENT RECEIVED" confirmation instead of a bare form | ~30 |
+| 2026-10-26 | visual | Six route skeletons were wearing the wrong theme: `/partners` and `/resources` had paper skeletons over dark pages, `/resources/[slug]` had a paper skeleton over the dark resource module, `/login` and `/signup` had dark skeletons over the light `.auth-shell`. All six now match the page they stand in for | ~220 |
+| 2026-10-26 | visual | `/archive/[slug]/loading.tsx` rendered literal `[` and `]` characters as page text — a stray bracket outside any JSX expression. The skeleton now mirrors the real entry: dark reading chrome around the light paper article, with the artwork block and the practice panel | ~60 |
 | 2026-10-26 | telegram | The Telegram bridge was rebuilt. `/api/telegram/link-code` mints a short opaque token for a signed-in member and stores it in `profiles.metadata.telegram_connect`; `/api/telegram/membership` trades that token — or a Telegram id already written onto the member's row — for a yes-or-no membership answer over a shared secret. The bot now learns whether somebody has paid without ever learning their address | ~400 |
 | 2026-10-26 | telegram | The link code could never have worked in a deep link: it was 109 characters and Telegram allows 64 of `A-Za-z0-9_-`. `lib/server/telegram-link.ts` now mints a random 24-character token, following the codebase's own referral-code pattern, and `TELEGRAM_BOT_USERNAME` turns it into a one-tap `t.me` link | ~120 |
 | 2026-10-26 | telegram | `telegram-bot/`: `membership.py` speaks the new bridge over stdlib HTTP with a request deadline and parses the site's error body; `access.py` asks the site about the bot's own Telegram account and keeps the answer in the persisted row instead of an in-memory cache a restart threw away; `database.py` dropped the email column and stores the member flag, the free unit and the unit count | ~260 |
@@ -376,6 +441,25 @@ with the `products.slug` migration decision in the same entry. **Recorded
   account confirmed. Never modify an existing account on this path — no
   password reset, no confirmation flip. Runbook:
   `runbook.imperium / paid-path-registration-without-email-confirmation`.
+- **one-address-can-own-many-stripe-customers** (fleet, applies to every
+  paid site) — `stripe.customers.list({email}).data[0]` is the customer that
+  matched first, not the one with the live subscription. A member who
+  replaced a failed card or signed up twice can hold two customers, and
+  resolving membership from the first one locks a paying member out with no
+  error anywhere. Gather every candidate id (profile rows **and** a Stripe
+  lookup by email in both letter cases) and let any live subscription win.
+- **prove-the-money-path-with-a-script-not-a-badge** (fleet) — a payment
+  chain has five links (Stripe → webhook → purchase record → profile →
+  the site's own conclusion) and each can fail alone and invisibly. The
+  member who paid and cannot open the curriculum is the worst outcome a
+  paid site can produce, so give the operator one command that prints
+  PASS/FAIL per link and names the broken one. Runbook:
+  `runbook.imperium / proving-a-payment-became-a-membership`.
+- **a-skeleton-is-a-promise-about-the-page** (Next.js, every project) — a
+  `loading.tsx` wearing the wrong theme shows a light flash before a dark
+  page (or the reverse). Read the page the skeleton stands in for before
+  writing it, and remember the skeleton is still content: a stray `[` or
+  `]` outside a JSX expression renders as literal page text.
 - **stripe-is-the-ledger-not-the-flag** (fleet) — a boolean on a profile row
   is written once and never updated, so it goes stale on cancellation. When a
   Stripe customer exists for an address, the subscription decides whether the
