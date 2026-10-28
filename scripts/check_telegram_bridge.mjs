@@ -42,7 +42,7 @@ const results = [];
 
 function record(label, ok, detail) {
     results.push({ label, ok, detail });
-    const mark = ok === null ? '????' : ok ? 'PASS' : 'FAIL';
+    const mark = ok === null ? 'SKIP' : ok ? 'PASS' : 'FAIL';
     console.log(`${mark}  ${label}${detail ? ` — ${detail}` : ''}`);
 }
 
@@ -343,4 +343,4 @@ if (failed.length === 0) {
 }
 if (unknown.length > 0) console.log(`${unknown.length} check(s) could not run.`);
 
-process.exit(failed.length > 0 ? 1 : 0);
+process.exit(failed.length > 0 ? 1 : unknown.length > 0 ? 3 : 0);
