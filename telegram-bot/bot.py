@@ -5,7 +5,7 @@ from config import TELEGRAM_BOT_TOKEN, validate_config
 import database
 
 from handlers.start import start_command
-from handlers.navigation import handle_callback
+from handlers.navigation import handle_callback, resume_command
 from handlers.progress import progress_command, phases_command
 from handlers.link import link_command
 
@@ -25,6 +25,7 @@ def main():
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("progress", progress_command))
     application.add_handler(CommandHandler("phases", phases_command))
+    application.add_handler(CommandHandler("resume", resume_command))
     application.add_handler(CommandHandler("link", link_command))
     
     # Register Callbacks (Inline keyboards)

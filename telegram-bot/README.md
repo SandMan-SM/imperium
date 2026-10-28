@@ -14,6 +14,7 @@ To create your bot on Telegram:
    - `start` - Begin your journey
    - `progress` - Check your course progress
    - `phases` - View all phases
+   - `resume` - Continue from where you left off
    - `link` - Connect your Imperium membership
 
 ### 2. Environment Variable Setup
@@ -58,6 +59,20 @@ bot's own environment — it is gitignored.
 Phases II to V are only open to a member. How many units are free is decided
 by the website and read through the same bridge, so the bot and the site
 cannot disagree.
+
+### Is the bridge wired?
+
+One command answers it — the token against Telegram, the site's copy of the
+token and the bot's username, the shared secret on both sides, every command
+the bot advertises, every button the bot draws, and whether the site still
+ships a locked lesson to an anonymous reader:
+
+```bash
+node scripts/check_telegram_bridge.mjs
+```
+
+Exit 0 means the bridge is wired. Exit 1 means something is broken, and the
+script names it.
 
 
 ### 3. Local Run Instructions

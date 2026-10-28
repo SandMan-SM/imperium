@@ -4,7 +4,63 @@ import database
 from access import can_read, resolve_access
 from config import STRIPE_CHECKOUT_URL
 from content.phases import PHASES, TOTAL_UNITS
+from handlers.progress import progress_text
 from utils.helpers import get_main_menu_keyboard, build_phase_keyboard, build_unit_keyboard, build_membership_keyboard, calculate_progress_percentage
+
+PAYWALL_TEXT = (
+    "Phases II to V are part of Imperium Elite.\n\n"
+    "Join here: {checkout}\n\n"
+    "Already a member? Send /link with the access code from your Imperium "
+    "account and this account opens every phase."
+)
+
+
+def resume_view(user, access):
+    """
+    The unit the reader is on, and the keyboard that goes with it.
+
+    One place decides what "resume" means, so the button and the /resume
+    command can never answer differently.
+    """
+    if user["completion_status"]:
+        return (
+            "You have completed all 28 units of Imperium. Your legacy begins now.",
+            get_main_menu_keyboard(),
+        )
+
+    if not can_read(access, user["current_unit"]):
+        return (
+            PAYWALL_TEXT.format(checkout=STRIPE_CHECKOUT_URL),
+            build_membership_keyboard(),
+        )
+
+    phase_id = user["current_phase"]
+    unit_id = user["current_unit"]
+    phase_data = PHASES[phase_id]
+    unit_data = phase_data["units"][unit_id]
+
+    text = (
+        f"Phase {phase_id}: {phase_data['title']}\n\n"
+        f"Unit {unit_id}: {unit_data['title']}\n\n{unit_data['content']}"
+    )
+    return (text, build_unit_keyboard(unit_id, False))
+
+
+async def resume_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Continues the sequence from where the reader left off."""
+    message = update.message
+    if not message:
+        return
+
+    user = await database.get_user(update.effective_user.id)
+    if not user:
+        await message.reply_text("User not found. Please type /start first.")
+        return
+
+    access = await resolve_access(user)
+    text, keyboard = resume_view(user, access)
+    await message.reply_text(text, reply_markup=keyboard)
+
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -20,7 +76,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     current_phase = user["current_phase"]
     current_unit = user["current_unit"]
-    completion_status = user["completion_status"]
 
     # Membership is confirmed by the website, which holds the Stripe ledger.
     # The answer is cached for an hour, so this is one call per hour at most.
@@ -35,34 +90,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = build_phase_keyboard(current_phase, member=member, free_unit=free_unit)
         await query.edit_message_text("Available Phases:", reply_markup=keyboard)
 
+    elif data == "view_progress":
+        await query.edit_message_text(progress_text(user))
+
     elif data == "resume_course":
-        if completion_status:
-            await query.edit_message_text(
-                "You have completed all 28 units of Imperium. Your legacy begins now.",
-                reply_markup=get_main_menu_keyboard()
-            )
-            return
-
-        if not can_read(access, current_unit):
-            await query.edit_message_text(
-                "Phases II to V are part of Imperium Elite.\n\n"
-                "Join here: {checkout}\n\n"
-                "Already a member? Send /link with the access code from your "
-                "Imperium account and this account opens every phase.".format(
-                    checkout=STRIPE_CHECKOUT_URL
-                ),
-                reply_markup=build_membership_keyboard()
-            )
-            return
-
-        phase_id = current_phase
-        unit_id = current_unit
-
-        phase_data = PHASES[phase_id]
-        unit_data = phase_data["units"][unit_id]
-
-        text = f"Phase {phase_id}: {phase_data['title']}\n\nUnit {unit_id}: {unit_data['title']}\n\n{unit_data['content']}"
-        keyboard = build_unit_keyboard(unit_id, completion_status)
+        text, keyboard = resume_view(user, access)
         await query.edit_message_text(text, reply_markup=keyboard)
 
     elif data.startswith("complete_unit_"):
