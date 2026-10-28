@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 27, 2026 11:22 PM
+> Synthetic Intelligence Memory | Updated: October 27, 2026 11:58 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,261 +21,134 @@
 | **OVERALL** | **96/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The money path was hardened end to end, and a **one-command proof** was
-added so the operator can see the whole chain the moment the card runs:
-- **A member can no longer be locked out by their own history.**
-  `resolveMembership` read `stripe.customers.list(...).data[0]` — one
-  customer, the first one. A member whose *first* Stripe customer was
-  closed (a failed card, a replaced card, a second account) was locked out
-  of paid content even with a live subscription on another customer. It now
-  gathers every customer id for the address — from the profile rows and from
-  a Stripe lookup by email in both cases — and asks Stripe for the
-  subscription on each. The ledger decides, not the first page of a list.
-- **A member who just paid keeps their confirmation.** The checkout session
-  id survived the trip to `/login` and `/signup`, so a member who signs in
-  after paying still sees "PAYMENT RECEIVED" instead of a bare form.
-  Without it the session id was dropped and the member landed on the
-  curriculum with no idea the payment had landed.
-- **`scripts/check_payment_chain.mjs` answers "did my card make me a
-  member?"** One command, no guesswork: it prints PASS/FAIL for each link
-  in the chain — Stripe customer, live subscription, webhook receipt,
-  purchase record, the profile carrying the membership, the Stripe id
-  stamped on the profile, and the site's own conclusion. Exit code 0 means
-  the chain is complete, 1 means a link is broken and names it.
-- **Six route skeletons now wear the theme of the page they stand in for.**
-  `/partners` and `/resources` had paper skeletons standing in for dark
-  pages (and the reverse for `/login` and `/signup`), so a reader saw a
-  light flash and then a dark page. The `/archive/[slug]` skeleton also
-  rendered **literal `[` and `]` characters as page text** — a real
-  rendering bug, not a styling one.
-- **The Telegram bot now sits inside the same membership as the site**, and
-  the membership now carries the weekly letter:
-  - **One membership, two surfaces.** The bot no longer keeps a premium
-    flag of its own. It asks the website, which holds the Stripe ledger,
-    and a cancelled subscription closes the paid phases within the hour.
-  - **The bot never learns a member's address.** A member signs in on the
-    site, asks for a short code, and sends it to the bot with `/link` (or
-    opens the deep link). The bot trades the code for a yes-or-no answer.
-  - **The code is short enough for a deep link.** Telegram allows at most
-    64 characters of `A-Za-z0-9_-`; the first attempt minted a
-    109-character signed code, so the one-tap connect could never have
-    worked. It is now a random 24-character string kept in
-    `profiles.metadata.telegram_connect`.
-  - **Env parity restored.** Production and Preview carry the same 25
-    variable names, including `IMPERIUM_MEMBERSHIP_SECRET`.
+The Telegram bridge — the second front door onto the paid curriculum — was
+proved, repaired and measured, and the site it hangs off is clean:
+- **The bot's two dead ends were closed.** The main menu's **"My Progress"**
+  button drew a callback that no handler answered, so pressing it did
+  nothing at all. And the bot told a paying member to "use /resume to
+  continue where you left off" — a command that was never registered, so the
+  instruction could not be followed. Both now answer, and the unit view is
+  built in **one place** so the button and the command cannot drift apart.
+- **`scripts/check_telegram_bridge.mjs` answers "will the bot open the paid
+  sequence?"** One command, no guesswork, in the shape of the money-path
+  proof: the bot's token against Telegram itself, the site's copy of the
+  token, the admin chat, the shared secret, the bot's username, the depth of
+  the access code against Telegram's 64-character limit, every advertised
+  command against every registered one, every drawn button against every
+  answer, the curriculum's size, and whether the site still ships a locked
+  lesson to an anonymous reader. Exit 0 means the bridge is wired; 1 names
+  the broken link.
+- **The site and the bot were proven to share a secret.** The live bridge
+  accepts the bot's own `.membership-secret` and refuses a wrong one with a
+  `401` — the two halves of the membership are already talking.
+- **The token is no longer in version control.** It was committed in
+  `AGENTS.md` and hardcoded as a fallback in `docker-compose.yml`. Both are
+  gone; the compose file now refuses to start without a token rather than
+  falling back to a revoked one. The token itself is already dead — every
+  copy answers `401 Unauthorized` — so this is hygiene, not an outage.
+- **The environment now has one name for the token.** The website read
+  `TELEGRAM_BOT_TOKEN`; Vercel carried `BOT_TOKEN`, which nothing reads.
+  The site therefore never notified Telegram, silently, with no error
+  anywhere. `TELEGRAM_BOT_TOKEN` is now set on Production and Preview and
+  the orphan is gone.
+- **`scripts/check_visual.mjs` audits the whole site in one pass.** It
+  reads the routes from the site's own sitemap and checks each one for
+  overflow, console errors, broken images, missing alt text, links that go
+  nowhere and a theme that breaks. 36 routes at 375 / 768 / 1440 px and 14
+  more that the sitemap does not list: **nothing to fix.**
 
 ## 🎯 This Session: Do These In Order
-1. **Get the operator's own card through the checkout once.** This is the
-   only thing left that turns the product into revenue, and it is
+1. **Get the operator's own card through the checkout once.** Still
    **operator-blocked — the agent cannot do it.** Everything around it is
-   now proven: a signed probe event returned `200` and wrote the `events`
-   row; the payment link is configured as a $20/month subscription
-   redirecting to
+   proven: a signed probe event returned `200` and wrote the `events` row;
+   the payment link is a $20/month subscription redirecting to
    `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
    The Stripe account still shows **zero customers and zero subscriptions**;
-   the only paid session is a $0 verification session. When the card runs,
-   prove it in one command:
+   the only paid session is a $0 verification session. Twenty sessions exist,
+   and the ones that reached the $20 link are all expired and unpaid. When
+   the card runs, prove it in one command:
    `node scripts/check_payment_chain.mjs <the-address>`.
-   **The "100+ abandoned sessions" diagnosis was wrong** — 99 of them were
-   created in a single second on 2026-10-18, so they were programmatic, not
-   human, and they are not evidence of a broken checkout page.
-2. **Give the bot a working token.** There is **no valid Telegram token
-   anywhere**: the one in `Website/.env.local` and the one committed in
-   `AGENTS.md` both answer `401 Unauthorized`. Until BotFather issues a
-   real one the bot cannot be run, and none of the Telegram work can be
-   seen live. The committed token in `AGENTS.md` should be rotated and
-   removed from version control at the same time.
+2. **Get a working Telegram token from BotFather.** There is **no valid
+   token anywhere** — the local `.env.local`, the bot's `.env` and the one
+   that was committed to `AGENTS.md` all answer `401 Unauthorized`, and so
+   does the `BOT_TOKEN` that was on Vercel. Until BotFather issues a real
+   one the bot cannot be run and none of the Telegram work can be seen live.
+   `node scripts/check_telegram_bridge.mjs` names it as the first failure.
 3. **Set `TELEGRAM_BOT_USERNAME`** on Vercel (Production and Preview, in
    the same session). With it, `/api/telegram/link-code` returns a deep
-   link and a member is connected in one tap; without it the member copies
+   link and a member is connected in one tap; without it, the member copies
    the code and sends `/link`, which also works. **Do not set a placeholder**
    — absent degrades gracefully to the copy-the-code path, a placeholder
-   produces a deep link that opens a dead bot.
+   produces a deep link that opens a dead bot. The username is the one thing
+   the agent cannot invent: it only exists once the token works.
 4. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
    functions, the `subscriptions`/`referrals` policy contradiction) and
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
-5. **Keep Preview in step with Production.** Both carry the same 25 vars
-   (verified by name this session). Any new Production env var must be
-   added to Preview in the same session, or previews break silently again.
-   Note: **sensitive Vercel env vars are write-only** — neither
-   `vercel env pull` nor `?decrypt=true` returns a value. To mirror one
-   without reading it, extend the target list of the existing Production
-   record to include `preview` instead of creating a new record.
+5. **Keep Preview in step with Production.** Both carry the same variable
+   names (verified by name this session; `TELEGRAM_BOT_TOKEN` now carries
+   the same value in both). Any new Production env var must be added to
+   Preview in the same session, or previews break silently again. Note:
+   **sensitive Vercel env vars are write-only** — neither `vercel env pull`
+   nor `?decrypt=true` returns a value. To mirror one without reading it,
+   extend the target list of the existing Production record to include
+   `preview` instead of creating a new record. The Vercel REST API
+   (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
+   without a prompt, which the CLI will not.
+6. **The trees drifted again — this time on the brief itself.** The last
+   session wrote `web/AGENT_MEMORY.md` and did not sync, so the canonical
+   `Website/AGENT_MEMORY.md` was a day older. **Write the brief into
+   `Website/` and run `scripts/sync-trees.sh`**, never the other way round.
 
 ## 🔬 Why
-- **A member can have more than one Stripe customer.** `customers.list`
-  returns every customer that ever used the address, and `.data[0]` is the
-  one that matched first — not the one with the live subscription. A
-  member who replaced a failed card, or who signed up twice, ends up with
-  two customers; if the *first* is closed, membership resolution reads
-  "no live subscription" and locks a paying member out of the curriculum
-  with no error anywhere. The rule: **ask about every customer the
-  address can have, and let any live subscription win.**
-- **The money path has no dashboard.** Nothing on the site can say "your
-  card did not reach us". Each link in the chain (Stripe → webhook →
-  purchase record → profile → the site's own conclusion) can fail alone and
-  invisibly, which is exactly the outcome the operator most needs to see.
-  A script that prints the chain is worth more than a status badge.
-- **A checkout session id is a secret, and it gets lost in the redirect.**
-  The member paid, was sent to `/login`, and the session id was dropped on
-  the way — so the site could not prove the payment to the person who had
-  just made it, even though it held the proof. Carry the id through the
-  sign-in and the confirmation survives.
-- **A skeleton is a promise about the page.** Six route skeletons wore the
-  wrong theme — paper skeletons for dark pages and dark skeletons for
-  light ones — so a reader saw a light flash and then a dark page, or the
-  reverse. The theme mismatch is as visible as a broken layout, and the
-  fix is to read the page the skeleton stands in for before writing it.
-- **A stray bracket in JSX is page text.** `/archive/[slug]/loading.tsx`
-  had a `[` and a `]` on their own lines inside the JSX, outside any
-  expression — they rendered as literal characters on the page. A loading
-  skeleton is still content; it ships to the reader.
-- **A catch-all `catch` turns a wrong link into a broken site.** Every
-  Stripe failure in `/api/membership/session` became a `500`, so a stale
-  session link told a member the site was down. Stripe distinguishes "I
-  cannot find this session" (an invalid request for a missing resource)
-  from "I could not answer" — and the first is a `404`, not a `500`.
-  `/api/account/register` already got this right; the session-lookup route
-  did not.
-- **A payment link's URL token is not its id.** `GET /v1/payment_links/
-  4gM4gyfOs2V64an8Dd5AQ07` returns `resource_missing`, because
-  `buy.stripe.com/<token>` is not a `plink_…` id. The site's link is
-  `plink_1T4KHzChZyGhfmDOmrYtnoEV` → `price_1T4KHvChByGhfmDOhcHCBpat`
-  ($20/month, active, correct redirect). **A "the checkout link is dead"
-  finding produced this way is a false positive** — list the links and
-  match on price id before acting on it.
-- **A deep link is not a URL parameter.** Telegram allows at most 64
-  characters of `A-Za-z0-9_-` in the `start` payload of `t.me/<bot>?start=`.
-  The first code minted for the bot was a 109-character signed string, so the
-  one-tap connect could never have worked no matter what the operator did —
-  and nothing in the code said so. A code that will be carried by a deep
-  link has to be **short and random**, which points at the pattern the
-  referral code already uses: a random string kept in `profiles.metadata`
-  and found with a `.contains()` lookup.
-- **The bot should not hold an address.** A bot that asks "is this email a
-  member?" has an address to protect, and a member's address is the one
-  thing worth guessing. A bot that asks "is this Telegram account a
-  member?" has nothing to protect, and the website — which already holds
-  the ledger — can answer for a Telegram id it wrote onto the member's own
-  row. The address never crosses the bridge.
-- **The bot had no membership at all.** There was no `is_premium` column
-  and no flag of any kind: the bot handed the whole 28-unit sequence to
-  anybody who pressed a button, and `monetization.py` was dead code that
-  could not even be imported. The paid product was free in Telegram.
-- **"100+ abandoned sessions" was the wrong diagnosis.** 99 of them were
-  created in a single second on 2026-10-18, so they were programmatic, not
-  human. A funnel that has never had a human in it cannot say anything
-  about the checkout page.
-- **The membership had no product behind it.** The Stripe webhook set
-  `profiles.is_premium` and nothing read it. The curriculum lived only in
-  `telegram-bot/` behind a local SQLite flag that no checkout could reach.
-  Now `lib/curriculum.ts` is a server module and `/api/principles` is the
-  only way out of it, so the content is gated by the ledger rather than by
-  the UI: a locked unit is never sent to the browser at all.
-- **The email confirmation was the last thing standing between a paying
-  member and the curriculum.** Supabase runs this project with
-  `mailer_autoconfirm: false` on a rate-limited default SMTP, so a new
-  account sat dormant until a confirmation email arrived — and on the one
-  weekend that matters, it does not arrive. The paid path no longer waits
-  for it: the checkout session proves the address.
-- **A Stripe subscription can exist before its first checkout session**, and
-  a customer can exist without one. A renewal or a cancellation was looked
-  up by `stripe_customer_id` alone, so an event for a member whose profile
-  row had never been stamped with the customer id went nowhere. The lookup
-  now falls back to the customer's email and writes the id onto the account
-  row.
-- **The account row and the purchase row are two different rows.** The
-  signup trigger creates a row with `auth_id` for the same address that the
-  webhook already wrote a row for, and `profiles.email` has no unique
-  constraint. Every read of "the member's profile" therefore has to read
-  all rows for the address, and the Stripe id belongs on the row that
-  carries `auth_id` — that is the row the site reads.
-- **The fleet's RLS policies, not the app, decided what the site could
-  read.** `profiles` has a policy that subqueries `profiles`, so every
-  authenticated read of that table dies with Postgres error 42P17 ("infinite
-  recursion detected in policy"), and an anonymous read is blocked outright.
-  `products` has only an UPDATE policy for `public`, so no browser read
-  returns a row. `newsletters` inherits the same recursion. The admin
-  console therefore showed blank tables, every premium check read `null`,
-  and `/api/subscriptions` answered "Unauthorized" to everybody. All of
-  those reads now happen server side with the service-role key, behind the
-  operator's session token.
-- `profiles.id` is a **different uuid** from `profiles.auth_id`, and the
-  `subscriptions` / `referrals` foreign keys point at `profiles(id)` while
-  their RLS policies compare them to `auth.uid()`. The two can never both be
-  true, so those tables are writable only with the service-role key.
-- The previous brief's claim that "the anon key can SELECT `profiles` (24
-  rows with email + stripe ids), `products`, `transactions` and
-  `user_interactions`" is **not reproducible** — an anon read returns zero
-  rows on all four. The real exposures are narrower and different; they are
-  listed under "Council items".
-- The schema guard checked table names only, so four phantom *columns*
-  (`profiles.referral_code`, `profiles.referred_by`, `referrals.email`,
-  `referrals.status`) slipped through and made the referral route fail on
-  every call. It now checks columns as well, and reports 19 tables and 48
-  column references.
-- The Preview environment had no Supabase, Stripe or Resend values for 240
-  days; every preview data route 500'd. All 17 non-empty Production values
-  are now mirrored into Preview (sensitive, all branches) and verified with a
-  real preview deployment.
-- `web/` had drifted 51 changed files away from the production root and was
-  missing the entire Archive rebrand. It is now an exact mirror, guarded by a
-  script and a CI check, so a session can no longer ship a no-op fix into the
-  tree that does not deploy.
-- The live database has **no `revenue`, `analytics` or `purchases` table**.
-  The analytics endpoint read `revenue` (500 on every request) and the Stripe
-  webhook inserted into `purchases` (silently discarded). Both now read and
-  write tables that actually exist.
-- A second sweep found three more tables the code referenced that do not
-  exist: `client_health` (the admin Client Health tab and the metrics
-  refresh route), `newsletter_subscribers` (in a dead Gmail service), and
-  `revenue_analytics` (an unread query in the admin analytics tab). The
-  health tab now derives from `profiles`, the metrics route computes live,
-  and the dead Gmail service is deleted.
-- The Stripe webhook's replay guard never worked: the `events` table has no
-  `payload` column, so both the insert and the `payload->>stripe_event_id`
-  filter errored and were swallowed. It now uses `properties`, the column the
-  table actually has, with the required `actor_type` / `actor_id` fields.
-- `npm run lint` reported 279 errors across 56 files. It is now clean:
-  `no-explicit-any` replaced with real types, unused imports removed, JSX
-  entities escaped, React Compiler hook rules fixed properly.
-- Live visual audit at 375 / 768 / 1440 px: no horizontal overflow, no
-  console errors, no dead internal links, every image reference resolves.
-- **The editorial artwork shipped as PNG.** Sixteen illustrations totalling
-  roughly 44 MB were served raw (`next.config.ts` sets
-  `images.unoptimized: true`), so a single 375 px archive load pulled about
-  24 MB. All sixteen are now WebP (about 1.5 MB total) and the markup points
-  at them. The PNG originals stay in `public/` because `next/og` cannot
-  decode WebP — `getArchiveArtwork()` returns both a display and an OG
-  source for that reason.
-- **The checkout success URL pointed at `localhost`.**
-  `/api/checkout/create-session` fell back to `http://localhost:3000`
-  because `NEXT_PUBLIC_BASE_URL` is not set in the Vercel environment, so a
-  completed order landed on a dead address. It now falls back to
-  `BRAND.siteUrl`.
-- **The live site could not take a payment.** Every commerce route
-  (`/28principles`, `/shop`, `/account`, `/cart`, `/checkout`, `/login`,
-  `/signup`, `/portal`, `/subscribe`) redirects to `/archive/`, and the
-  archive carried no price, no Stripe link and no call to action — the only
-  `STRIPE_CHECKOUT_URL` usage rendered on a redirected page. One membership
-  block now sits on the homepage, the archive and the newsletter, linking the
-  canonical payment link from `lib/brand.ts` and restating exactly what the
-  Stripe product sells, so the page and the checkout page cannot disagree.
-- **The storefront decision, taken.** The Archive rebrand is the product;
-  the old storefront routes stay retired behind their redirects, because
-  `/subscribe` is a free newsletter form with no Stripe link and
-  `/28principles` is a bare `permanentRedirect` stub (`lib/curriculum.ts` was
-  deleted). The Archive stays free and the paid tier is sold through one
-  block, not through a resurrected multi-route storefront.
-- **The 28 Principles now live in the Archive, on the website and in the
-  bot.** Eight principle essays are published free in the Archive's
-  "Principles" collection. The full five-phase curriculum is now a gated
-  website surface at `/principles/`, and `telegram-bot/` still carries its
-  own copy behind a local SQLite flag that no checkout reaches — that
-  bridge is the next priority.
+- **A button with no handler is invisible.** The main menu drew "My
+  Progress" with a callback that `handle_callback` did not match, so the
+  button answered with silence — no error, no log, just a tap that did
+  nothing. The same shape as a dead link: the reader is the only one who
+  finds out.
+- **The bot told members to type a command that did not exist.** The
+  confirmation after a successful link ends "use /resume to continue where
+  you left off", and `/resume` was never registered. A promise the product
+  cannot keep is worse than no promise: the member types it, Telegram says
+  "unknown command", and the member concludes the bot is broken.
+- **One view, two ways to ask for it.** The resume view existed inside the
+  callback handler, where the `/resume` command could not reach it. Building
+  it once and asking for it twice is what keeps the button and the command
+  from answering differently.
+- **An env var with the wrong name is a silent no-op.** The code read
+  `TELEGRAM_BOT_TOKEN`; the environment carried `BOT_TOKEN`. The site
+  skipped its Telegram notification every time, correctly and invisibly.
+  A missing variable does not fail a build and does not log — it just means
+  the feature never runs, so the *name* has to be checked against the
+  environment, not just the presence of a value.
+- **A bridge has to be proved from both ends.** The membership secret
+  matches (the live site accepts the bot's file and refuses a wrong one),
+  but the bot cannot run without a token, so the half that matters most is
+  still unproven. One command that checks every link, in the order a member
+  would hit them, turns "it looks wired" into a list.
+- **A revoked token in version control is only hygiene.** The token was
+  committed, then revoked by Telegram. Removing it from the tree stops the
+  next person from trying it; it does not un-leak it, and the history still
+  holds it. Rewriting shared history is not worth it for a credential that
+  no longer works — the real fix is rotation, which only the operator can do.
+- **A light page is a design, not a bug.** The first run of the visual
+  audit flagged every route for "light background with dark text". The
+  Archive rebrand *is* paper — that is the product. The rule only means
+  something on a dark page, where a light block is a skeleton that forgot
+  what it stands in for.
+- **A file that claims to hold a secret can be checked against the live
+  thing.** The bot's `.membership-secret` and the site's
+  `IMPERIUM_MEMBERSHIP_SECRET` were assumed to match because both were
+  set. They are: the live bridge accepted the bot's file and refused a
+  wrong secret with a `401`. That is the only way to know without reading a
+  write-only variable.
+- **The one command beats the status badge.** The money path got
+  `check_payment_chain.mjs`; the Telegram path now gets its twin. Every
+  link that can fail alone and invisibly deserves a line in a script, not a
+  badge that says "configured".
+
 
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
@@ -310,12 +183,18 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 52
-- Lines written: 4300
+- Sessions: 53
+- Lines written: 5000
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-27 | telegram | The bot's two dead ends were closed. The main menu's "My Progress" button drew a callback no handler answered — the tap did nothing at all. And the bot told a paying member to "use /resume to continue where you left off" for a command that was never registered. Both now answer, and the resume view is built in one place so the button and the command cannot drift apart | ~120 |
+| 2026-10-27 | telegram | `scripts/check_telegram_bridge.mjs`: one command proves the Telegram bridge — the bot's token against Telegram itself, the site's copy of the token, the admin chat, the shared secret, the bot's username, the access code against Telegram's 64-character limit, every advertised command against every registered one, every drawn button against every answer, the curriculum's size, and whether the site still ships a locked lesson to an anonymous reader. Exit 0 wired / 1 broken and named | ~330 |
+| 2026-10-27 | security | The revoked Telegram token was committed in `AGENTS.md` and hardcoded as a `docker-compose.yml` fallback. Both are gone; the compose file now refuses to start without a token instead of falling back to a revoked one. The token itself already answers 401 — this is hygiene, and rotation remains the operator's job | ~20 |
+| 2026-10-27 | ops | The website read `TELEGRAM_BOT_TOKEN` while Vercel carried `BOT_TOKEN`, which nothing reads — so the site's Telegram notification was a silent no-op on every call. `TELEGRAM_BOT_TOKEN` is now set on Production and Preview and the orphan is deleted | ~20 |
+| 2026-10-27 | visual | `scripts/check_visual.mjs`: audits every route in the sitemap for overflow, console errors, broken images, missing alt text, links that go nowhere and a theme that breaks — 375 / 768 / 1440 px, 36 routes plus 14 the sitemap does not list. Nothing to fix | ~330 |
+| 2026-10-27 | repo | `AGENT_MEMORY.md` was written into `web/` and never synced, leaving the canonical `Website/` copy a day behind. The brief now lives in `Website/` and is mirrored | ~10 |
 | 2026-10-26 | revenue | `resolveMembership` now asks Stripe about **every** customer the address can have — from the profile rows and from a lookup by email in both cases — instead of `customers.list(...).data[0]`. A member whose first Stripe customer was closed was locked out of the curriculum despite a live subscription elsewhere. A live subscription on any candidate now wins; Stripe failures degrade to the database flag instead of throwing | ~90 |
 | 2026-10-26 | revenue | `scripts/check_payment_chain.mjs`: one command proves the whole chain — Stripe customer, live subscription, webhook receipt, purchase record, the profile carrying the membership, the Stripe id stamped on the profile, and the site's own conclusion. Exit 0 complete / 1 broken / 3 error. Reads credentials from the environment, then `Website/.env.local`. Runbook: `runbook.imperium / proving-a-payment-became-a-membership` | ~250 |
 | 2026-10-26 | revenue | `/login` and `/signup` now carry the checkout `session_id` through the redirect, so a member who signs in after paying still sees the "PAYMENT RECEIVED" confirmation instead of a bare form | ~30 |
@@ -463,6 +342,38 @@ with the `products.slug` migration decision in the same entry. **Recorded
   paid site can produce, so give the operator one command that prints
   PASS/FAIL per link and names the broken one. Runbook:
   `runbook.imperium / proving-a-payment-became-a-membership`.
+- **prove-every-bridge-with-a-script** (fleet, applies to every second
+  front door) — a bot, an app or a partner site that shares a membership
+  with the website is another chain, and it fails the same way: silently,
+  link by link. Give it the same treatment as the money path — one command
+  that asks every question a member would ask, in the order they would ask
+  it, and names the first broken link. Script:
+  `scripts/check_telegram_bridge.mjs`.
+- **an-env-var-with-the-wrong-name-is-a-silent-no-op** (every project) — a
+  missing variable does not fail the build and does not log; the feature
+  simply never runs. When the code reads `TELEGRAM_BOT_TOKEN` and the
+  environment carries `BOT_TOKEN`, the site is "configured" by every check
+  that looks for a value and still does nothing. Check the *name* in the
+  code against the *name* in the environment, and keep one name per
+  secret — an orphan variable under an old name is a trap for whoever
+  updates the value next.
+- **every-drawable-callback-needs-a-handler** (Telegram, every bot) — a
+  keyboard button whose `callback_data` matches no branch answers with
+  silence, and a command the bot advertises but never registered is an
+  instruction the reader cannot follow. Both are invisible until somebody
+  taps the button. Derive the callbacks the keyboards can produce, derive
+  the handlers that exist, and check the two against each other — a static
+  check, in the same script that proves the rest of the bridge.
+- **one-view-two-ways-to-ask-for-it** (every project) — when a command and
+  a button do the same thing, build the view once and ask for it twice.
+  Two copies of the same logic drift, and the drift shows up as one of
+  them answering differently.
+- **an-audit-rule-that-flags-the-design-is-not-an-audit** (every project) —
+  "light background with dark text" is a broken theme on a dark site and the
+  whole point of the design on a paper site. A rule that fires on every
+  route teaches the reader to ignore it. Scope a visual rule to the theme it
+  is about (only apply the light-block rule to a dark page) before trusting
+  its output.
 - **a-skeleton-is-a-promise-about-the-page** (Next.js, every project) — a
   `loading.tsx` wearing the wrong theme shows a light flash before a dark
   page (or the reverse). Read the page the skeleton stands in for before
@@ -503,3 +414,9 @@ with the `products.slug` migration decision in the same entry. **Recorded
 - Push when done
 - Take a federation lease before any deploy, migration, or DNS change, and
   release it with a receipt
+- Write `AGENT_MEMORY.md` into **`Website/`**, then run
+  `scripts/sync-trees.sh` — the canonical copy is the production root, and
+  a brief written into `web/` is a brief that drifts
+- Before every push run `node scripts/check-schema-refs.mjs`,
+  `node scripts/check_telegram_bridge.mjs` and
+  `node scripts/check_visual.mjs https://secretimperium.com 375`
