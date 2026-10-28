@@ -69,6 +69,16 @@ scripts/sync-trees.sh --check   # fail if they drifted
 # Mobile overflow audit (needs playwright)
 node scripts/check_overflow.mjs https://secretimperium.com 375
 
+# Full visual audit — every route in the sitemap, plus a viewport (needs playwright)
+node scripts/check_visual.mjs https://secretimperium.com 375
+
+# Prove the money path: did a card become a membership?
+node scripts/check_payment_chain.mjs someone@example.com
+node scripts/check_payment_chain.mjs --recent
+
+# Prove the Telegram bridge: will the bot open the paid sequence?
+node scripts/check_telegram_bridge.mjs
+
 # Telegram bot
 cd telegram-bot && source venv/bin/activate && python bot.py
 ```
@@ -121,7 +131,7 @@ cd telegram-bot && source venv/bin/activate && python bot.py
 
 ## Deploy & env
 - Deploy: production builds `Website/` (Vercel `rootDirectory=Website`). Deploys land on a git push to `main`; `vercel deploy --prod` from the repo root also works. Region pinned to `iad1`; `NODE_VERSION=24.x` (`Website/vercel.json`). Node 20.x is discontinued on Vercel and fails the build.
-- Env var **NAMES** (values live in `.env`, never commit/echo them): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID`, `SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`.
+- Env var **NAMES** (values live in `.env`, never commit/echo them): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` (the bot's @handle — absent degrades gracefully to the copy-the-code path; never set a placeholder), `TELEGRAM_ADMIN_CHAT_ID`, `IMPERIUM_MEMBERSHIP_SECRET` (shared with the bot), `SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`.
 
 ## Stripe integration
 - **Stripe SDK helper** (`web/src/lib/stripe-helper.ts`): server-side singleton, API version pinned `2026-02-25.clover`, reads `STRIPE_SECRET_KEY`.
@@ -150,7 +160,7 @@ cd telegram-bot && source venv/bin/activate && python bot.py
 - Subscription gating: `/28principles` (Phases II–V) and gated pages must check Supabase subscription status before rendering content.
 - Checkout uses dynamic line items but the webhook expects products pre-registered in Supabase — mind this gap when wiring product analytics.
 - `web/src/components/Footer.tsx` does not exist; don't assume an extracted footer.
-- **Security**: `AGENTS.md` in the repo root contains a real Telegram bot token in plaintext — do not propagate it; it should be rotated and removed from version control.
+- **Security**: the Telegram bot token was removed from `AGENTS.md` and from `docker-compose.yml` on 2026-10-27. The one that was committed has been revoked by Telegram (it answers `401 Unauthorized`), so it is harmless — but a new token from @BotFather must never be committed, and `scripts/check_telegram_bridge.mjs` says whether the one in use still works.
 
 ## Omni agent workflow (AGENT_MEMORY.md)
 When run as the Omni Synthetic Intelligence Agent on the `imperium` project:

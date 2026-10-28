@@ -36,7 +36,7 @@ This document outlines the architecture for an AI-driven Imperium business opera
 ## Telegram Integration
 
 ### Credentials
-- **Bot Token**: `7876846081:AAG8UriNM7UaNKTxrR8aIuBlLc8XzGzhKJI`
+- **Bot Token**: never committed — take it from `@BotFather` and keep it in `.env`
 - **Admin Chat ID**: `8459911167`
 
 ### Notification Types
@@ -72,12 +72,17 @@ This document outlines the architecture for an AI-driven Imperium business opera
 ### 2. Environment Setup
 The following environment variables are configured in `.env`:
 ```
-TELEGRAM_BOT_TOKEN=7876846081:AAG8UriNM7UaNKTxrR8aIuBlLc8XzGzhKJI
+TELEGRAM_BOT_TOKEN=<from @BotFather>
 TELEGRAM_ADMIN_CHAT_ID=8459911167
 SUPABASE_URL=https://odvxtychuxxsudfpcqqs.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<secret>
 STRIPE_SECRET_KEY=<secret>
 ```
+
+The bot token is never committed. The one that was written here has been
+revoked by Telegram — it answers `401 Unauthorized` — and has to be replaced
+with a fresh one from `@BotFather` before the bot can run. Run
+`node scripts/check_telegram_bridge.mjs` to see what is still missing.
 
 ### 3. Running the Telegram Bot
 ```bash
