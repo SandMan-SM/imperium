@@ -214,7 +214,7 @@ try {
 
         record(
             'Website: the deep link names the same bot',
-            body.usernameMatches === true,
+            body.configuredUsername ? body.usernameMatches === true : null,
             !body.configuredUsername
                 ? 'TELEGRAM_BOT_USERNAME is not set — the member copies the code instead'
                 : body.usernameMatches
