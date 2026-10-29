@@ -83,8 +83,23 @@ for (const route of routes) {
 
     let status = 0;
     try {
-        const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle', timeout: TIMEOUT });
-        status = response?.status() ?? 0;
+        // `networkidle` waits for the page to go quiet, so a slow moment on
+        // the network reads as a broken route. One retry separates a slow
+        // page from a broken one — an audit that fires on noise teaches the
+        // reader to ignore it.
+        let lastError;
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            try {
+                const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle', timeout: TIMEOUT });
+                status = response?.status() ?? 0;
+                lastError = null;
+                break;
+            } catch (error) {
+                lastError = error;
+            }
+        }
+        if (lastError) throw lastError;
+
         // Scroll the page so lazy images are requested before they are judged.
         await page.evaluate(async () => {
             await new Promise((resolve) => {
