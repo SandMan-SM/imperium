@@ -116,6 +116,7 @@ export default function InboundTracker() {
         target_id: el.getAttribute("data-track"),
         target_area: el.closest("[data-track-area]")?.getAttribute("data-track-area") || null,
         page_path: pathname,
+        page_url: `${window.location.origin}${window.location.pathname}`,
         ...(ref || {}),
       });
     }

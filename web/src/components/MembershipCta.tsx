@@ -43,7 +43,7 @@ export function MembershipCta({ id = "membership" }: { id?: string }) {
             members who want to work through it rather than skim it.
           </p>
           <div className="membership-cta-actions">
-            <a className="editorial-button" href={STRIPE_CHECKOUT_URL}>
+            <a className="editorial-button" href={STRIPE_CHECKOUT_URL} data-track="membership_join" data-track-area="membership">
               Join Imperium Elite — {BRAND.priceMonthly}
               <ArrowRight size={18} aria-hidden="true" />
             </a>
