@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The repo holds two app trees (Website/ is the production root, web/ is a
+  // mirror), so Next finds two lockfiles and infers the whole repository as
+  // the workspace root. Pin it to the app's own directory: the build then
+  // traces this tree and nothing else.
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     unoptimized: true,
   },

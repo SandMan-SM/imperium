@@ -21,6 +21,8 @@ telegram-bot/handlers/__pycache__/
 telegram-bot/utils/__pycache__/
 
 # Node
+/node_modules/
+/scripts/node_modules/
 web/node_modules/
 web/.next/
 web/.vercel/
