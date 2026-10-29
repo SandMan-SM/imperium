@@ -50,6 +50,14 @@ compare:
   the production tree and its mirror — and inferred the whole repository as
   the workspace root, on every build, in every environment. `turbopack.root`
   is now pinned to the app's own directory, and the warning is gone.
+- **It was proved on the live site, not on a local build.** The lead webhook
+  was probed in production with a real payload: it wrote the subscriber row
+  and the tenant lead row, and answered `persisted: true, notified: false`
+  — the honest answer, because the site's Telegram token is still dead, and
+  the row was cleaned up afterwards. `/api/telegram/status` answers
+  `tokenValid: false` on production, which is the silent failure the new
+  route exists to name. The visual audit is clean across 36 routes at 375,
+  768 and 1440 px.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -67,7 +75,9 @@ compare:
    that was committed to `AGENTS.md` all answer `401 Unauthorized`, and so
    does the `BOT_TOKEN` that was on Vercel. Until BotFather issues a real
    one the bot cannot be run and none of the Telegram work can be seen live.
-   `node scripts/check_telegram_bridge.mjs` names it as the first failure.
+   `node scripts/check_telegram_bridge.mjs` names it as the first failure —
+   and now names the site's own copy as a separate failure, because the
+   site carries a second copy of the same dead token.
    **Set the same new token in two places** — `telegram-bot/.env` and the
    Vercel variable `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and
    the bridge script will now say whether the two copies are the same bot.
