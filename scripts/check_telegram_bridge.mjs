@@ -7,6 +7,7 @@
  *
  *   1. the bot has a token Telegram still accepts
  *   2. the website carries the same token and the bot's username
+ *   2b. the site's own token works, and names the same bot as the bot's
  *   3. the access code fits in a Telegram deep link
  *   4. the bot and the website share the membership secret
  *   5. every command the bot advertises is registered
@@ -126,6 +127,7 @@ console.log('\nImperium Telegram bridge — can the bot open the paid sequence?\
 // 1. The bot's token.
 // ---------------------------------------------------------------------------
 const botToken = botEnv.TELEGRAM_BOT_TOKEN || '';
+let botUsername = null;
 
 if (!botToken) {
     record('Bot: a token is configured', false, 'telegram-bot/.env has no TELEGRAM_BOT_TOKEN');
@@ -133,7 +135,8 @@ if (!botToken) {
     try {
         const { status, body } = await telegramGetMe(botToken);
         if (status === 200 && body?.ok) {
-            record('Bot: the token is accepted by Telegram', true, `bot @${body.result?.username ?? 'unknown'}`);
+            botUsername = body.result?.username ?? null;
+            record('Bot: the token is accepted by Telegram', true, `bot @${botUsername ?? 'unknown'}`);
         } else {
             record(
                 'Bot: the token is accepted by Telegram',
@@ -179,6 +182,64 @@ if (envNames) {
                 : `missing from ${missing.join(' and ')}`,
         );
     }
+}
+
+// ---------------------------------------------------------------------------
+// 2b. The site's own copy of the token.
+//
+// The Vercel variable is write-only, so the two copies of the token cannot
+// be read back and compared. The site asks Telegram who its own token
+// belongs to and answers with the username alone; that is the only way to
+// see whether the site and the bot talk to the same bot — the last link in
+// the bridge that could still fail on its own, silently.
+// ---------------------------------------------------------------------------
+try {
+    const response = await fetch(`${SITE_URL}/api/telegram/status`, {
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    const body = (await response.json().catch(() => ({}))) as {
+        tokenConfigured?: boolean;
+        tokenValid?: boolean;
+        username?: string | null;
+        configuredUsername?: string | null;
+        usernameMatches?: boolean | null;
+    };
+
+    if (!response.ok) {
+        record('Website: the site can talk to Telegram', null, `HTTP ${response.status}`);
+    } else {
+        record(
+            'Website: the site can talk to Telegram',
+            body.tokenValid === true,
+            body.tokenValid
+                ? `the site's own token belongs to @${body.username ?? 'unknown'}`
+                : body.tokenConfigured
+                  ? "the site's own token was refused by Telegram"
+                  : 'TELEGRAM_BOT_TOKEN is not set on the deployment',
+        );
+
+        record(
+            'Website: the deep link names the same bot',
+            body.usernameMatches === true,
+            !body.configuredUsername
+                ? 'TELEGRAM_BOT_USERNAME is not set — the member copies the code instead'
+                : body.usernameMatches
+                  ? `@${body.configuredUsername}`
+                  : `TELEGRAM_BOT_USERNAME is @${body.configuredUsername} but the token belongs to @${body.username ?? 'unknown'}`,
+        );
+
+        if (botUsername && body.username) {
+            record(
+                'Bridge: the site and the bot talk to the same bot',
+                botUsername.toLowerCase() === body.username.toLowerCase(),
+                botUsername.toLowerCase() === body.username.toLowerCase()
+                    ? `@${botUsername}`
+                    : `the bot's token belongs to @${botUsername}, the site's to @${body.username}`,
+            );
+        }
+    }
+} catch (error) {
+    record('Website: the site can talk to Telegram', null, error.message);
 }
 
 // ---------------------------------------------------------------------------
