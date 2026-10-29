@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 27, 2026 11:58 PM
+> Synthetic Intelligence Memory | Updated: October 28, 2026 11:58 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,41 +21,35 @@
 | **OVERALL** | **96/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The Telegram bridge — the second front door onto the paid curriculum — was
-proved, repaired and measured, and the site it hangs off is clean:
-- **The bot's two dead ends were closed.** The main menu's **"My Progress"**
-  button drew a callback that no handler answered, so pressing it did
-  nothing at all. And the bot told a paying member to "use /resume to
-  continue where you left off" — a command that was never registered, so the
-  instruction could not be followed. Both now answer, and the unit view is
-  built in **one place** so the button and the command cannot drift apart.
-- **`scripts/check_telegram_bridge.mjs` answers "will the bot open the paid
-  sequence?"** One command, no guesswork, in the shape of the money-path
-  proof: the bot's token against Telegram itself, the site's copy of the
-  token, the admin chat, the shared secret, the bot's username, the depth of
-  the access code against Telegram's 64-character limit, every advertised
-  command against every registered one, every drawn button against every
-  answer, the curriculum's size, and whether the site still ships a locked
-  lesson to an anonymous reader. Exit 0 means the bridge is wired; 1 names
-  the broken link.
-- **The site and the bot were proven to share a secret.** The live bridge
-  accepts the bot's own `.membership-secret` and refuses a wrong one with a
-  `401` — the two halves of the membership are already talking.
-- **The token is no longer in version control.** It was committed in
-  `AGENTS.md` and hardcoded as a fallback in `docker-compose.yml`. Both are
-  gone; the compose file now refuses to start without a token rather than
-  falling back to a revoked one. The token itself is already dead — every
-  copy answers `401 Unauthorized` — so this is hygiene, not an outage.
-- **The environment now has one name for the token.** The website read
-  `TELEGRAM_BOT_TOKEN`; Vercel carried `BOT_TOKEN`, which nothing reads.
-  The site therefore never notified Telegram, silently, with no error
-  anywhere. `TELEGRAM_BOT_TOKEN` is now set on Production and Preview and
-  the orphan is gone.
-- **`scripts/check_visual.mjs` audits the whole site in one pass.** It
-  reads the routes from the site's own sitemap and checks each one for
-  overflow, console errors, broken images, missing alt text, links that go
-  nowhere and a theme that breaks. 36 routes at 375 / 768 / 1440 px and 14
-  more that the sitemap does not list: **nothing to fix.**
+The two silent halves of the site were closed — the lead endpoint that
+recorded nothing, and the one copy of the Telegram token nobody could
+compare:
+- **`/api/webhooks/clients` recorded nothing and said it had.** It read the
+  payload, pasted it into a Telegram message, dropped the lead on the floor,
+  and answered "Lead recorded and admin notified." to every caller — and
+  accepted any body from anyone, so it was a relay into the operator's
+  private admin chat. The lead now goes through the same capture pipeline
+  as every other form on the site (validation, rate limiting, the subscriber
+  row in `profiles`, the tenant lead row in `inbound_imperium_leads`), and
+  the Telegram ping reports what actually happened instead of claiming
+  success.
+- **The two copies of the Telegram token can now be compared.** The bot
+  holds one in `telegram-bot/.env`, the site holds one on Vercel, and a
+  Vercel variable is write-only — so nobody could tell whether they were the
+  same token, and a stale one fails silently (the site's notifications go
+  to a bot Telegram answers `401` to). `/api/telegram/status` asks Telegram
+  who the site's own token belongs to and answers with the username alone.
+  The bridge script now checks that the site's token works, that
+  `TELEGRAM_BOT_USERNAME` names that same bot, and that the site and the bot
+  talk to the same bot.
+- **The audit tooling is reproducible.** `scripts/` now carries its own
+  `package.json` with playwright pinned, so `npm run audit:visual` (and its
+  four siblings) work from a clean checkout instead of failing on a missing
+  module.
+- **The build stopped guessing where it was.** Next found two lockfiles —
+  the production tree and its mirror — and inferred the whole repository as
+  the workspace root, on every build, in every environment. `turbopack.root`
+  is now pinned to the app's own directory, and the warning is gone.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -74,6 +68,9 @@ proved, repaired and measured, and the site it hangs off is clean:
    does the `BOT_TOKEN` that was on Vercel. Until BotFather issues a real
    one the bot cannot be run and none of the Telegram work can be seen live.
    `node scripts/check_telegram_bridge.mjs` names it as the first failure.
+   **Set the same new token in two places** — `telegram-bot/.env` and the
+   Vercel variable `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and
+   the bridge script will now say whether the two copies are the same bot.
 3. **Set `TELEGRAM_BOT_USERNAME`** on Vercel (Production and Preview, in
    the same session). With it, `/api/telegram/link-code` returns a deep
    link and a member is connected in one tap; without it, the member copies
@@ -88,66 +85,39 @@ proved, repaired and measured, and the site it hangs off is clean:
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
 5. **Keep Preview in step with Production.** Both carry the same variable
-   names (verified by name this session; `TELEGRAM_BOT_TOKEN` now carries
-   the same value in both). Any new Production env var must be added to
-   Preview in the same session, or previews break silently again. Note:
+   names (re-verified this session by name: 26 variables, the same set in
+   each environment). Any new Production env var must be added to Preview in
+   the same session, or previews break silently again. Note:
    **sensitive Vercel env vars are write-only** — neither `vercel env pull`
    nor `?decrypt=true` returns a value. To mirror one without reading it,
    extend the target list of the existing Production record to include
    `preview` instead of creating a new record. The Vercel REST API
    (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
    without a prompt, which the CLI will not.
-6. **The trees drifted again — this time on the brief itself.** The last
-   session wrote `web/AGENT_MEMORY.md` and did not sync, so the canonical
-   `Website/AGENT_MEMORY.md` was a day older. **Write the brief into
-   `Website/` and run `scripts/sync-trees.sh`**, never the other way round.
 
 ## 🔬 Why
-- **A button with no handler is invisible.** The main menu drew "My
-  Progress" with a callback that `handle_callback` did not match, so the
-  button answered with silence — no error, no log, just a tap that did
-  nothing. The same shape as a dead link: the reader is the only one who
-  finds out.
-- **The bot told members to type a command that did not exist.** The
-  confirmation after a successful link ends "use /resume to continue where
-  you left off", and `/resume` was never registered. A promise the product
-  cannot keep is worse than no promise: the member types it, Telegram says
-  "unknown command", and the member concludes the bot is broken.
-- **One view, two ways to ask for it.** The resume view existed inside the
-  callback handler, where the `/resume` command could not reach it. Building
-  it once and asking for it twice is what keeps the button and the command
-  from answering differently.
-- **An env var with the wrong name is a silent no-op.** The code read
-  `TELEGRAM_BOT_TOKEN`; the environment carried `BOT_TOKEN`. The site
-  skipped its Telegram notification every time, correctly and invisibly.
-  A missing variable does not fail a build and does not log — it just means
-  the feature never runs, so the *name* has to be checked against the
-  environment, not just the presence of a value.
-- **A bridge has to be proved from both ends.** The membership secret
-  matches (the live site accepts the bot's file and refuses a wrong one),
-  but the bot cannot run without a token, so the half that matters most is
-  still unproven. One command that checks every link, in the order a member
-  would hit them, turns "it looks wired" into a list.
-- **A revoked token in version control is only hygiene.** The token was
-  committed, then revoked by Telegram. Removing it from the tree stops the
-  next person from trying it; it does not un-leak it, and the history still
-  holds it. Rewriting shared history is not worth it for a credential that
-  no longer works — the real fix is rotation, which only the operator can do.
-- **A light page is a design, not a bug.** The first run of the visual
-  audit flagged every route for "light background with dark text". The
-  Archive rebrand *is* paper — that is the product. The rule only means
-  something on a dark page, where a light block is a skeleton that forgot
-  what it stands in for.
-- **A file that claims to hold a secret can be checked against the live
-  thing.** The bot's `.membership-secret` and the site's
-  `IMPERIUM_MEMBERSHIP_SECRET` were assumed to match because both were
-  set. They are: the live bridge accepted the bot's file and refused a
-  wrong secret with a `401`. That is the only way to know without reading a
-  write-only variable.
-- **The one command beats the status badge.** The money path got
-  `check_payment_chain.mjs`; the Telegram path now gets its twin. Every
-  link that can fail alone and invisibly deserves a line in a script, not a
-  badge that says "configured".
+- **A success message nobody verifies is a lie the caller believes.** The
+  lead endpoint answered "Lead recorded and admin notified" without writing
+  anything. The operator's dashboard stayed empty and the caller was told
+  otherwise — the worst of both: no lead, and no reason to look for one.
+- **An open endpoint that pastes its input somewhere is a relay.** Every
+  field of the body went verbatim into a message in the operator's private
+  chat, with no validation, no rate limit and no record of the sender.
+- **Two copies of a secret that cannot be compared will drift.** The bot's
+  token and the site's token live in two places, one of them write-only. The
+  only way to see whether they are the same is to ask Telegram who each one
+  belongs to — which is what the new status route does.
+- **The site's own token can fail on its own.** The site sends the bot's
+  notifications; a token Telegram answers `401` to means lead alerts stop
+  arriving, with no error on the site and none in the bot.
+- **A build that guesses its own root guesses wrong twice.** Two lockfiles
+  — the production tree and its mirror — make Next infer the repository as
+  the workspace root. Pinning it is one line and removes the guess.
+- **A missing dev dependency is why the audit did not run.** The audit
+  scripts need playwright; with no `package.json` beside them, `node
+  scripts/check_visual.mjs` died on a missing module before it opened a
+  page. The scripts are the operator's only view into the site; they have to
+  be installable from a clean checkout.
 
 
 ## 🚨 Council items — do not fix these autonomously
@@ -183,12 +153,16 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 53
-- Lines written: 5000
+- Sessions: 54
+- Lines written: 5330
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-28 | revenue | `/api/webhooks/clients` recorded nothing and said it had: the payload was pasted into a Telegram message, the lead was dropped, and every caller got "Lead recorded and admin notified". It also accepted any body from anyone — a relay into the operator's private admin chat. The lead now goes through the site's own capture pipeline (validation, rate limit, `profiles` subscriber row, `inbound_imperium_leads` lead row), and the Telegram ping reports what actually happened | ~190 |
+| 2026-10-28 | telegram | The two copies of the Telegram token could not be compared — Vercel's is write-only — so a stale one failed silently. `/api/telegram/status` asks Telegram who the site's own token belongs to and answers with the username alone, and `check_telegram_bridge.mjs` now checks that the site's token works, that `TELEGRAM_BOT_USERNAME` names that bot, and that the site and the bot are the same bot | ~110 |
+| 2026-10-28 | repo | `scripts/package.json` pins playwright beside the audit scripts, so `npm run audit:visual` and its four siblings work from a clean checkout instead of dying on a missing module. It lives in `scripts/`, not the repo root, so Next cannot mistake it for a workspace root | ~20 |
+| 2026-10-28 | build | Next inferred the whole repository as the workspace root on every build, because the production tree and its mirror each carry a lockfile. `turbopack.root` is pinned to the app's own directory; the warning is gone and the build traces this tree only | ~10 |
 | 2026-10-27 | telegram | The bot's two dead ends were closed. The main menu's "My Progress" button drew a callback no handler answered — the tap did nothing at all. And the bot told a paying member to "use /resume to continue where you left off" for a command that was never registered. Both now answer, and the resume view is built in one place so the button and the command cannot drift apart | ~120 |
 | 2026-10-27 | telegram | `scripts/check_telegram_bridge.mjs`: one command proves the Telegram bridge — the bot's token against Telegram itself, the site's copy of the token, the admin chat, the shared secret, the bot's username, the access code against Telegram's 64-character limit, every advertised command against every registered one, every drawn button against every answer, the curriculum's size, and whether the site still ships a locked lesson to an anonymous reader. Exit 0 wired / 1 broken and named | ~330 |
 | 2026-10-27 | security | The revoked Telegram token was committed in `AGENTS.md` and hardcoded as a `docker-compose.yml` fallback. Both are gone; the compose file now refuses to start without a token instead of falling back to a revoked one. The token itself already answers 401 — this is hygiene, and rotation remains the operator's job | ~20 |
@@ -357,6 +331,31 @@ with the `products.slug` migration decision in the same entry. **Recorded
   code against the *name* in the environment, and keep one name per
   secret — an orphan variable under an old name is a trap for whoever
   updates the value next.
+- **a-success-message-nobody-verifies-is-a-lie-the-caller-believes**
+  (fleet, applies to every write endpoint) — an endpoint that answers
+  "recorded" without recording leaves the dashboard empty and the caller
+  convinced. Say what actually happened: `persisted`, `notified`,
+  `emailSent`, each a boolean the caller can trust, rather than one
+  cheerful string.
+- **an-open-endpoint-that-pastes-its-input-somewhere-is-a-relay** (fleet)
+  — a webhook that forwards a request body into a private channel with no
+  validation, no rate limit and no record of the sender is a spam relay
+  wearing a lead capture's clothes. Validate, rate limit, record, and only
+  then notify.
+- **two-copies-of-a-secret-that-cannot-be-compared-will-drift** (fleet) —
+  the bot's token is in a file, the site's is in a write-only variable.
+  Nothing can read them side by side, so nothing notices when they drift
+  apart. The fix is to ask the *other side* who it is: a status route that
+  reports which bot the site's own token belongs to, so one command can
+  compare the two.
+- **a-build-that-infers-its-own-root-infers-it-wrong-twice** (every repo
+  with two app trees) — two lockfiles make Next treat the whole repository
+  as the workspace root. Pin `turbopack.root` to the app's own directory.
+- **the-audit-scripts-need-their-own-package** (every project) — a script
+  that needs a dependency and has no `package.json` beside it dies before it
+  opens a page. The operator's only view into the site has to be
+  installable from a clean checkout — and it belongs in the tooling
+  directory, not the repo root, or the app build will try to include it.
 - **every-drawable-callback-needs-a-handler** (Telegram, every bot) — a
   keyboard button whose `callback_data` matches no branch answers with
   silence, and a command the bot advertises but never registered is an
