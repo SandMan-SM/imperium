@@ -197,13 +197,7 @@ try {
     const response = await fetch(`${SITE_URL}/api/telegram/status`, {
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    const body = (await response.json().catch(() => ({}))) as {
-        tokenConfigured?: boolean;
-        tokenValid?: boolean;
-        username?: string | null;
-        configuredUsername?: string | null;
-        usernameMatches?: boolean | null;
-    };
+    const body = (await response.json().catch(() => ({})));
 
     if (!response.ok) {
         record('Website: the site can talk to Telegram', null, `HTTP ${response.status}`);
