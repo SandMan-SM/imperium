@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 29, 2026 11:58 PM
+> Synthetic Intelligence Memory | Updated: October 30, 2026 12:40 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -176,6 +176,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-30 | security | The two cron routes failed OPEN. `/api/newsletter/cron` accepted the `x-vercel-cron: 1` request header as an alternative credential — a header the caller chooses, so it proves nothing — and both cron routes skipped the comparison entirely when `CRON_SECRET` was unset, because the rejection sat inside the condition (`if (expectedSecret && provided !== expectedSecret)`). A missing secret and a wrong secret must both deny, so the missing case is now its own statement that answers 503, and the shared secret is the only credential. `CRON_SECRET` is set in the `imperium` project, so nothing was open in production — the route would have opened the next time the variable was missing. The shared `scripts/audit-cron-auth.mjs` gate is installed and wired into `npm run build` so the class cannot come back | ~140 |
 | 2026-10-29 | security | Three operator routes answered anyone who knew their URL. `/api/sync-products` creates live Stripe products, prices and payment links and writes to `products` with the service-role key — with no authentication at all, so a stranger could mint payment links in the live account. `/api/check-payment-links` asked Stripe with the secret key which payment links exist and whether each is active. `/api/admin/refresh-metrics` read the whole `profiles` table with the service role and answered with the business numbers. All three now require the operator's session via `isAdminRequest`, and the admin dashboard's `adminFetch` helper carries the token to each of them | ~110 |
 | 2026-10-29 | security | `/api/referrals` creates a real Supabase auth user and sends a confirmation email to whatever address it is given once a referral code exists, and it was unrated. The capture pipeline's rate limiter was module-private, so it now lives in `lib/server/rate-limit.ts` and both the capture forms and the referral route count the caller's IP; the referral route also validates the email before it does anything | ~110 |
 | 2026-10-29 | repo | `web/AGENT_MEMORY.md` had drifted ahead of the canonical `Website/` copy by a timestamp line — the exact failure the mirror rule exists to prevent — and the sync script reverted it. The brief is written into `Website/` and mirrored, as the rules say | ~10 |
@@ -453,6 +454,10 @@ with the `products.slug` migration decision in the same entry. **Recorded
   silently (see `rls-recursion-breaks-the-client`)
 - Run `node scripts/check-schema-refs.mjs` before shipping any change that
   adds or renames a `.from()` call, and run it again before every push
+- Run `npm run audit:cron-auth` before every push — it is the only check that
+  sees a route authenticating a caller with a header the caller chooses
+  (`x-vercel-cron`, `User-Agent`) or treating "no secret configured" as
+  "allow". The check runs as part of `npm run build`
 - Commit every logical unit: `git commit -m 'agent: [what]'`
 - Push when done
 - Take a federation lease before any deploy, migration, or DNS change, and

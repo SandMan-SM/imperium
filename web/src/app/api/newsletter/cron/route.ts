@@ -20,19 +20,29 @@ import {
  * out, so publishing is the approval step.
  */
 export async function GET(req: Request) {
-  // Vercel sends the project cron secret as `Authorization: Bearer <secret>`
-  // and flags the invocation with `x-vercel-cron: 1`. The legacy
-  // `x-vercel-cron-token` header is still accepted. When CRON_SECRET is
-  // configured, an unauthenticated caller is rejected — otherwise anyone
-  // could trigger a full send.
+  // Vercel sends the project cron secret as `Authorization: Bearer <secret>`.
+  // That bearer — or the legacy `x-vercel-cron-token` header carrying the same
+  // value — is the ONLY accepted credential.
+  //
+  // This route used to accept the `x-vercel-cron: 1` request header as an
+  // alternative, and to skip the check entirely when CRON_SECRET was unset:
+  //   `if (expectedSecret && provided !== expectedSecret) return 401`
+  // A request header is chosen by the caller, so it proves nothing, and an
+  // unset secret made the whole comparison disappear — which would have let
+  // anyone trigger a full newsletter send. An unset secret and a wrong secret
+  // must both deny, so the two cases are separate statements now: deny when
+  // the secret is missing, then compare.
   const expectedSecret = process.env.CRON_SECRET;
+  if (!expectedSecret) {
+    return NextResponse.json(
+      { error: 'Cron authentication is not configured' },
+      { status: 503 },
+    );
+  }
   const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-  const provided =
-    req.headers.get('x-vercel-cron-token') ||
-    bearer ||
-    (req.headers.get('x-vercel-cron') === '1' ? 'vercel-cron' : '');
+  const provided = req.headers.get('x-vercel-cron-token') || bearer;
 
-  if (expectedSecret && provided !== expectedSecret) {
+  if (provided !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

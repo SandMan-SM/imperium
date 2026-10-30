@@ -22,12 +22,26 @@ async function persistSnapshot(snapshot: Awaited<ReturnType<typeof generateMarke
 }
 
 export async function GET(req: Request) {
+  // The shared cron secret is the only accepted credential: the bearer Vercel
+  // sends on a cron invocation, or the legacy `x-vercel-cron-token` header
+  // carrying the same value.
+  //
+  // The rejection used to sit inside the `expectedSecret &&` condition, so an
+  // unset CRON_SECRET skipped the check and let anyone trigger a snapshot
+  // write. An unset secret and a wrong secret must both deny.
+  const expectedSecret = process.env.CRON_SECRET;
+  if (!expectedSecret) {
+    return NextResponse.json(
+      { error: "Cron authentication is not configured" },
+      { status: 503 },
+    );
+  }
+
   const cronSecret = req.headers.get("x-vercel-cron-token");
   const authHeader = req.headers.get("authorization");
   const bearerSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : null;
-  const expectedSecret = process.env.CRON_SECRET;
 
-  if (expectedSecret && cronSecret !== expectedSecret && bearerSecret !== expectedSecret) {
+  if (cronSecret !== expectedSecret && bearerSecret !== expectedSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

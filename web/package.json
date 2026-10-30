@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "audit:cron-auth": "node scripts/audit-cron-auth.mjs",
+    "build": "npm run audit:cron-auth && next build",
     "start": "next start",
     "lint": "eslint"
   },
