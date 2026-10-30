@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 29, 2026 11:03 PM
+> Synthetic Intelligence Memory | Updated: October 29, 2026 11:58 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,43 +21,40 @@
 | **OVERALL** | **96/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The two silent halves of the site were closed — the lead endpoint that
-recorded nothing, and the one copy of the Telegram token nobody could
-compare:
-- **`/api/webhooks/clients` recorded nothing and said it had.** It read the
-  payload, pasted it into a Telegram message, dropped the lead on the floor,
-  and answered "Lead recorded and admin notified." to every caller — and
-  accepted any body from anyone, so it was a relay into the operator's
-  private admin chat. The lead now goes through the same capture pipeline
-  as every other form on the site (validation, rate limiting, the subscriber
-  row in `profiles`, the tenant lead row in `inbound_imperium_leads`), and
-  the Telegram ping reports what actually happened instead of claiming
-  success.
-- **The two copies of the Telegram token can now be compared.** The bot
-  holds one in `telegram-bot/.env`, the site holds one on Vercel, and a
-  Vercel variable is write-only — so nobody could tell whether they were the
-  same token, and a stale one fails silently (the site's notifications go
-  to a bot Telegram answers `401` to). `/api/telegram/status` asks Telegram
-  who the site's own token belongs to and answers with the username alone.
-  The bridge script now checks that the site's token works, that
-  `TELEGRAM_BOT_USERNAME` names that same bot, and that the site and the bot
-  talk to the same bot.
-- **The audit tooling is reproducible.** `scripts/` now carries its own
-  `package.json` with playwright pinned, so `npm run audit:visual` (and its
-  four siblings) work from a clean checkout instead of failing on a missing
-  module.
-- **The build stopped guessing where it was.** Next found two lockfiles —
-  the production tree and its mirror — and inferred the whole repository as
-  the workspace root, on every build, in every environment. `turbopack.root`
-  is now pinned to the app's own directory, and the warning is gone.
-- **It was proved on the live site, not on a local build.** The lead webhook
-  was probed in production with a real payload: it wrote the subscriber row
-  and the tenant lead row, and answered `persisted: true, notified: false`
-  — the honest answer, because the site's Telegram token is still dead, and
-  the row was cleaned up afterwards. `/api/telegram/status` answers
-  `tokenValid: false` on production, which is the silent failure the new
-  route exists to name. The visual audit is clean across 36 routes at 375,
-  768 and 1440 px.
+Three operator routes that answered anyone who knew their URL were closed,
+and the referral door was rate limited before it is ever opened:
+- **`/api/sync-products` was an open door into the live Stripe account.**
+  It creates real Stripe products, prices and payment links and writes to
+  `products` with the service-role key — and it had no authentication at
+  all. The admin dashboard is gated in the browser, which is a client-side
+  gate; the handler behind it was reachable by anyone who knew the URL, so
+  a stranger could mint payment links in the live account and write rows to
+  the catalogue. It now requires the operator's session, and its `GET`,
+  which read the whole table with the service role, does too.
+- **`/api/check-payment-links` leaked the billing configuration.** It asks
+  Stripe, with the secret key, which payment links exist and whether each
+  one is still active, and answered any caller. It is operator-only now.
+- **`/api/admin/refresh-metrics` published the business numbers.** It read
+  the whole `profiles` table with the service-role key and answered a
+  stranger with `{"totalUsers":25,"premiumUsers":1,...}`. It is
+  operator-only now.
+- **The dashboard still works.** The admin page had been calling all three
+  with a bare `fetch`, so it had no token to send. A shared `adminFetch`
+  helper now attaches the operator's access token to every call, and the
+  console's own `consoleFetch` is built on it.
+- **The referral signup is rate limited before it can be abused.**
+  `/api/referrals` creates a real Supabase auth user and sends a
+  confirmation email to whatever address it is given, once a valid referral
+  code exists. The rate limiter that guarded the capture forms was
+  module-private; it now lives in `lib/server/rate-limit.ts` and the
+  referral route counts the caller's IP before it creates anything.
+- **It was proved, not assumed.** Against a local production build: the
+  three operator routes answer `401` with no token and `401` with a wrong
+  token, and answer `200` with the service-role bearer. The capture
+  pipeline still persists and still sends after the rate-limiter move, and
+  the referral route answers `429` with a `Retry-After` on the eleventh
+  attempt. The probe row the capture test wrote to the live database was
+  deleted afterwards. The visual audit is clean across 36 routes.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -88,13 +85,22 @@ compare:
    — absent degrades gracefully to the copy-the-code path, a placeholder
    produces a deep link that opens a dead bot. The username is the one thing
    the agent cannot invent: it only exists once the token works.
-4. **The council items are recorded, not fixed.** They are written up in
+4. **Prove the operator's own admin session still reaches the guarded
+   routes.** The service-role bearer was proved to work on all three
+   operator routes; the *session* bearer was not, because the agent has no
+   admin credentials. Sign in at `/admin` and confirm the Analytics refresh
+   button, the product sync button and the payment-link status check all
+   still answer `200` and not `401`. A `401` on a button that used to work
+   means `is_admin` on the profile row is not set the way `isAdminRequest`
+   expects — check `profiles.auth_id` and `profiles.email` before anything
+   else.
+5. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
    functions, the `subscriptions`/`referrals` policy contradiction) and
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
-5. **Keep Preview in step with Production.** Both carry the same variable
+6. **Keep Preview in step with Production.** Both carry the same variable
    names (re-verified this session by name: 26 variables, the same set in
    each environment). Any new Production env var must be added to Preview in
    the same session, or previews break silently again. Note:
@@ -106,30 +112,31 @@ compare:
    without a prompt, which the CLI will not.
 
 ## 🔬 Why
-- **A success message nobody verifies is a lie the caller believes.** The
-  lead endpoint answered "Lead recorded and admin notified" without writing
-  anything. The operator's dashboard stayed empty and the caller was told
-  otherwise — the worst of both: no lead, and no reason to look for one.
-- **An open endpoint that pastes its input somewhere is a relay.** Every
-  field of the body went verbatim into a message in the operator's private
-  chat, with no validation, no rate limit and no record of the sender.
-- **Two copies of a secret that cannot be compared will drift.** The bot's
-  token and the site's token live in two places, one of them write-only. The
-  only way to see whether they are the same is to ask Telegram who each one
-  belongs to — which is what the new status route does.
-- **The site's own token can fail on its own.** The site sends the bot's
-  notifications; a token Telegram answers `401` to means lead alerts stop
-  arriving, with no error on the site and none in the bot.
-- **A build that guesses its own root guesses wrong twice.** Two lockfiles
-  — the production tree and its mirror — make Next infer the repository as
-  the workspace root. Pinning it is one line and removes the guess.
-- **A missing dev dependency is why the audit did not run.** The audit
-  scripts need playwright; with no `package.json` beside them, `node
-  scripts/check_visual.mjs` died on a missing module before it opened a
-  page. The scripts are the operator's only view into the site; they have to
-  be installable from a clean checkout.
-
-
+- **A client-side gate is not a gate.** The dashboard checks the session in
+  the browser and hides itself from anyone who is not an admin — and then
+  calls three handlers that checked nothing. The browser gate decides what
+  is *shown*; the server decides what is *allowed*, and only the server
+  gate counts. Three routes held a live Stripe secret key, a service-role
+  key and the business numbers with no gate behind them at all.
+- **The route that writes to the account is the one that must be careful.**
+  `sync-products` does not read anything — it mints payment links in the
+  live account and writes rows to the catalogue. An open route that only
+  reads is bad; an open route that writes is worse, because what it wrote
+  cannot be un-written by turning it off.
+- **The operator's own tool must keep working.** Closing a route is only
+  half the fix; the dashboard that legitimately calls it has to carry a
+  token. A guard added without touching the caller turns a working button
+  into a silent `401`.
+- **A rate limit has to exist before the door opens.** The referral
+  programme is inert today because no referral code has been issued, so the
+  route always answers "Invalid referral code". The moment the operator
+  seeds a code, the route becomes a way to send the brand's mail to any
+  address and to create auth users in the live database. The limit belongs
+  in the code now, not after it is exploited.
+- **A shared limiter beats two copies of one.** The capture pipeline's
+  rate limiter was module-private, so the referral route could not use it
+  without duplicating it — and two copies of a limiter drift, exactly as
+  two copies of a token did.
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
 of them is a migration and needs a council decision. They are written up in
@@ -163,12 +170,15 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 54
-- Lines written: 5330
+- Sessions: 55
+- Lines written: 5480
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-29 | security | Three operator routes answered anyone who knew their URL. `/api/sync-products` creates live Stripe products, prices and payment links and writes to `products` with the service-role key — with no authentication at all, so a stranger could mint payment links in the live account. `/api/check-payment-links` asked Stripe with the secret key which payment links exist and whether each is active. `/api/admin/refresh-metrics` read the whole `profiles` table with the service role and answered with the business numbers. All three now require the operator's session via `isAdminRequest`, and the admin dashboard's `adminFetch` helper carries the token to each of them | ~110 |
+| 2026-10-29 | security | `/api/referrals` creates a real Supabase auth user and sends a confirmation email to whatever address it is given once a referral code exists, and it was unrated. The capture pipeline's rate limiter was module-private, so it now lives in `lib/server/rate-limit.ts` and both the capture forms and the referral route count the caller's IP; the referral route also validates the email before it does anything | ~110 |
+| 2026-10-29 | repo | `web/AGENT_MEMORY.md` had drifted ahead of the canonical `Website/` copy by a timestamp line — the exact failure the mirror rule exists to prevent — and the sync script reverted it. The brief is written into `Website/` and mirrored, as the rules say | ~10 |
 | 2026-10-28 | revenue | `/api/webhooks/clients` recorded nothing and said it had: the payload was pasted into a Telegram message, the lead was dropped, and every caller got "Lead recorded and admin notified". It also accepted any body from anyone — a relay into the operator's private admin chat. The lead now goes through the site's own capture pipeline (validation, rate limit, `profiles` subscriber row, `inbound_imperium_leads` lead row), and the Telegram ping reports what actually happened | ~190 |
 | 2026-10-28 | telegram | The two copies of the Telegram token could not be compared — Vercel's is write-only — so a stale one failed silently. `/api/telegram/status` asks Telegram who the site's own token belongs to and answers with the username alone, and `check_telegram_bridge.mjs` now checks that the site's token works, that `TELEGRAM_BOT_USERNAME` names that bot, and that the site and the bot are the same bot | ~110 |
 | 2026-10-28 | repo | `scripts/package.json` pins playwright beside the audit scripts, so `npm run audit:visual` and its four siblings work from a clean checkout instead of dying on a missing module. It lives in `scripts/`, not the repo root, so Next cannot mistake it for a workspace root | ~20 |
@@ -400,6 +410,29 @@ with the `products.slug` migration decision in the same entry. **Recorded
   is sent to the browser and hidden with CSS is a lesson anyone can read in
   the network tab. Keep the paid content in a server module and release it
   through an API that checks membership before it writes a single byte.
+- **a-client-side-gate-is-not-a-gate** (every project, every admin
+  surface) — a dashboard that hides itself from non-admins in the browser
+  and calls handlers that check nothing has not gated anything: the gate
+  decides what is *shown*, the server decides what is *allowed*. Audit
+  every route behind an operator screen by asking one question — *if I
+  knew this URL, what could I do with it?* A route that mints payment
+  links, writes rows, or reads a table with the service role is an
+  operator route and must carry the session. `isAdminRequest` is that gate
+  here.
+- **close-the-route-and-fix-the-caller-in-the-same-change** (every
+  project) — adding a guard without touching the client that legitimately
+  calls the route turns a working button into a silent `401`. If the
+  dashboard has no token to send, that is the bug to find, not a reason
+  to leave the route open.
+- **rate-limit-a-door-before-it-is-opened** (every project) — a route
+  that is inert today because its capability token has never been issued
+  becomes an abuse vector the moment someone issues one. The limit
+  belongs in the code before the key is handed out, not after the first
+  flood.
+- **a-shared-limiter-beats-two-copies-of-one** (every project) — a rate
+  limiter that lives inside one module cannot be used by the next route
+  that needs one, so it gets copied, and copies drift. Extract it once,
+  import it twice.
 
 
 ## ⚡ Rules
