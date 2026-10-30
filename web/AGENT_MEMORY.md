@@ -463,3 +463,16 @@ with the `products.slug` migration decision in the same entry. **Recorded
 - Before every push run `node scripts/check-schema-refs.mjs`,
   `node scripts/check_telegram_bridge.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
+- **Never deploy from a retired worktree.** Two directories still hold a
+  `.vercel/project.json` pointing at the **production** project
+  (`prj_rbnO8QZmuJtlDpWlGYE1tcYkwx3o`) and still contain the old,
+  unauthenticated `/api/sync-products`:
+  `/Users/janahasson/Desktop/Clients/_deploy-worktrees/imperium-archive-20261018`
+  (at `9687472`) and
+  `/Users/janahasson/Desktop/Clients/Sitani Mafi/Imperium/.claude/worktrees/zealous-poitras-6023da`
+  (at `203d902`). A `vercel --prod` from either ships an old tree to the
+  live alias and silently reverts every fix since — including the
+  operator-route guards. **Deploy from `main`, by git push, and nothing
+  else.** The `federation.surfaces` row for `secretimperium.com` names
+  `codebase_path` = this `Website/` tree; treat any other directory as
+  the wrong tree.
