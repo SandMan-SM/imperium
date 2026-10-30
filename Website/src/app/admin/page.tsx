@@ -85,6 +85,27 @@ interface ConsolePayload {
 }
 
 /**
+ * Calls an admin API with the operator's access token.
+ *
+ * The operator-only routes check the caller's session server side, so every
+ * request the dashboard makes has to carry the token. This returns the raw
+ * response for the callers that read the status code themselves.
+ */
+async function adminFetch(input: string, init?: RequestInit): Promise<Response> {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+
+    return fetch(input, {
+        ...init,
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(init?.headers || {}),
+        },
+    });
+}
+
+/**
  * Calls the admin console API with the operator's access token.
  *
  * The console used to read and write `profiles`, `products` and `newsletters`
@@ -94,17 +115,7 @@ interface ConsolePayload {
  * and checks the caller's session.
  */
 async function consoleFetch<T>(input: string, init?: RequestInit): Promise<T> {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-
-    const response = await fetch(input, {
-        ...init,
-        headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(init?.headers || {}),
-        },
-    });
+    const response = await adminFetch(input, init);
 
     if (!response.ok) {
         const detail = await response.text().catch(() => "");
@@ -510,7 +521,7 @@ function AnalyticsView({ metrics, stats }: { metrics: Metrics | null; stats: { p
     const refreshMetrics = async () => {
         setLoading(true);
         try {
-            await fetch('/api/admin/refresh-metrics', { method: 'POST' });
+            await adminFetch('/api/admin/refresh-metrics', { method: 'POST' });
         } catch (e) {
             console.error('Failed to refresh metrics:', e);
         }
@@ -975,7 +986,7 @@ function ProductManager() {
                 return;
             }
 
-            const response = await fetch('/api/sync-products', {
+            const response = await adminFetch('/api/sync-products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ products: toSync }),
@@ -992,7 +1003,7 @@ function ProductManager() {
                 setProducts(refreshedRows);
                 // After syncing, check link statuses for products
                 try {
-                    const checkRes = await fetch('/api/check-payment-links', {
+                    const checkRes = await adminFetch('/api/check-payment-links', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ products: refreshedRows }),

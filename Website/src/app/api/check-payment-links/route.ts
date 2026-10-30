@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import type { Stripe } from 'stripe';
 import { getStripe } from '@/lib/stripe-helper';
+import { isAdminRequest } from '@/lib/server/admin-auth';
 
 /** Product row fields this endpoint reads. */
 interface ProductLinkRow {
@@ -34,6 +35,14 @@ function errorMessage(error: unknown): string | undefined {
 
 export async function POST(req: NextRequest) {
   try {
+    // This route asks Stripe, with the secret key, which payment links exist
+    // and whether each one is still active. The dashboard that calls it is
+    // gated in the browser, which is a client-side gate, so the handler was
+    // reachable by anyone who knew the URL.
+    if (!(await isAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { products } = (await req.json()) as { products?: unknown };
     if (!Array.isArray(products)) {
       return NextResponse.json({ error: 'Invalid products array' }, { status: 400 });

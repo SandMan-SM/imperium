@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import type { Stripe } from "stripe";
 import { getStripe } from "@/lib/stripe-helper";
+import { isAdminRequest } from "@/lib/server/admin-auth";
 
 // Use the runtime-friendly admin client from lib/supabase which supports multiple env var names
 import { supabaseAdmin as _supabaseAdmin } from '@/lib/supabase';
@@ -64,6 +65,15 @@ function errorMessage(error: unknown): string | undefined {
 
 export async function POST(req: NextRequest) {
     try {
+        // This route creates live Stripe products, prices and payment links and
+        // writes to `products` with the service-role key. The dashboard is
+        // gated in the browser, which is a client-side gate: this handler was
+        // reachable by anyone who knew the URL, so a stranger could mint
+        // payment links in the live account and write rows to the catalogue.
+        if (!(await isAdminRequest(req))) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { products } = (await req.json()) as { products?: unknown };
 
         if (!products || !Array.isArray(products)) {
@@ -267,8 +277,15 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        // Operator-only for the same reason as the POST above: this reads the
+        // catalogue with the service-role key, which bypasses the fleet's RLS
+        // policies and returns every column, not the public product list.
+        if (!(await isAdminRequest(req))) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { data: products, error } = await supabaseAdmin
             .from("products")
             .select("*")
