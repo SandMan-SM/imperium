@@ -5,6 +5,7 @@ import {
   isValidEmail,
   type CaptureInput,
 } from './imperium-capture';
+import { consumeRateWindow, requestIp } from './rate-limit';
 
 /**
  * Shared request handler for every public email capture form on the site.
@@ -12,46 +13,7 @@ import {
  * junk submissions never reaches Supabase or the hub.
  */
 
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const MAX_BODY_BYTES = 8 * 1024;
-
-type RateWindow = { count: number; resetAt: number };
-
-const rateWindows =
-  globalThis.__imperiumCaptureRateLimits ?? new Map<string, RateWindow>();
-globalThis.__imperiumCaptureRateLimits = rateWindows;
-
-declare global {
-  var __imperiumCaptureRateLimits: Map<string, RateWindow> | undefined;
-}
-
-function requestIp(request: Request): string {
-  const forwarded = cleanText(request.headers.get('x-forwarded-for'), 256).split(',')[0]?.trim();
-  return forwarded || cleanText(request.headers.get('x-real-ip'), 80) || 'unknown';
-}
-
-function consumeRateWindow(key: string): { ok: boolean; retryAfterSeconds: number } {
-  const now = Date.now();
-  const current = rateWindows.get(key);
-  if (!current || current.resetAt <= now) {
-    rateWindows.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-  } else {
-    current.count += 1;
-    if (current.count > RATE_LIMIT_MAX) {
-      return {
-        ok: false,
-        retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
-      };
-    }
-  }
-  if (rateWindows.size > 2000) {
-    for (const [candidate, value] of rateWindows) {
-      if (value.resetAt <= now || rateWindows.size > 1500) rateWindows.delete(candidate);
-    }
-  }
-  return { ok: true, retryAfterSeconds: 0 };
-}
 
 export async function handleEmailCaptureRequest(
   request: Request,

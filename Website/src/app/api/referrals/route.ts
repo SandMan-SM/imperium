@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getAdminClient } from "@/lib/server/imperium-capture";
+import { getAdminClient, isValidEmail } from "@/lib/server/imperium-capture";
+import { consumeRateWindow, requestIp } from "@/lib/server/rate-limit";
 
 /**
  * Referral codes.
@@ -68,10 +69,28 @@ async function findReferrerByCode(
 
 export async function POST(request: Request) {
     try {
+        // This route creates a real Supabase auth user and sends a
+        // confirmation email to whatever address it is given. The referral
+        // code is the invitation, but one code must not become a way to send
+        // the brand's mail to any address, so the caller's IP is counted
+        // before any account is created.
+        const ip = requestIp(request);
+        const limited = consumeRateWindow(`referral:${ip}`);
+        if (!limited.ok) {
+            return NextResponse.json(
+                { error: "Too many attempts. Please try again shortly." },
+                { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } },
+            );
+        }
+
         const { email, firstName, lastName, referralCode } = await request.json();
 
         if (!email || !referralCode) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        if (!isValidEmail(email)) {
+            return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
         }
 
         const admin = getAdminClient();
