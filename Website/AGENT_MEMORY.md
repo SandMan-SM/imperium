@@ -59,6 +59,16 @@ not take a money. Four things were wrong and are now right:
   needed `TELEGRAM_BOT_USERNAME` set by hand, and the token is the only
   authority on which bot the link may point at. The username is now asked
   of Telegram through `getMe` and cached.
+- **It was proved against production, not assumed.** A promo checkout
+  answered with a Stripe session totalling 7979 cents — catalogue 7999 less
+  the 2000 promo, tax 480, express shipping 1500 — while the request itself
+  claimed `price: 0.01`; an unknown line was refused with 400; a bogus
+  promo earned no discount; the deleted second checkout route answers 404;
+  `/api/admin/analytics` answers 403 without a token and `/admin/analytics`
+  carries no metrics in its HTML; `/api/analytics` and
+  `/api/newsletter/send` answer 401. The visual audit is clean across 36
+  routes. Deployment `imperium-1n8k7wxie`, federation lease 1031, released
+  with a receipt.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -117,16 +127,18 @@ not take a money. Four things were wrong and are now right:
    `preview` instead of creating a new record. The Vercel REST API
    (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
    without a prompt, which the CLI will not.
-7. **Prove the rebuilt checkout takes money.** The merch routes
-   (`/shop`, `/cart`, `/checkout`) still redirect to `/archive/`, so the
-   buyer-facing flow is paused — but `POST /api/checkout/create-session` is
-   live and reachable. Post a cart with `promoCode: "IMPERIUM20"` and
-   `shippingMethod: "express"` and open the session it returns: the line
-   amounts must be the catalogue prices less $20, the tax must be 8% of the
-   discounted subtotal, the shipping rate must be $15, and the session total
-   must equal the summary on `/checkout`. The old route answered
-   `{"error":"No such coupon: 'IMPERIUM20'"}`; it must now answer a
-   session URL.
+7. **The rebuilt checkout is proved live — the operator's decision is
+   whether to reopen the shop.** The merch routes (`/shop`, `/cart`,
+   `/checkout`) still redirect to `/archive/`, so the buyer-facing flow is
+   paused, but `POST /api/checkout/create-session` is live and reachable.
+   On 2026-10-31 it answered a promo checkout with a Stripe session
+   totalling **7979 cents** — the catalogue hoodie at 5999 (7999 less the
+   2000 promo), tax 480 and express shipping 1500 — while the request
+   itself claimed `price: 0.01`. An unknown line was refused with 400, a
+   bogus promo earned no discount (10139), and the deleted `/api/checkout`
+   answers 404. **What is left is a business decision, not a defect:** the
+   Archive rebrand holds the storefront closed, and reopening `/shop` is the
+   operator's call.
 
 ## 🔬 Why
 - **A client-side gate is not a gate.** The dashboard checks the session in
