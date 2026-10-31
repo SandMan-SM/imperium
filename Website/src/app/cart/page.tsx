@@ -9,36 +9,44 @@ import {
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";
+import { ShippingTierPicker } from "@/components/ShippingTierPicker";
+import {
+  computeTotals,
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  PROMO_QUERY_KEY,
+  promoDiscountCents,
+  usd,
+} from "@/lib/checkout-totals";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
-  
+
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
-  const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoError, setPromoError] = useState<string | null>(null);
+  const [shippingMethod, setShippingMethod] = useState("standard");
 
-  const handleApplyPromo = async () => {
+  const handleApplyPromo = () => {
     setPromoError(null);
-    
-    if (promoCode.toUpperCase() === "IMPERIUM20") {
-      setPromoDiscount(20);
-      setPromoApplied(true);
-    } else {
+
+    if (promoDiscountCents(promoCode) === null) {
       setPromoError("Invalid promo code");
+      return;
     }
+
+    setPromoApplied(true);
   };
 
   const handleCheckout = () => {
-    router.push("/checkout");
+    // The code is carried in the link so the checkout page starts with it.
+    const code = promoApplied ? promoCode.trim().toUpperCase() : "";
+    router.push(code ? `/checkout?${PROMO_QUERY_KEY}=${encodeURIComponent(code)}` : "/checkout");
   };
 
-  const shippingCost = total >= 100 ? 0 : 15;
-  const discount = promoDiscount;
-  const taxRate = 0.08;
-  const tax = Math.round((total - discount) * taxRate) / 100;
-  const grandTotal = total - discount + shippingCost + tax;
+  const discountCents = promoApplied ? (promoDiscountCents(promoCode) ?? 0) : 0;
+  const totals = computeTotals(Math.round(total * 100), discountCents, shippingMethod);
+  const grandTotal = totals.total / 100;
 
   if (items.length === 0) {
     return (
@@ -213,42 +221,48 @@ export default function CartPage() {
                 )}
               </div>
 
+              {/* Shipping Method */}
+              <div className="mb-6">
+                <label className="block text-white/60 text-sm mb-2">Shipping Method</label>
+                <ShippingTierPicker value={shippingMethod} onChange={setShippingMethod} />
+              </div>
+
               {/* Totals */}
               <div className="space-y-3 border-t border-white/10 pt-4">
                 <div className="flex justify-between text-white/60">
                   <span>Subtotal ({items.reduce((a, b) => a + b.quantity, 0)} items)</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${usd(totals.subtotal)}</span>
                 </div>
-                
-                {discount > 0 && (
+
+                {totals.discount > 0 && (
                   <div className="flex justify-between text-green-400">
                     <span>Discount</span>
-                    <span>-${discount.toFixed(2)}</span>
+                    <span>-${usd(totals.discount)}</span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between text-white/60">
                   <span>Shipping</span>
                   <span>
-                    {shippingCost === 0 ? (
+                    {totals.shipping === 0 ? (
                       <span className="text-green-400">FREE</span>
                     ) : (
-                      `$${shippingCost.toFixed(2)}`
+                      `$${usd(totals.shipping)}`
                     )}
                   </span>
                 </div>
-                
-                {total < 100 && shippingCost > 0 && (
+
+                {totals.subtotal - totals.discount < FREE_SHIPPING_THRESHOLD_CENTS && totals.shipping > 0 && (
                   <p className="text-white/40 text-xs">
-                    Add ${(100 - total).toFixed(2)} more for free shipping
+                    Add ${usd(FREE_SHIPPING_THRESHOLD_CENTS - (totals.subtotal - totals.discount))} more for free shipping
                   </p>
                 )}
-                
+
                 <div className="flex justify-between text-white/60">
                   <span>Estimated Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>${usd(totals.tax)}</span>
                 </div>
-                
+
                 <div className="flex justify-between text-white font-bold text-xl pt-3 border-t border-white/10">
                   <span>Total</span>
                   <span className="text-imperium-gold">${grandTotal.toFixed(2)}</span>

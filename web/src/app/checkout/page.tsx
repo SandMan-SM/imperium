@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { SafeImage } from "@/components/SafeImage";
-
-const SHIPPING_OPTIONS = [
-  { id: "standard", name: "Standard Shipping", price: 0, days: "5-7 business days" },
-  { id: "express", name: "Express Shipping", price: 15, days: "2-3 business days" },
-  { id: "overnight", name: "Overnight Shipping", price: 30, days: "Next business day" },
-];
+import { ShippingTierPicker } from "@/components/ShippingTierPicker";
+import {
+  computeTotals,
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  PROMO_QUERY_KEY,
+  promoDiscountCents,
+  usd,
+} from "@/lib/checkout-totals";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -38,16 +40,20 @@ function CheckoutContent() {
   });
   
   const [shippingMethod, setShippingMethod] = useState("standard");
-  const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoDiscount, setPromoDiscount] = useState(0);
 
-  const shipping = SHIPPING_OPTIONS.find(s => s.id === shippingMethod) || SHIPPING_OPTIONS[0];
-  const shippingCost = total >= 100 ? 0 : shipping.price;
-  const discount = promoDiscount;
-  const taxRate = 0.08;
-  const tax = Math.round((total - discount) * taxRate) / 100;
-  const grandTotal = total - discount + shippingCost + tax;
+  // A promo code applied in the cart arrives in the link, so the checkout
+  // starts with it already applied.
+  const promoFromLink = searchParams.get(PROMO_QUERY_KEY);
+  const [promoCode, setPromoCode] = useState(promoFromLink ?? "");
+  const [promoApplied, setPromoApplied] = useState(
+    promoFromLink !== null && promoDiscountCents(promoFromLink) !== null,
+  );
+
+  // The totals are worked out by the module the server also uses, so the
+  // number quoted here is the number Stripe charges.
+  const discountCents = promoApplied ? (promoDiscountCents(promoCode) ?? 0) : 0;
+  const totals = computeTotals(Math.round(total * 100), discountCents, shippingMethod);
+  const grandTotal = totals.total / 100;
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -84,12 +90,12 @@ function CheckoutContent() {
   };
 
   const handleApplyPromo = () => {
-    if (promoCode.toUpperCase() === "IMPERIUM20") {
-      setPromoDiscount(20);
-      setPromoApplied(true);
-    } else {
+    if (promoDiscountCents(promoCode) === null) {
       setError("Invalid promo code");
+      return;
     }
+    setPromoApplied(true);
+    setError(null);
   };
 
   const handlePlaceOrder = async () => {
@@ -102,8 +108,9 @@ function CheckoutContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
-          shipping: { ...formData, shippingMethod },
-          discount,
+          shipping: { ...formData },
+          shippingMethod,
+          promoCode: promoApplied ? promoCode : undefined,
           email: formData.email,
         }),
       });
@@ -327,41 +334,7 @@ function CheckoutContent() {
 
                 {/* Shipping Method */}
                 <h3 className="text-lg text-white font-bold mt-8 mb-4">Shipping Method</h3>
-                <div className="space-y-3">
-                  {SHIPPING_OPTIONS.map((option) => (
-                    <label
-                      key={option.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all ${
-                        shippingMethod === option.id
-                          ? "border-imperium-gold bg-imperium-gold/5"
-                          : "border-white/10 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="radio"
-                          name="shipping"
-                          value={option.id}
-                          checked={shippingMethod === option.id}
-                          onChange={() => setShippingMethod(option.id)}
-                          className="sr-only"
-                        />
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          shippingMethod === option.id ? "border-imperium-gold" : "border-white/30"
-                        }`}>
-                          {shippingMethod === option.id && <div className="w-2 h-2 rounded-full bg-imperium-gold" />}
-                        </div>
-                        <div>
-                          <p className="text-white font-medium">{option.name}</p>
-                          <p className="text-white/40 text-sm">{option.days}</p>
-                        </div>
-                      </div>
-                      <span className="text-imperium-gold font-bold">
-                        {option.price === 0 ? "FREE" : `$${option.price}`}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <ShippingTierPicker value={shippingMethod} onChange={setShippingMethod} />
 
                 <button
                   onClick={handleContinueToPayment}
@@ -514,21 +487,26 @@ function CheckoutContent() {
               <div className="space-y-3 border-t border-white/10 pt-4">
                 <div className="flex justify-between text-white/60 text-sm">
                   <span>Subtotal</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>${usd(totals.subtotal)}</span>
                 </div>
-                {discount > 0 && (
+                {totals.discount > 0 && (
                   <div className="flex justify-between text-green-400 text-sm">
                     <span>Discount</span>
-                    <span>-${discount.toFixed(2)}</span>
+                    <span>-${usd(totals.discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-white/60 text-sm">
                   <span>Shipping</span>
-                  <span>{shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`}</span>
+                  <span>{totals.shipping === 0 ? "FREE" : `$${usd(totals.shipping)}`}</span>
                 </div>
+                {totals.subtotal - totals.discount < FREE_SHIPPING_THRESHOLD_CENTS && totals.shipping > 0 && (
+                  <p className="text-white/40 text-xs">
+                    Add ${usd(FREE_SHIPPING_THRESHOLD_CENTS - (totals.subtotal - totals.discount))} more for free shipping
+                  </p>
+                )}
                 <div className="flex justify-between text-white/60 text-sm">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>${usd(totals.tax)}</span>
                 </div>
                 <div className="flex justify-between text-white font-bold text-lg pt-3 border-t border-white/10">
                   <span>Total</span>

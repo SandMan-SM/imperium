@@ -2,8 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
 import type { CartItem } from "@/lib/cart-context";
-import { getStripe } from "@/lib/stripe-helper";
-import { BRAND } from "@/lib/brand";
+import { CheckoutError, createCheckoutSession } from "@/lib/server/checkout-session";
 
 /** Shipping details collected by the checkout form. */
 interface ShippingDetails {
@@ -15,11 +14,20 @@ interface ShippingDetails {
   zip: string;
 }
 
-/** Request body accepted by the checkout endpoint. */
+/**
+ * Request body accepted by the checkout endpoint.
+ *
+ * The discount is not among them. The promo used to arrive as a dollar
+ * amount the browser chose, and the server applied a Stripe coupon whenever
+ * that number was above zero — the coupon did not exist, so every checkout
+ * that used it failed at the last step and the buyer was left holding a
+ * cart. The code is sent instead, and the server decides what it is worth.
+ */
 interface CheckoutRequestBody {
   items?: CartItem[];
-  shipping: ShippingDetails;
-  discount: number;
+  shipping?: ShippingDetails;
+  shippingMethod?: string;
+  promoCode?: string;
   email?: string;
 }
 
@@ -34,92 +42,37 @@ function errorMessage(error: unknown): string | undefined {
   return typeof message === 'string' ? message : undefined;
 }
 
-/**
- * The origin Stripe sends the buyer back to. `NEXT_PUBLIC_BASE_URL` is not
- * set in the Vercel environment, so the old fallback sent every completed
- * order to `http://localhost:3000/checkout?success=true` — the buyer landed
- * on a dead address and the order looked lost. The canonical site origin is
- * the fallback.
- */
-function siteOrigin(): string {
-  const configured = process.env.NEXT_PUBLIC_BASE_URL || process.env.WEBSITE_URL;
-  return (configured || BRAND.siteUrl).replace(/\/+$/, "");
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CheckoutRequestBody;
-    const { items, shipping, discount, email } = body;
+    const { items, shipping, shippingMethod, promoCode, email } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
     }
 
-    const lineItems = items.map((item) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.name,
-          description: item.size ? `Size: ${item.size}${item.color ? `, Color: ${item.color}` : ""}` : undefined,
-          images: item.image_url ? [item.image_url] : [],
-        },
-        unit_amount: Math.round(item.price * 100),
-      },
-      quantity: item.quantity,
-    }));
-
-    let discountAmount = 0;
-    if (discount > 0) {
-      discountAmount = Math.round(discount * 100);
+    if (!shipping?.address || !shipping?.city || !shipping?.state || !shipping?.zip) {
+      return NextResponse.json({ error: "Shipping details are incomplete." }, { status: 400 });
     }
 
-    const shippingCost = 0;
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    }
 
-    const session = await getStripe().checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${siteOrigin()}/checkout?success=true`,
-      cancel_url: `${siteOrigin()}/cart`,
-      customer_email: email,
-      shipping_address_collection: {
-        allowed_countries: ["US", "CA", "GB", "AU"],
-      },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: {
-              amount: shippingCost,
-              currency: "usd",
-            },
-            display_name: "Standard Shipping",
-            delivery_estimate: {
-              minimum: {
-                unit: "business_day",
-                value: 5,
-              },
-              maximum: {
-                unit: "business_day",
-                value: 7,
-              },
-            },
-          },
-        },
-      ],
-      metadata: {
-        shipping_name: `${shipping.firstName} ${shipping.lastName}`,
-        shipping_address: shipping.address,
-        shipping_city: shipping.city,
-        shipping_state: shipping.state,
-        shipping_zip: shipping.zip,
-        discount: discount.toString(),
-      },
-      discounts: discountAmount > 0 ? [{ coupon: "IMPERIUM20" }] : undefined,
+    const { url, totals } = await createCheckoutSession({
+      items,
+      shippingMethodId: shippingMethod,
+      promoCode,
+      email,
+      shipping,
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url, total: totals.total });
   } catch (error: unknown) {
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+
     console.error("Stripe error:", error);
     return NextResponse.json(
       { error: errorMessage(error) || "Failed to create checkout session" },
