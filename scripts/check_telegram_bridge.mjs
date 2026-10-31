@@ -6,7 +6,7 @@
  * between the two surfaces can fail on its own without anything saying so:
  *
  *   1. the bot has a token Telegram still accepts
- *   2. the website carries the same token and the bot's username
+ *   2. the website carries the same token, and can name the bot
  *   2b. the site's own token works, and names the same bot as the bot's
  *   3. the access code fits in a Telegram deep link
  *   4. the bot and the website share the membership secret
@@ -164,7 +164,6 @@ if (envNames) {
         ['TELEGRAM_BOT_TOKEN', 'the bot token the site sends notifications with'],
         ['TELEGRAM_ADMIN_CHAT_ID', 'the chat the site sends notifications to'],
         ['IMPERIUM_MEMBERSHIP_SECRET', 'the secret the bot and the site share'],
-        ['TELEGRAM_BOT_USERNAME', 'the username that turns an access code into a one-tap link'],
     ];
 
     for (const [name, why] of required) {
@@ -182,6 +181,19 @@ if (envNames) {
                 : `missing from ${missing.join(' and ')}`,
         );
     }
+
+    // The bot's username is not a secret of its own — it is a property of the
+    // token, and the site asks Telegram for it. Setting it by hand is
+    // therefore optional; what matters is that the site can name the bot at
+    // all, which is checked below against the live deployment.
+    const usernameEnv = envNames.get('TELEGRAM_BOT_USERNAME');
+    record(
+        'Website: the bot username needs no separate configuration',
+        true,
+        usernameEnv
+            ? 'TELEGRAM_BOT_USERNAME is set — the site will prefer it'
+            : 'not set on Vercel — the site derives it from the token',
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -213,22 +225,31 @@ try {
         );
 
         record(
+            'Website: the site can name the bot for a one-tap link',
+            Boolean(body.effectiveUsername),
+            body.effectiveUsername
+                ? `@${body.effectiveUsername} — ${body.usernameSource === 'configured' ? 'configured by hand' : 'derived from the token'}`
+                : 'the bot cannot be named — the member copies the code and sends it with /link',
+        );
+
+        record(
             'Website: the deep link names the same bot',
-            body.configuredUsername ? body.usernameMatches === true : null,
+            body.configuredUsername ? body.usernameMatches === true : true,
             !body.configuredUsername
-                ? 'TELEGRAM_BOT_USERNAME is not set — the member copies the code instead'
+                ? 'the username comes from the token itself, so the link cannot name a different bot'
                 : body.usernameMatches
                   ? `@${body.configuredUsername}`
                   : `TELEGRAM_BOT_USERNAME is @${body.configuredUsername} but the token belongs to @${body.username ?? 'unknown'}`,
         );
 
-        if (botUsername && body.username) {
+        const siteUsername = body.effectiveUsername ?? null;
+        if (botUsername && siteUsername) {
             record(
                 'Bridge: the site and the bot talk to the same bot',
-                botUsername.toLowerCase() === body.username.toLowerCase(),
-                botUsername.toLowerCase() === body.username.toLowerCase()
+                botUsername.toLowerCase() === siteUsername.toLowerCase(),
+                botUsername.toLowerCase() === siteUsername.toLowerCase()
                     ? `@${botUsername}`
-                    : `the bot's token belongs to @${botUsername}, the site's to @${body.username}`,
+                    : `the bot's token belongs to @${botUsername}, the site's to @${siteUsername}`,
             );
         }
     }
@@ -388,6 +409,31 @@ try {
 // ---------------------------------------------------------------------------
 const failed = results.filter((result) => result.ok === false);
 const unknown = results.filter((result) => result.ok === null);
+
+// ---------------------------------------------------------------------------
+// What to do about it.
+//
+// A check that names a failure and not the repair leaves the operator to
+// reconstruct the repair. The repair is known, so it is printed.
+// ---------------------------------------------------------------------------
+const failedLabels = new Set(failed.map((result) => result.label));
+
+if (failedLabels.has('Bot: the token is accepted by Telegram') || failedLabels.has('Website: the site can talk to Telegram')) {
+    console.log('To fix the token — ask @BotFather for a new one, then put the SAME token in both places:');
+    console.log('  1. telegram-bot/.env');
+    console.log('       TELEGRAM_BOT_TOKEN=<the new token>');
+    console.log('  2. Vercel (the site reads its own copy from here):');
+    console.log('       cd Website');
+    console.log('       printf %s "<the new token>" | vercel env add TELEGRAM_BOT_TOKEN production --sensitive --force');
+    console.log('       printf %s "<the new token>" | vercel env add TELEGRAM_BOT_TOKEN preview --sensitive --force');
+    console.log('  No username needs setting: the site asks Telegram which bot the token belongs to.');
+    console.log('');
+}
+
+if (failedLabels.has('Bot: every advertised command is registered') || failedLabels.has('Bot: every button the bot draws is answered')) {
+    console.log('To fix the bot: register the missing command or handler in telegram-bot/, then re-run this script.');
+    console.log('');
+}
 
 console.log('');
 if (failed.length === 0) {

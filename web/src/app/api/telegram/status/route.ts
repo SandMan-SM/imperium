@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
+import { getTelegramBotIdentity } from '@/lib/server/telegram-bot';
 
 /**
  * The site's own Telegram health.
@@ -17,46 +18,28 @@ import { NextResponse } from 'next/server';
  * token reports, so one command can say whether the two halves of the
  * bridge talk to the same bot — the last link that could still fail on its
  * own, and did so silently.
+ *
+ * The username the site puts in a deep link is the one Telegram reports for
+ * the token, unless one was configured by hand. `effectiveUsername` is the
+ * name that will actually be used; `configuredUsername` is what the operator
+ * set, if anything.
  */
 export async function GET() {
     const token = process.env.TELEGRAM_BOT_TOKEN ?? '';
     const configuredUsername = (process.env.TELEGRAM_BOT_USERNAME ?? '').replace(/^@/, '');
 
-    if (!token) {
-        return NextResponse.json({
-            tokenConfigured: false,
-            tokenValid: false,
-            username: null,
-            configuredUsername: configuredUsername || null,
-            usernameMatches: null,
-        });
-    }
-
-    let username: string | null = null;
-    let tokenValid = false;
-
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${token}/getMe`, {
-            signal: AbortSignal.timeout(8000),
-            cache: 'no-store',
-        });
-        const body = (await response.json().catch(() => ({}))) as {
-            ok?: boolean;
-            result?: { username?: string };
-        };
-        tokenValid = response.ok && body.ok === true;
-        username = typeof body.result?.username === 'string' ? body.result.username : null;
-    } catch (error) {
-        console.error('Telegram status: Telegram could not be reached:', error);
-    }
+    const identity = await getTelegramBotIdentity();
 
     return NextResponse.json({
-        tokenConfigured: true,
-        tokenValid,
-        username,
+        tokenConfigured: Boolean(token),
+        tokenValid: identity.tokenValid,
+        username: identity.derivedUsername,
         configuredUsername: configuredUsername || null,
-        usernameMatches: username
-            ? username.toLowerCase() === configuredUsername.toLowerCase()
-            : null,
+        effectiveUsername: identity.username,
+        usernameSource: identity.source,
+        usernameMatches:
+            identity.username && configuredUsername
+                ? identity.username.toLowerCase() === configuredUsername.toLowerCase()
+                : null,
     });
 }

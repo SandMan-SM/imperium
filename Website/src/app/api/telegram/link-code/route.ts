@@ -5,6 +5,7 @@ import { resolveCaller } from '@/lib/server/request-user';
 import { resolveMembership } from '@/lib/server/membership';
 import { getAdminClient } from '@/lib/server/imperium-capture';
 import { createTelegramConnectToken, isTelegramSafeToken } from '@/lib/server/telegram-link';
+import { getTelegramBotUsername } from '@/lib/server/telegram-bot';
 
 /**
  * Mints a Telegram access code for a signed-in member.
@@ -71,11 +72,13 @@ export async function GET(request: Request) {
         }
 
         // The bot username is optional. With it, the code becomes a link that
-        // opens the bot; without it, the member copies the code.
-        const botUsername = process.env.TELEGRAM_BOT_USERNAME;
+        // opens the bot; without it, the member copies the code. It is asked
+        // of Telegram rather than read from a variable, so the link can never
+        // point at a bot the token does not belong to.
+        const botUsername = await getTelegramBotUsername();
         const telegramUrl =
             botUsername && isTelegramSafeToken(minted.token)
-                ? `https://t.me/${botUsername.replace(/^@/, '')}?start=${minted.token}`
+                ? `https://t.me/${botUsername}?start=${minted.token}`
                 : null;
 
         return NextResponse.json({
