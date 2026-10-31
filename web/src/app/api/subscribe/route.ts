@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { consumeRateWindow, requestIp } from "@/lib/server/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIST_ENDPOINT = "https://omnileadsagi.com/api/federation-newsletter/subscribe";
@@ -23,6 +24,17 @@ async function post(url: string, body: unknown): Promise<boolean> {
 }
 
 export async function POST(request: Request) {
+  // This route puts an address on the brand's mailing list and writes an
+  // event into the hub. Unrated, it is a way to send the brand's mail to any
+  // address on demand, so the caller's IP is counted first.
+  const limited = consumeRateWindow(`subscribe:${requestIp(request)}`);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { ok: false, error: "too_many_requests" },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } },
+    );
+  }
+
   let email = "";
   try {
     const body = await request.json();

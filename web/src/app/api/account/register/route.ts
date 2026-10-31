@@ -39,7 +39,12 @@ function isPaidSession(session: {
     mode: string | null;
 }): boolean {
     if (session.status !== 'complete') return false;
-    return session.payment_status === 'paid' || session.mode === 'subscription';
+    // `mode === 'subscription'` on its own is not proof of payment: a
+    // subscription session can complete without money changing hands, and
+    // this route opens an account that is confirmed and can sign in
+    // immediately. Only a paid session — or one that required no payment,
+    // which is what a free trial is — opens the account.
+    return session.payment_status === 'paid' || session.payment_status === 'no_payment_required';
 }
 
 export async function POST(request: Request) {

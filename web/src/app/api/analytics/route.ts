@@ -21,6 +21,13 @@ const ALLOWED_EVENT_TYPES = new Set([
 
 export async function GET(request: Request) {
     try {
+        // The business numbers are operator-only. The write was gated and the
+        // read was not, so the revenue, the commission totals and the
+        // subscriber counts were answerable by anyone who knew the URL.
+        if (!(await isAdminRequest(request))) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const url = new URL(request.url);
         const startDate = url.searchParams.get('start_date');
         const endDate = url.searchParams.get('end_date');

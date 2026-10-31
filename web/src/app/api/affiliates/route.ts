@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 
 import { createClient } from "@supabase/supabase-js";
+import { isAdminRequest } from "@/lib/server/admin-auth";
 
 export async function POST(request: Request) {
     try {
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
 
         const { data: affiliate, error } = await supabase
             .from('affiliates')
-            .select('name, email, commission_rate, total_earnings')
+            .select('name, commission_rate')
             .eq('affiliate_code', affiliateCode)
             .single();
 
@@ -92,10 +93,24 @@ export async function GET(request: Request) {
 
 export async function PATCH(request: Request) {
     try {
+        // Approving an affiliate application is an operator decision: it
+        // starts a commission. The route held no credential at all, so a
+        // stranger could approve their own application by guessing an id.
+        if (!(await isAdminRequest(request))) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { applicationId, status } = await request.json();
 
         if (!applicationId || !status) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        // The status is a fixed set. An operator route that writes whatever
+        // string it is handed is a route that can be told to write anything.
+        const ALLOWED_STATUSES = new Set(["pending", "approved", "rejected"]);
+        if (!ALLOWED_STATUSES.has(status)) {
+            return NextResponse.json({ error: "Unsupported status" }, { status: 400 });
         }
 
         const supabase = createClient(

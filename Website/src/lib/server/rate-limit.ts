@@ -24,10 +24,34 @@ declare global {
   var __imperiumRateLimitWindows: Map<string, RateWindow> | undefined;
 }
 
-/** The caller's IP, from the proxy headers Vercel sets. */
+/**
+ * The caller's IP, from the proxy headers Vercel sets.
+ *
+ * The order matters. `x-forwarded-for` is a list the client can start, and
+ * most edges append to it rather than replace it — so its FIRST entry is
+ * whatever the caller sent, and a limiter that counts on it can be walked
+ * around by rotating a header. Vercel's own `x-vercel-forwarded-for` and
+ * `x-real-ip` are set by the edge and cannot be forged, and the LAST entry
+ * of `x-forwarded-for` is the hop closest to the server.
+ */
 export function requestIp(request: Request): string {
-  const forwarded = cleanText(request.headers.get('x-forwarded-for'), 256).split(',')[0]?.trim();
-  return forwarded || cleanText(request.headers.get('x-real-ip'), 80) || 'unknown';
+  const last = (value: string | null): string => {
+    const parts = cleanText(value, 256)
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length === 0) return '';
+    // An address may carry a port (`1.2.3.4:5678`); the port is not the
+    // identity, and it would split one caller into two windows.
+    return parts[parts.length - 1].replace(/:\d+$/, '');
+  };
+
+  return (
+    last(request.headers.get('x-vercel-forwarded-for')) ||
+    last(request.headers.get('x-real-ip')) ||
+    last(request.headers.get('x-forwarded-for')) ||
+    'unknown'
+  );
 }
 
 /**

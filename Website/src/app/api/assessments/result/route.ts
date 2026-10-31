@@ -6,6 +6,9 @@ import { ASSESSMENT_MODULES, SLUGS } from "@/lib/assessments";
 import { buildResultEmail } from "@/lib/assessments/email";
 import type { ArchetypeResult, PersonalityResult, Slug } from "@/lib/assessments/types";
 import { resendService } from "@/lib/resend";
+import { consumeRateWindow, requestIp } from "@/lib/server/rate-limit";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function headline(slug: Slug, result: unknown): string {
   if (slug === "archetype") return `Descendant of ${(result as ArchetypeResult).lineage.name}`;
@@ -15,9 +18,21 @@ function headline(slug: Slug, result: unknown): string {
 
 export async function POST(request: Request) {
   try {
+    // The route sends a real email, from the verified sender, to whatever
+    // address it is handed. Unrated, it is a way to send the brand's mail on
+    // demand, so the caller's IP is counted before anything is scored or
+    // sent.
+    const limited = consumeRateWindow(`assessment:${requestIp(request)}`);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } },
+      );
+    }
+
     const { slug, answers, firstName, lastName, email } = await request.json();
 
-    if (!email || typeof email !== "string" || !email.includes("@")) {
+    if (!email || typeof email !== "string" || !EMAIL_PATTERN.test(email) || email.length > 254) {
       return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
     }
     if (!SLUGS.includes(slug) || !Array.isArray(answers)) {

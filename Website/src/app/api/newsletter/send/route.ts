@@ -92,6 +92,14 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    // The read is operator-only too: it returns unpublished drafts and the
+    // send records, both read with the service-role key. The POST was gated
+    // and the GET was not, which left the same door open from a different
+    // verb.
+    if (!(await isAdminRequest(req))) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const newsletterId = searchParams.get('newsletterId');
 
