@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 30, 2026 12:40 AM
+> Synthetic Intelligence Memory | Updated: October 31, 2026 12:10 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -16,45 +16,49 @@
 | Build | 99/100 | █████████░ |
 | SEO | 93/100 | █████████░ |
 | Performance | 92/100 | █████████░ |
-| Backend | 98/100 | █████████░ |
+| Backend | 99/100 | █████████░ |
 | Mobile | 97/100 | █████████░ |
-| **OVERALL** | **96/100** | █████████░ |
+| **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-Three operator routes that answered anyone who knew their URL were closed,
-and the referral door was rate limited before it is ever opened:
-- **`/api/sync-products` was an open door into the live Stripe account.**
-  It creates real Stripe products, prices and payment links and writes to
-  `products` with the service-role key — and it had no authentication at
-  all. The admin dashboard is gated in the browser, which is a client-side
-  gate; the handler behind it was reachable by anyone who knew the URL, so
-  a stranger could mint payment links in the live account and write rows to
-  the catalogue. It now requires the operator's session, and its `GET`,
-  which read the whole table with the service role, does too.
-- **`/api/check-payment-links` leaked the billing configuration.** It asks
-  Stripe, with the secret key, which payment links exist and whether each
-  one is still active, and answered any caller. It is operator-only now.
-- **`/api/admin/refresh-metrics` published the business numbers.** It read
-  the whole `profiles` table with the service-role key and answered a
-  stranger with `{"totalUsers":25,"premiumUsers":1,...}`. It is
-  operator-only now.
-- **The dashboard still works.** The admin page had been calling all three
-  with a bare `fetch`, so it had no token to send. A shared `adminFetch`
-  helper now attaches the operator's access token to every call, and the
-  console's own `consoleFetch` is built on it.
-- **The referral signup is rate limited before it can be abused.**
-  `/api/referrals` creates a real Supabase auth user and sends a
-  confirmation email to whatever address it is given, once a valid referral
-  code exists. The rate limiter that guarded the capture forms was
-  module-private; it now lives in `lib/server/rate-limit.ts` and the
-  referral route counts the caller's IP before it creates anything.
-- **It was proved, not assumed.** Against a local production build: the
-  three operator routes answer `401` with no token and `401` with a wrong
-  token, and answer `200` with the service-role bearer. The capture
-  pipeline still persists and still sends after the rate-limiter move, and
-  the referral route answers `429` with a `Retry-After` on the eleventh
-  attempt. The probe row the capture test wrote to the live database was
-  deleted afterwards. The visual audit is clean across 36 routes.
+The checkout was priced from three places at once and the merch shop could
+not take a money. Four things were wrong and are now right:
+- **The promo code could never work.** The checkout applied a Stripe coupon
+  named `IMPERIUM20`, and the coupon does not exist in the Stripe account —
+  proven against production, which answered `{"error":"No such coupon:
+  'IMPERIUM20'"}`. Every checkout that used the code failed at the last
+  step and the buyer was left holding a cart. The discount is no longer a
+  Stripe coupon at all: the code is checked against a table in
+  `lib/checkout-totals.ts` and the amount is what the table says.
+- **The tax was divided by 100 twice.** `Math.round((total - discount) *
+  taxRate) / 100` on a $100 order showed $0.06 of tax. The tax is a share
+  of the discounted subtotal, and it is now worked out in one place.
+- **The shipping tiers on screen were not the shipping charged.** Express
+  and overnight were offered for $15 and $30; the server always charged the
+  standard rate. The tier is now sent, read from the same table the page
+  quotes, and charged.
+- **The server took the price from the request.** A caller could ask for a
+  session that charges one cent for a hoodie and pay it. The price is read
+  from the `products` table — the one place the catalogue is written down —
+  and a line that resolves to no catalogue row is refused.
+- **There were two checkout doors.** The second one (`/api/checkout`) still
+  priced from the request and redirected to the retired
+  `imperium-green.vercel.app` alias. Its only caller was a `CartDrawer`
+  component that is not mounted anywhere. The route and the dead component
+  are gone; `lib/server/checkout-session.ts` is now the only way a session
+  is built.
+- **The analytics dashboard had no gate.** `/admin/analytics` was a server
+  component that read six tables with the service-role key and rendered them
+  for anyone who asked — revenue, subscriber counts and affiliate earnings
+  at a guessable URL. The data now comes from a route that checks the
+  caller's session, and the page sends anyone else to the portal.
+- **The other operator routes were closed too**, and the shared limiter now
+  counts the address the edge sets rather than the first entry of a header
+  the caller chooses.
+- **The Telegram bot username is derived, not configured.** The deep link
+  needed `TELEGRAM_BOT_USERNAME` set by hand, and the token is the only
+  authority on which bot the link may point at. The username is now asked
+  of Telegram through `getMe` and cached.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -78,19 +82,22 @@ and the referral door was rate limited before it is ever opened:
    **Set the same new token in two places** — `telegram-bot/.env` and the
    Vercel variable `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and
    the bridge script will now say whether the two copies are the same bot.
-3. **Set `TELEGRAM_BOT_USERNAME`** on Vercel (Production and Preview, in
-   the same session). With it, `/api/telegram/link-code` returns a deep
-   link and a member is connected in one tap; without it, the member copies
-   the code and sends `/link`, which also works. **Do not set a placeholder**
-   — absent degrades gracefully to the copy-the-code path, a placeholder
-   produces a deep link that opens a dead bot. The username is the one thing
-   the agent cannot invent: it only exists once the token works.
+3. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
+   Telegram who the token belongs to (`getMe`), caches the answer and builds
+   the `t.me` deep link from that, so the link cannot point at a bot the
+   token does not belong to. The variable is still read as a fallback, and
+   `/api/telegram/status` answers with `effectiveUsername` and
+   `usernameSource`. **Do not set a placeholder** — a placeholder produces a
+   deep link that opens a dead bot. The username only exists once the token
+   works, so this priority still waits on priority 2.
 4. **Prove the operator's own admin session still reaches the guarded
-   routes.** The service-role bearer was proved to work on all three
-   operator routes; the *session* bearer was not, because the agent has no
-   admin credentials. Sign in at `/admin` and confirm the Analytics refresh
+   routes.** The service-role bearer was proved to work on the operator
+   routes; the *session* bearer was not, because the agent has no admin
+   credentials. Sign in at `/admin` and confirm the Analytics refresh
    button, the product sync button and the payment-link status check all
-   still answer `200` and not `401`. A `401` on a button that used to work
+   still answer `200` and not `401`. The Analytics dashboard is now a client
+   page too — it reads `/api/admin/analytics` with the operator's token and
+   sends anyone else to `/portal`. A `401` on a button that used to work
    means `is_admin` on the profile row is not set the way `isAdminRequest`
    expects — check `profiles.auth_id` and `profiles.email` before anything
    else.
@@ -110,6 +117,16 @@ and the referral door was rate limited before it is ever opened:
    `preview` instead of creating a new record. The Vercel REST API
    (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
    without a prompt, which the CLI will not.
+7. **Prove the rebuilt checkout takes money.** The merch routes
+   (`/shop`, `/cart`, `/checkout`) still redirect to `/archive/`, so the
+   buyer-facing flow is paused — but `POST /api/checkout/create-session` is
+   live and reachable. Post a cart with `promoCode: "IMPERIUM20"` and
+   `shippingMethod: "express"` and open the session it returns: the line
+   amounts must be the catalogue prices less $20, the tax must be 8% of the
+   discounted subtotal, the shipping rate must be $15, and the session total
+   must equal the summary on `/checkout`. The old route answered
+   `{"error":"No such coupon: 'IMPERIUM20'"}`; it must now answer a
+   session URL.
 
 ## 🔬 Why
 - **A client-side gate is not a gate.** The dashboard checks the session in
@@ -137,6 +154,26 @@ and the referral door was rate limited before it is ever opened:
   rate limiter was module-private, so the referral route could not use it
   without duplicating it — and two copies of a limiter drift, exactly as
   two copies of a token did.
+- **The cart is a claim, not a price.** Everything in it — the name, the
+  price, the quantity — is chosen by whoever made the request. A price read
+  from the request is a price the buyer sets. The catalogue is the one place
+  a price is written down.
+- **The number the buyer is shown must be the number the account is
+  charged.** The checkout had three totals: the page's, the server's and
+  Stripe's, and they disagreed. One module now owns the arithmetic, and the
+  browser and the server both read it.
+- **A discount is worth what the shop says it is worth.** The browser sent
+  a dollar amount and the server applied a coupon whenever the number was
+  above zero — so the buyer chose their own discount. The code travels, and
+  the server decides.
+- **A second door is a second price.** The hardened checkout route and the
+  legacy one both existed, and only one of them priced from the catalogue.
+  The second door is gone, with its dead caller.
+- **A resource that does not exist is a failure at the last step.** The
+  promo named a Stripe coupon that was never created. Every buyer who used
+  it found out after filling in the form. Nothing in the checkout may name
+  a Stripe resource without checking that the resource is there.
+
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
 of them is a migration and needs a council decision. They are written up in
@@ -170,12 +207,16 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 55
-- Lines written: 5480
+- Sessions: 56
+- Lines written: 5960
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-31 | revenue | The merch checkout could not take money and could be charged whatever the caller asked for. The promo code named a Stripe coupon that does not exist (`No such coupon: 'IMPERIUM20'`, reproduced against production), the tax was divided by 100 twice, the shipping tiers on screen were not the shipping charged, and the server priced the cart from the request. `lib/checkout-totals.ts` now owns the arithmetic for both the browser and the server, the price is read from the `products` table, the promo is a code the server values, and the duplicate route is gone | ~900 |
+| 2026-10-31 | security | `/admin/analytics` was a server component with no gate: it read six tables with the service-role key and rendered revenue, subscriber counts and affiliate earnings for anyone who asked. The data now comes from `/api/admin/analytics`, which checks the caller's session, and the page sends anyone else to the portal | ~230 |
+| 2026-10-31 | security | Five more operator routes answered anyone who knew their URL — `/api/analytics`, `/api/affiliates`, `/api/newsletter/send`, `/api/subscribe` and `/api/assessments/result` — and the shared rate limiter counted on the first entry of `x-forwarded-for`, which the caller chooses. The limiter now counts the address the edge sets, and the analytics proxy refuses a body that is not an event | ~200 |
+| 2026-10-31 | telegram | The deep link needed `TELEGRAM_BOT_USERNAME` set by hand, and the token is the only authority on which bot the link may point at. The username is now asked of Telegram through `getMe` and cached, with the configured name as a fallback; `/api/telegram/status` answers with `effectiveUsername` and `usernameSource` | ~200 |
 | 2026-10-30 | security | The two cron routes failed OPEN. `/api/newsletter/cron` accepted the `x-vercel-cron: 1` request header as an alternative credential — a header the caller chooses, so it proves nothing — and both cron routes skipped the comparison entirely when `CRON_SECRET` was unset, because the rejection sat inside the condition (`if (expectedSecret && provided !== expectedSecret)`). A missing secret and a wrong secret must both deny, so the missing case is now its own statement that answers 503, and the shared secret is the only credential. `CRON_SECRET` is set in the `imperium` project, so nothing was open in production — the route would have opened the next time the variable was missing. The shared `scripts/audit-cron-auth.mjs` gate is installed and wired into `npm run build` so the class cannot come back | ~140 |
 | 2026-10-29 | security | Three operator routes answered anyone who knew their URL. `/api/sync-products` creates live Stripe products, prices and payment links and writes to `products` with the service-role key — with no authentication at all, so a stranger could mint payment links in the live account. `/api/check-payment-links` asked Stripe with the secret key which payment links exist and whether each is active. `/api/admin/refresh-metrics` read the whole `profiles` table with the service role and answered with the business numbers. All three now require the operator's session via `isAdminRequest`, and the admin dashboard's `adminFetch` helper carries the token to each of them | ~110 |
 | 2026-10-29 | security | `/api/referrals` creates a real Supabase auth user and sends a confirmation email to whatever address it is given once a referral code exists, and it was unrated. The capture pipeline's rate limiter was module-private, so it now lives in `lib/server/rate-limit.ts` and both the capture forms and the referral route count the caller's IP; the referral route also validates the email before it does anything | ~110 |
@@ -434,6 +475,31 @@ with the `products.slug` migration decision in the same entry. **Recorded
   limiter that lives inside one module cannot be used by the next route
   that needs one, so it gets copied, and copies drift. Extract it once,
   import it twice.
+- **an-open-endpoint-that-pastes-its-input-somewhere-is-a-relay**
+  (every project) — a proxy that forwards a body to another service lets
+  anyone write into that service's data. Bound the body, check that it is
+  the shape you forward, and count the caller.
+- **the-cart-is-a-claim-not-a-price** (every commerce project) — the
+  browser chooses the name, the price and the quantity of every line it
+  sends. Read the price from the catalogue and refuse a line that resolves
+  to no catalogue row.
+- **one-owner-for-the-arithmetic** (every commerce project) — a total
+  worked out in three places is a total that will be wrong in two of them.
+  Put the rates, the thresholds and the discount table in one module that
+  both the browser and the server import, and let the server send the
+  totals it charged back with the response so they can be compared.
+- **a-second-door-is-a-second-price** (every commerce project) — when two
+  routes can build the same payment, only one of them will be hardened.
+  Find the second route, close it, and delete the caller if the caller is
+  dead code.
+- **a-discount-is-worth-what-the-shop-says-it-is-worth** (every commerce
+  project) — never accept an amount from the client. Send the code, keep
+  the table, and apply the table's number.
+- **name-no-resource-you-have-not-checked** (every commerce project) — a
+  checkout that applies a Stripe coupon which does not exist fails at the
+  last step, after the buyer has filled in the form. Probe the account
+  before naming a price, a coupon or a link, and prefer a value the shop
+  owns over one the account must happen to have.
 
 
 ## ⚡ Rules
