@@ -78,20 +78,23 @@ if (command === 'surface') {
     console.log(JSON.stringify(await rpc('hermes_federation_surface', { p_domain: rest[0] }), null, 2));
 } else if (command === 'acquire') {
     const [target, agent, kind, session, note, ttl] = rest;
-    console.log(
-        JSON.stringify(
-            await rpc('hermes_federation_acquire_lease', {
-                p_target: target,
-                p_agent: agent,
-                p_kind: kind,
-                p_session_ref: session,
-                p_note: note,
-                p_ttl_minutes: Number(ttl || 45),
-            }),
-            null,
-            2,
-        ),
-    );
+    const lease = await rpc('hermes_federation_acquire_lease', {
+        p_target: target,
+        p_agent: agent,
+        p_kind: kind,
+        p_session_ref: session,
+        // A missing note would be dropped from the payload and the call would
+        // fail as an unknown function signature, which reads like a broken
+        // script rather than a missing argument.
+        p_note: note || session || 'no note given',
+        p_ttl_minutes: Number(ttl || 45),
+    });
+    console.log(JSON.stringify(lease, null, 2));
+
+    // A lease that is not granted is not permission, and a helper that
+    // answers 0 when the lease is refused invites the caller to carry on.
+    // Exit 3 says: somebody else is holding it.
+    if (!lease?.granted) process.exit(3);
 } else if (command === 'renew') {
     const [leaseId, agent, ttl] = rest;
     console.log(
