@@ -1,4 +1,5 @@
 import { getAdminClient } from './imperium-capture';
+import { isMailableAddress } from './mailable';
 import { resendService } from '@/lib/resend';
 
 /**
@@ -76,6 +77,11 @@ export function oneClickUnsubscribeUrl(email: string): string {
  * Everyone who should receive the brief right now.
  *
  * Fails closed: if the suppression list cannot be read, nobody is emailed.
+ *
+ * Addresses at reserved documentation domains are left off as well. They
+ * cannot receive mail, so every one of them is a guaranteed bounce, and
+ * bounces are counted against the sending domain's reputation — see
+ * `lib/server/mailable.ts`.
  */
 export async function getBriefRecipients(): Promise<{ emails: string[]; error?: string }> {
   const sb = getAdminClient();
@@ -124,7 +130,11 @@ export async function getBriefRecipients(): Promise<{ emails: string[]; error?: 
     if (email) blocked.add(email);
   }
 
-  return { emails: Array.from(recipients).filter((email) => !blocked.has(email)) };
+  return {
+    emails: Array.from(recipients).filter(
+      (email) => !blocked.has(email) && isMailableAddress(email),
+    ),
+  };
 }
 
 export function buildNewsletterHtml(subject: string, content: string, unsubUrl: string): string {
@@ -200,6 +210,13 @@ export async function sendToAddress(
 ): Promise<{ ok: boolean; error?: string }> {
   const normalized = normalizeEmail(email);
   if (!normalized) return { ok: false, error: 'invalid email' };
+
+  // A test send to an address that cannot receive mail is a bounce, and it
+  // costs the sending domain its reputation. Say so rather than pretending
+  // to have sent it.
+  if (!isMailableAddress(normalized)) {
+    return { ok: false, error: 'That address cannot receive mail (reserved documentation domain)' };
+  }
 
   if (!resendService.isConfigured()) {
     return { ok: false, error: 'RESEND_API_KEY is not configured for this deployment' };

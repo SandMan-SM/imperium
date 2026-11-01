@@ -33,17 +33,26 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
 
   const { data: byAuth } = await admin
     .from('profiles')
-    .select('is_admin')
+    .select('id')
     .eq('auth_id', user.id)
+    .eq('is_admin', true)
     .limit(1);
-  if (byAuth?.[0]?.is_admin) return true;
+  if (byAuth && byAuth.length > 0) return true;
 
   if (!user.email) return false;
 
+  // The email fallback finds rows written before the auth link existed. The
+  // filter is on `is_admin` rather than on the first row that happens to
+  // match: `profiles` is a shared table and one address can carry more than
+  // one row, so reading the flag off an arbitrary row made the answer depend
+  // on which row Postgres happened to return — and an operator whose address
+  // had a second, ordinary row could be refused with a 401 on a button that
+  // had always worked.
   const { data: byEmail } = await admin
     .from('profiles')
-    .select('is_admin')
+    .select('id')
     .ilike('email', user.email)
+    .eq('is_admin', true)
     .limit(1);
-  return Boolean(byEmail?.[0]?.is_admin);
+  return Boolean(byEmail && byEmail.length > 0);
 }

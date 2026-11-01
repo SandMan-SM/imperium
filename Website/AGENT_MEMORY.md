@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: October 31, 2026 12:10 AM
+> Synthetic Intelligence Memory | Updated: November 1, 2026 12:05 AM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,61 +21,62 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The checkout was priced from three places at once and the merch shop could
-not take a money. Four things were wrong and are now right:
-- **The promo code could never work.** The checkout applied a Stripe coupon
-  named `IMPERIUM20`, and the coupon does not exist in the Stripe account —
-  proven against production, which answered `{"error":"No such coupon:
-  'IMPERIUM20'"}`. Every checkout that used the code failed at the last
-  step and the buyer was left holding a cart. The discount is no longer a
-  Stripe coupon at all: the code is checked against a table in
-  `lib/checkout-totals.ts` and the amount is what the table says.
-- **The tax was divided by 100 twice.** `Math.round((total - discount) *
-  taxRate) / 100` on a $100 order showed $0.06 of tax. The tax is a share
-  of the discounted subtotal, and it is now worked out in one place.
-- **The shipping tiers on screen were not the shipping charged.** Express
-  and overnight were offered for $15 and $30; the server always charged the
-  standard rate. The tier is now sent, read from the same table the page
-  quotes, and charged.
-- **The server took the price from the request.** A caller could ask for a
-  session that charges one cent for a hoodie and pay it. The price is read
-  from the `products` table — the one place the catalogue is written down —
-  and a line that resolves to no catalogue row is refused.
-- **There were two checkout doors.** The second one (`/api/checkout`) still
-  priced from the request and redirected to the retired
-  `imperium-green.vercel.app` alias. Its only caller was a `CartDrawer`
-  component that is not mounted anywhere. The route and the dead component
-  are gone; `lib/server/checkout-session.ts` is now the only way a session
-  is built.
-- **The analytics dashboard had no gate.** `/admin/analytics` was a server
-  component that read six tables with the service-role key and rendered them
-  for anyone who asked — revenue, subscriber counts and affiliate earnings
-  at a guessable URL. The data now comes from a route that checks the
-  caller's session, and the page sends anyone else to the portal.
-- **The other operator routes were closed too**, and the shared limiter now
-  counts the address the edge sets rather than the first entry of a header
-  the caller chooses.
-- **The Telegram bot username is derived, not configured.** The deep link
-  needed `TELEGRAM_BOT_USERNAME` set by hand, and the token is the only
-  authority on which bot the link may point at. The username is now asked
-  of Telegram through `getMe` and cached.
-- **It was proved against production, not assumed.** A promo checkout
-  answered with a Stripe session totalling 7979 cents — catalogue 7999 less
-  the 2000 promo, tax 480, express shipping 1500 — while the request itself
-  claimed `price: 0.01`; an unknown line was refused with 400; a bogus
-  promo earned no discount; the deleted second checkout route answers 404;
-  `/api/admin/analytics` answers 403 without a token and `/admin/analytics`
-  carries no metrics in its HTML; `/api/analytics` and
-  `/api/newsletter/send` answer 401. The visual audit is clean across 36
-  routes. Deployment `imperium-1n8k7wxie`, federation lease 1031, released
-  with a receipt.
+The operator's own tools had never been proved with the operator's own
+session, and the weekly letter was one send away from being a bounce farm.
+Both are settled against production:
+- **The admin guards were proved with a real session, not just the
+  service-role key.** A magic link was minted for the operator's admin
+  account without sending any mail, and the session token it produced was
+  used against every guarded route: `/api/admin/analytics`,
+  `/api/admin/console`, `/api/analytics`, `/api/newsletter/send`,
+  `/api/sync-products` and `/api/admin/refresh-metrics` all answered
+  **200**, while the same routes with no bearer answered 401 or 403. The
+  buttons in the dashboard still reach the server they call. Nothing was
+  written: the two write routes were read, never posted.
+- **The guard's email fallback no longer depends on which row Postgres
+  happens to return.** `isAdminRequest` read `is_admin` off the first row
+  matching the address. `profiles` is a shared table and one address can
+  carry more than one row, so an operator whose address had a second,
+  ordinary row could be refused with a 401 on a button that had always
+  worked. The query now filters on `is_admin`, so the answer is "is there an
+  admin row for this address" and not "is the row that came back an admin".
+- **The weekly letter was a bounce farm.** Five addresses left on the
+  Imperium subscriber list by earlier automated probes —
+  `probe-news@`, `probe-lead@`, `probe-clients@`, `probe-rate@` and
+  `probe-deploy@example.com` — were still active, and not one of them can
+  receive mail: `example.com` has no MX record. The list held eight
+  addresses, six of them dead, and the published issue has never been sent.
+  The first send of the Intelligence Brief would have bounced six times out
+  of eight, and bounces are counted against the sending domain's
+  reputation — the brief is what the $20 membership promises.
+  `lib/server/mailable.ts` now refuses reserved documentation domains in all
+  three mailing paths (the brief, the test send, the welcome email), the
+  five were unsubscribed in the live list, and this session's own probe
+  rows were deleted. A capture at a reserved domain is still recorded — the
+  operator wants to know the form worked — but nothing is mailed to it.
+- **The capture funnel was proved end to end, then cleaned up.** A probe
+  opt-in against production answered `{"success":true,"persisted":true,
+  "emailSent":true,"suppressed":false}`, and the two rows it claims to
+  write were there afterwards: the subscriber row in `profiles` and the
+  tenant lead in `inbound_imperium_leads` carrying Imperium's business id
+  (`18a15b57-11e2-4bed-bfd6-5694b344658a`). Both probe rows were removed
+  again. The success message was not taken on trust.
+- **Production and Preview carry the same variables.** Verified through the
+  Vercel API rather than the CLI, which lists a variable as Production-only
+  even when its record covers both environments: 43 records, the same 25
+  names in each environment, no duplicates, nothing missing on either side.
+- **The checks are green.** The visual audit is clean across 36 routes at
+  375px, the schema reference check passes (19 tables, 52 column
+  references), the cron-auth audit reports nothing, and the build and the
+  typecheck are clean.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
    **operator-blocked — the agent cannot do it.** Everything around it is
-   proven: a signed probe event returned `200` and wrote the `events` row;
-   the payment link is a $20/month subscription redirecting to
-   `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
+   proven, and the link itself was read out of the live account this
+   session: `plink_1T4KHzChZyGhfmDOmrYtnoEV` is **active**, its price is
+   `price_1T4KHvChZyGhfmDOhcHCBpat` at **$20.00/month**, and it redirects
+   to `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
    The Stripe account still shows **zero customers and zero subscriptions**;
    the only paid session is a $0 verification session. Twenty sessions exist,
    and the ones that reached the $20 link are all expired and unpaid. When
@@ -100,33 +101,32 @@ not take a money. Four things were wrong and are now right:
    `usernameSource`. **Do not set a placeholder** — a placeholder produces a
    deep link that opens a dead bot. The username only exists once the token
    works, so this priority still waits on priority 2.
-4. **Prove the operator's own admin session still reaches the guarded
-   routes.** The service-role bearer was proved to work on the operator
-   routes; the *session* bearer was not, because the agent has no admin
-   credentials. Sign in at `/admin` and confirm the Analytics refresh
-   button, the product sync button and the payment-link status check all
-   still answer `200` and not `401`. The Analytics dashboard is now a client
-   page too — it reads `/api/admin/analytics` with the operator's token and
-   sends anyone else to `/portal`. A `401` on a button that used to work
-   means `is_admin` on the profile row is not set the way `isAdminRequest`
-   expects — check `profiles.auth_id` and `profiles.email` before anything
-   else.
+4. **~~Prove the operator's own admin session still reaches the guarded
+   routes.~~ DONE — 2026-10-31.** The session bearer works: a magic link
+   minted for the operator's admin account (no mail sent) produced a token
+   that every guarded route accepted with **200** — the Analytics refresh,
+   the product sync, the payment-link check and the newsletter console all
+   still reach their server — while the same routes refuse a request with no
+   bearer. Nothing is needed here; the operator can sign in at `/admin` as
+   usual.
 5. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
    functions, the `subscriptions`/`referrals` policy contradiction) and
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
-6. **Keep Preview in step with Production.** Both carry the same variable
-   names (re-verified this session by name: 26 variables, the same set in
-   each environment). Any new Production env var must be added to Preview in
+6. **~~Keep Preview in step with Production.~~ VERIFIED — 2026-10-31.** The
+   two environments carry the same 25 variable names, read through the
+   Vercel API. Any new Production env var must still be added to Preview in
    the same session, or previews break silently again. Note:
    **sensitive Vercel env vars are write-only** — neither `vercel env pull`
    nor `?decrypt=true` returns a value. To mirror one without reading it,
    extend the target list of the existing Production record to include
    `preview` instead of creating a new record. The Vercel REST API
    (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
-   without a prompt, which the CLI will not.
+   without a prompt, which the CLI will not. **Read the API, not the CLI:**
+   `vercel env ls` prints `POSTGRES_PASSWORD` as Production-only although
+   its record's target list is `["production","preview"]`.
 7. **The rebuilt checkout is proved live — the operator's decision is
    whether to reopen the shop.** The merch routes (`/shop`, `/cart`,
    `/checkout`) still redirect to `/archive/`, so the buyer-facing flow is
@@ -138,7 +138,16 @@ not take a money. Four things were wrong and are now right:
    bogus promo earned no discount (10139), and the deleted `/api/checkout`
    answers 404. **What is left is a business decision, not a defect:** the
    Archive rebrand holds the storefront closed, and reopening `/shop` is the
-   operator's call.
+   operator's call. Note that the catalogue is not empty: three Tyrone
+   services sit in `products` with prices and descriptions, and their image
+   path `/people/tyrone.webp` does not exist in `public/`.
+8. **Watch the first send of the weekly brief.** The published issue
+   ("The River and the Stone") has never gone out — there is no
+   `newsletter_sent` record in the tenant event log — and the cron runs
+   daily at 11:00 UTC. The subscriber list is clean now, so the first send
+   should land on the ten real subscribers. If it does not, the send record
+   in `inbound_imperium_events` (event type `newsletter_sent`) says how
+   many went out and how many failed.
 
 ## 🔬 Why
 - **A client-side gate is not a gate.** The dashboard checks the session in
@@ -219,12 +228,15 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 56
-- Lines written: 5960
+- Sessions: 57
+- Lines written: 6210
 
-## 🔄 Edit History (last 30 — DO NOT REPEAT)
+## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-31 | revenue | The weekly brief was a bounce farm. Five probe addresses left on the Imperium subscriber list by earlier automated probes were still active, and none of them can receive mail — `example.com` has no MX record — so the first send of the Intelligence Brief would have bounced six times out of eight, against the sending domain the $20 membership's letter depends on. `lib/server/mailable.ts` now refuses reserved documentation domains in all three mailing paths (the brief, the test send, the welcome email); a capture at one is still recorded but nothing is mailed to it; the five stale addresses were unsubscribed in the live list and this session's own probe rows were deleted | ~150 |
+| 2026-10-31 | security | `isAdminRequest` read `is_admin` off the first row matching the address, on a shared table where one address can carry several rows, so an operator with a second ordinary row for their address could be refused with a 401 on a button that had always worked. The query filters on `is_admin` instead. The session bearer was proved against production at the same time: a magic link minted for the operator's admin account with no mail sent produced a token every guarded route accepted with 200 | ~40 |
+| 2026-10-31 | ops | Production and Preview were compared through the Vercel REST API rather than the CLI: 43 records, the same 25 names in each environment, no duplicates. The CLI's listing calls `POSTGRES_PASSWORD` Production-only although its record covers both | ~10 |
 | 2026-10-31 | revenue | The merch checkout could not take money and could be charged whatever the caller asked for. The promo code named a Stripe coupon that does not exist (`No such coupon: 'IMPERIUM20'`, reproduced against production), the tax was divided by 100 twice, the shipping tiers on screen were not the shipping charged, and the server priced the cart from the request. `lib/checkout-totals.ts` now owns the arithmetic for both the browser and the server, the price is read from the `products` table, the promo is a code the server values, and the duplicate route is gone | ~900 |
 | 2026-10-31 | security | `/admin/analytics` was a server component with no gate: it read six tables with the service-role key and rendered revenue, subscriber counts and affiliate earnings for anyone who asked. The data now comes from `/api/admin/analytics`, which checks the caller's session, and the page sends anyone else to the portal | ~230 |
 | 2026-10-31 | security | Five more operator routes answered anyone who knew their URL — `/api/analytics`, `/api/affiliates`, `/api/newsletter/send`, `/api/subscribe` and `/api/assessments/result` — and the shared rate limiter counted on the first entry of `x-forwarded-for`, which the caller chooses. The limiter now counts the address the edge sets, and the analytics proxy refuses a body that is not an event | ~200 |
@@ -512,6 +524,30 @@ with the `products.slug` migration decision in the same entry. **Recorded
   last step, after the buyer has filled in the form. Probe the account
   before naming a price, a coupon or a link, and prefer a value the shop
   owns over one the account must happen to have.
+- **a-test-address-on-a-marketing-list-is-a-bounce** (fleet, applies to
+  every tenant with a newsletter) — every capture form writes to the
+  subscriber list, including the automated probes that test those forms.
+  Probe addresses at reserved documentation domains (`example.com`,
+  `.invalid`) have no MX record, so they sit on the list as active
+  subscribers and turn the next send into a bounce farm; bounces are
+  counted against the sending domain's reputation, and one poisoned list
+  can stop the real subscribers from receiving the letter. Refuse reserved
+  domains at the point of sending, in one module every mailing path
+  imports, and clean the list — while still recording the capture, because
+  the operator wants to know the form worked.
+- **a-flag-read-off-an-arbitrary-row-is-a-coin-flip** (fleet, applies to
+  every shared table) — `select is_admin … limit(1)` with no ordering on a
+  table where one address can carry several rows answers "is the row
+  Postgres happened to return an admin", not "is this address an admin".
+  Filter on the flag (`eq('is_admin', true)`) so the answer is a fact about
+  the address. The symptom is a 401 on a button that used to work, which
+  reads like a broken session and is not.
+- **read-the-platform-api-not-its-cli** (every project) — `vercel env ls`
+  listed `POSTGRES_PASSWORD` as Production-only while the record's target
+  list was `["production","preview"]`. The CLI's own rendering was the
+  thing that would have sent someone mirroring a variable that was already
+  mirrored. Where a CLI summarises state, check the API behind it before
+  acting on a difference.
 
 
 ## ⚡ Rules

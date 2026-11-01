@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { isMailableAddress } from './mailable';
 
 /**
  * Imperium email-capture pipeline.
@@ -226,6 +227,13 @@ function safePath(url: string): string | null {
  * the hub gets a welcome email with a one-click unsubscribe link.
  */
 async function sendHubWelcome(input: CaptureInput, email: string): Promise<boolean> {
+  // A capture at a reserved documentation domain is still recorded — the
+  // operator wants to know the form worked — but nothing is mailed to it:
+  // the address has no MX record, so the welcome email would be a
+  // guaranteed bounce, and bounces are counted against the sending
+  // domain's reputation.
+  if (!isMailableAddress(email)) return false;
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), HUB_TIMEOUT_MS);
   try {
