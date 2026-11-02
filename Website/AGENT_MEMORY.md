@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 1, 2026 11:52 PM
+> Synthetic Intelligence Memory | Updated: November 1, 2026 11:58 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,53 +21,51 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The brief's own premise about the weekly letter was wrong, and the letter
-was the one thing nobody could see. Both are settled:
-- **The Intelligence Brief HAS gone out — the brief was wrong.** The tenant
-  event log carries a `newsletter_sent` row from **2026-10-22T11:00:43Z**:
-  the published issue "The River and the Stone" reached **11 recipients,
-  10 sent and 1 failed**. The Vercel runtime logs agree: the cron fired at
-  04:00:41 MST on 2026-11-01 and answered **200** — correctly, because
-  there is only one published issue and it has already gone. The letter is
-  not broken and has not been broken; it has simply been **unobservable**.
+Two halves of work: the weekly letter became observable, and the coaching
+offers became sellable. Both are shipped and live.
+- **The Intelligence Brief HAS gone out — the earlier brief was wrong.** The
+  tenant event log carries a `newsletter_sent` row from
+  **2026-10-22T11:00:43Z**: the published issue "The River and the Stone"
+  reached **11 recipients, 10 sent and 1 failed**. The letter is not broken
+  and has not been broken; it has simply been **unobservable**.
 - **A dispatch that failed left no record at all.** The send row was only
   written once the mail was on its way, so every failure before that point
-  — no `RESEND_API_KEY`, no recipients, an unreadable send log — was
-  invisible. The brief's own instruction ("the send record says how many
-  went out and how many failed") was true only for the last step.
+  was invisible. Every dispatch attempt now writes its own row —
+  `newsletter_dispatch`, with the outcome (`sent`, `partial`, `failed`,
+  `skipped`), the source, the counts and the reason.
 - **A broken send log silently starved the letter.** `hasBeenSent` answered
   `true` when the read failed, so the cron skipped the issue and reported
-  *"No newsletters to send"* with a **200**. The brief would have stopped
-  going out to every subscriber with nothing anywhere saying so. It now
-  stops **loudly**: an unreadable log is a 500 and a recorded failure.
-- **Every dispatch attempt is now on record.** `dispatchNewsletter` writes a
-  `newsletter_dispatch` row for every outcome — `sent`, `partial`,
-  `failed`, `skipped` — with the source (`cron`, `admin`, `webhook`), the
-  recipient counts and the reason. The cron also records the runs that did
-  nothing, so *"the cron fired and correctly had nothing to do"* and *"the
-  cron never fired"* no longer look identical.
-- **A dispatch where every send failed no longer marks the issue as sent.**
-  The marker is what stops the cron retrying, so a total failure used to
-  mark the issue sent and it was never sent again — the letter was silently
-  dropped for good. The marker is now written only when at least one
-  recipient took the mail.
-- **The operator can now see the letter's history.** The Newsletter Studio
-  in `/admin` has a **Dispatch History** panel reading the new log, and
-  `scripts/check_newsletter_chain.mjs` answers the whole question in one
-  command: the site answers, the cron route is locked, the subscriber list
-  holds no undeliverable address, the suppression list reads, every
-  published issue has gone out, the last attempt did not fail, and the
-  sending domain is verified.
-- **The Tyrone services finally have an image.** Three catalogue rows —
-  Personal Training, Custom Meal Plan, Meal Plan Payment Plan — pointed at
-  `/people/tyrone.webp`, which was never in `public/`: a 404 on every
-  request. There is no photograph of Tyrone anywhere in the repository, so
-  the asset is a branded monogram card in the Imperium tile language rather
-  than an invented portrait — `public/people/tyrone.webp`, 800×1000, 15 KB.
-- **The checks are green.** The visual audit is clean across 36 routes at
+  *"No newsletters to send"* with a **200**. It now stops **loudly**: an
+  unreadable log is a 500 and a recorded failure. A total send failure no
+  longer marks the issue as sent, so the letter is no longer dropped for
+  good. `scripts/check_newsletter_chain.mjs` answers the whole question in
+  one command, and `/admin` has a **Dispatch History** panel.
+- **`CRON_SECRET` was rotated** in Vercel (Production and Preview, same
+  value). The route refuses an unauthenticated caller with **401** and
+  answers **200** only with the bearer. The temp copy was deleted; Vercel
+  is the only place the value lives.
+- **Tyrone's coaching pages exist and are live.** `/tyronengouamo`,
+  `/tyronengouamo/referral/` and `/tyronengouamo/booked/` are deployed, in
+  the site's editorial language, with a skeleton, JSON-LD, a route OG
+  image, sitemap entries and a footer link. The referral page carries a
+  share card (`public/people/tyrone-referral-card.webp`) and copyable
+  links. `/booked` exists because Stripe redirects there after payment —
+  a redirect target that 404s is a failed sale.
+- **The coaching offers had the wrong checkout.** All three catalogue rows
+  pointed at the **$20/month membership link**, so a buyer clicking
+  "Personal Training — $150" would have been charged $20 a month for a
+  subscription they did not ask for. Each offer now has its own Stripe
+  product, price and payment link ($150 one-time, $297 one-time, $99 a
+  month), created by `scripts/stripe_tyrone_offers.mjs`, which writes the
+  ids back onto the catalogue rows and **retires the superseded links** so
+  a stale checkout cannot be opened.
+- **The offers, the copy and the links live in one place.**
+  `src/lib/tyrone.ts` is the source of truth, so the price on the page and
+  the price charged cannot drift apart.
+- **The checks are green.** The visual audit is clean across 38 routes at
   375px, the schema reference check passes (19 tables, 52 column
-  references), the cron-auth audit reports nothing, the build and the
-  typecheck are clean, and the new newsletter check is green.
+  references), the build and the typecheck are clean, and the newsletter
+  chain is healthy.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -152,18 +150,32 @@ was the one thing nobody could see. Both are settled:
    sent eleven days ago. Publishing is the approval step the cron waits
    for, so until a second issue is published the cron has nothing to send
    and correctly says so. Publish one and the next run takes it.
-9. **Watch the first cron run against the new code.** The dispatch log
-   starts empty and fills from the first run of the new build. The cron
-   fires daily at **11:00 UTC (04:00 MST)**. One command proves it:
-   `node scripts/check_newsletter_chain.mjs` — it reports the age of the
-   last attempt and fails if the last attempt failed.
-10. **Tyrone's coaching pages are still unbuilt.** `/tyronengouamo` and
-   `/tyronengouamo/referral` exist in neither the source nor the sitemap
-   and both 404, while three paid coaching services sit priced in the
-   catalogue with nothing to sell them on. The brief says they are
-   "specified but never implemented"; they are a landing page away from
-   revenue, and the landing-page pattern to clone is
-   `28principles/page.tsx`. This is a build, not a fix.
+9. **~~Watch the first cron run against the new code.~~ DONE — 2026-11-01.**
+   The dispatch log filled from the first run of the new build. The cron
+   fires daily at **11:00 UTC (04:00 MST)**; the check reports the age of
+   the last attempt and fails if the last attempt failed. It reports
+   *"the cron ran within the last 36 hours"* and a `skipped` attempt
+   explaining that every published issue has already gone.
+10. **~~Tyrone's coaching pages are still unbuilt.~~ DONE — 2026-11-01.**
+    `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/`
+    are live, in the site's editorial language, with the three offers at
+    their real prices and each button pointing at that offer's own Stripe
+    link. See "What Last Session Shipped" for the details.
+11. **The first coaching sale is the operator's card, or it is nothing.**
+    The pages are live and the checkout is live, but no payment has been
+    made through them. `node scripts/check_payment_chain.mjs --recent`
+    will name a coaching purchase the moment one exists. What cannot be
+    faked is the card: the operator's own checkout, once, proves the whole
+    path the same way it proves the membership.
+12. **The referral page states a commission the site has never paid.**
+    The copy says **30%**, because the member portal at `/portal` says 30%
+    — but the referral chain records a link and nothing else: there is no
+    payout code behind it. Either implement the payout or change the copy
+    on **both** pages together. Do not leave the two pages disagreeing.
+13. **Tyrone has no photograph, and the pages now say so.** The hero card
+    is a branded monogram, and its alt text says so in as many words. If
+    a real portrait arrives, replace the asset and the alt text together —
+    a monogram captioned as a photograph would be a lie on the page.
 
 ## 🔬 Why
 - **A record that is only written on success is not a record.** The brief's
@@ -205,6 +217,24 @@ was the one thing nobody could see. Both are settled:
   seeds a code, the route becomes a way to send the brand's mail to any
   address and to create auth users in the live database. The limit belongs
   in the code now, not after it is exploited.
+- **A price on a page and a price charged are the same number.** All three
+  coaching offers pointed at the $20/month membership link, so the page
+  said $150 and the checkout took $20 — for a *subscription*. A catalogue
+  row that holds a link is a promise, and a promise that is wrong is worse
+  than no offer at all.
+- **A redirect target must exist before the link goes out.** Stripe sends
+  the buyer to `/tyronengouamo/booked/` after payment. That page did not
+  exist, so a paid customer would have landed on a 404 — the last thing
+  between a payment and a first session.
+- **A placeholder becomes a lie when it ships.** The three catalogue rows
+  needed a link each and the only one to hand was the membership link, so
+  all three took it. The alternative was to create the real objects, which
+  is the work this session did.
+- **A share card needs a real asset, not a promise of one.** The referral
+  page needed a card; the card was drawn in the house style and rendered
+  to WebP with the vendored `sharp`, so what a visitor saves is a real
+  image and not a broken link.
+
 - **A shared limiter beats two copies of one.** The capture pipeline's
   rate limiter was module-private, so the referral route could not use it
   without duplicating it — and two copies of a limiter drift, exactly as
@@ -268,6 +298,8 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-01 | revenue | Tyrone's coaching pages exist and are live: `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/` — the last because Stripe redirects the buyer there after payment, and a redirect target that 404s is a failed sale. The landing page carries the three offers at their real prices, how it works, who it is for and the questions people ask; the referral page carries a share card and copyable links. All of it lives in `src/lib/tyrone.ts` so the price on the page and the price charged cannot drift | ~640 |
+| 2026-11-01 | revenue | All three coaching offers pointed at the **$20/month membership link**, so a buyer clicking "Personal Training — $150" would have been charged $20 a month for a subscription they did not ask for. `scripts/stripe_tyrone_offers.mjs` now creates a product, a price and a payment link per offering ($150 one-time, $297 one-time, $99 a month), writes the ids back onto the catalogue rows, and retires the superseded links so a stale checkout cannot be opened | ~270 |
 | 2026-11-01 | revenue | The weekly letter was unobservable, not broken. The brief's premise was wrong — the tenant event log carries a `newsletter_sent` row from 2026-10-22 (11 recipients, 10 sent, 1 failed) and the cron has answered 200 every day since, correctly, because only one issue is published and it has gone. What was missing was the evidence: a dispatch that failed before the mail left no record at all, a failed send-log read made the cron skip the issue and report success, and a total send failure still wrote the "sent" marker that stops the cron retrying — so the letter could be silently dropped for good. Every attempt now writes a `newsletter_dispatch` row (sent / partial / failed / skipped, with the source and the reason), the unreadable-log case is a 500 and a recorded failure, the marker is written only when a recipient took the mail, and the admin studio shows the history | ~260 |
 | 2026-11-01 | ops | `scripts/check_newsletter_chain.mjs`: one command proves the whole letter — the site answers, the cron route is locked, no active subscriber sits at a reserved domain, the suppression list reads, every published issue has gone out, the last attempt did not fail, and the sending domain is verified. Exit 0 healthy / 1 broken and named / 3 could not run. It also corrected the brief: the letter went out on 2026-10-22, 10 of 11 | ~290 |
 | 2026-11-01 | visual | The three Tyrone coaching services in the catalogue pointed at `/people/tyrone.webp`, which was never in `public/` — a 404 on every request, and the merch placeholder in its place. There is no photograph of Tyrone anywhere in the repository, so the asset is a branded monogram card in the Imperium tile language rather than an invented portrait: `public/people/tyrone.webp`, 800×1000, 15 KB | ~30 |
@@ -351,6 +383,22 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
+- **the-price-on-the-page-is-the-price-charged** (fleet, applies to every
+  catalogue row that holds a payment link) — three coaching offers all
+  pointed at the membership link, so the page said $150 and the checkout
+  took $20 for a subscription. A row that holds a link is a promise; a
+  wrong promise is worse than no offer. **One row, one price, one link, one
+  product id** — and the ids written back so the webhook can match a
+  purchase to a service.
+- **the-redirect-target-must-exist-first** (fleet, applies to every
+  post-payment URL) — Stripe sends the buyer to a page you choose. If it
+  404s, a paid customer lands on an error and the sale dies at the last
+  step. Build the landing page, the receipt page and the "what happens
+  next" page before the link goes out.
+- **a-superseded-link-must-be-retired** (fleet) — creating a new payment
+  link does not close the old one. A buyer with the earlier URL still
+  reaches checkout, at the old price, on the old terms. Retiring what a
+  link replaces is part of making it.
 - **a-record-written-only-on-success-is-not-a-record** (fleet, applies to
   every write path that has a history) — the send row was written once the
   mail was on its way, so every failure before that point left nothing
@@ -648,6 +696,12 @@ with the `products.slug` migration decision in the same entry. **Recorded
   `node scripts/check_telegram_bridge.mjs`,
   `node scripts/check_newsletter_chain.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
+- **A coaching offer's price and link live in `src/lib/tyrone.ts` and in
+  the `products` row, and they must match.** Changing one without the other
+  re-creates the defect this session fixed — a page that says $150 and a
+  checkout that takes something else. The Stripe objects behind the offers
+  are created by `scripts/stripe_tyrone_offers.mjs`, which also writes the
+  ids back to the catalogue and retires the links it replaces
 - **Never deploy from a retired worktree.** Two directories still hold a
   `.vercel/project.json` pointing at the **production** project
   (`prj_rbnO8QZmuJtlDpWlGYE1tcYkwx3o`) and still contain the old,
