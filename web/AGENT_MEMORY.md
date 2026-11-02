@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 01, 2026 11:02 PM
+> Synthetic Intelligence Memory | Updated: November 1, 2026 11:52 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,54 +21,53 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The operator's own tools had never been proved with the operator's own
-session, and the weekly letter was one send away from being a bounce farm.
-Both are settled against production:
-- **The admin guards were proved with a real session, not just the
-  service-role key.** A magic link was minted for the operator's admin
-  account without sending any mail, and the session token it produced was
-  used against every guarded route: `/api/admin/analytics`,
-  `/api/admin/console`, `/api/analytics`, `/api/newsletter/send`,
-  `/api/sync-products` and `/api/admin/refresh-metrics` all answered
-  **200**, while the same routes with no bearer answered 401 or 403. The
-  buttons in the dashboard still reach the server they call. Nothing was
-  written: the two write routes were read, never posted.
-- **The guard's email fallback no longer depends on which row Postgres
-  happens to return.** `isAdminRequest` read `is_admin` off the first row
-  matching the address. `profiles` is a shared table and one address can
-  carry more than one row, so an operator whose address had a second,
-  ordinary row could be refused with a 401 on a button that had always
-  worked. The query now filters on `is_admin`, so the answer is "is there an
-  admin row for this address" and not "is the row that came back an admin".
-- **The weekly letter was a bounce farm.** Five addresses left on the
-  Imperium subscriber list by earlier automated probes —
-  `probe-news@`, `probe-lead@`, `probe-clients@`, `probe-rate@` and
-  `probe-deploy@example.com` — were still active, and not one of them can
-  receive mail: `example.com` has no MX record. The list held eight
-  addresses, six of them dead, and the published issue has never been sent.
-  The first send of the Intelligence Brief would have bounced six times out
-  of eight, and bounces are counted against the sending domain's
-  reputation — the brief is what the $20 membership promises.
-  `lib/server/mailable.ts` now refuses reserved documentation domains in all
-  three mailing paths (the brief, the test send, the welcome email), the
-  five were unsubscribed in the live list, and this session's own probe
-  rows were deleted. A capture at a reserved domain is still recorded — the
-  operator wants to know the form worked — but nothing is mailed to it.
-- **The capture funnel was proved end to end, then cleaned up.** A probe
-  opt-in against production answered `{"success":true,"persisted":true,
-  "emailSent":true,"suppressed":false}`, and the two rows it claims to
-  write were there afterwards: the subscriber row in `profiles` and the
-  tenant lead in `inbound_imperium_leads` carrying Imperium's business id
-  (`18a15b57-11e2-4bed-bfd6-5694b344658a`). Both probe rows were removed
-  again. The success message was not taken on trust.
-- **Production and Preview carry the same variables.** Verified through the
-  Vercel API rather than the CLI, which lists a variable as Production-only
-  even when its record covers both environments: 43 records, the same 25
-  names in each environment, no duplicates, nothing missing on either side.
+The brief's own premise about the weekly letter was wrong, and the letter
+was the one thing nobody could see. Both are settled:
+- **The Intelligence Brief HAS gone out — the brief was wrong.** The tenant
+  event log carries a `newsletter_sent` row from **2026-10-22T11:00:43Z**:
+  the published issue "The River and the Stone" reached **11 recipients,
+  10 sent and 1 failed**. The Vercel runtime logs agree: the cron fired at
+  04:00:41 MST on 2026-11-01 and answered **200** — correctly, because
+  there is only one published issue and it has already gone. The letter is
+  not broken and has not been broken; it has simply been **unobservable**.
+- **A dispatch that failed left no record at all.** The send row was only
+  written once the mail was on its way, so every failure before that point
+  — no `RESEND_API_KEY`, no recipients, an unreadable send log — was
+  invisible. The brief's own instruction ("the send record says how many
+  went out and how many failed") was true only for the last step.
+- **A broken send log silently starved the letter.** `hasBeenSent` answered
+  `true` when the read failed, so the cron skipped the issue and reported
+  *"No newsletters to send"* with a **200**. The brief would have stopped
+  going out to every subscriber with nothing anywhere saying so. It now
+  stops **loudly**: an unreadable log is a 500 and a recorded failure.
+- **Every dispatch attempt is now on record.** `dispatchNewsletter` writes a
+  `newsletter_dispatch` row for every outcome — `sent`, `partial`,
+  `failed`, `skipped` — with the source (`cron`, `admin`, `webhook`), the
+  recipient counts and the reason. The cron also records the runs that did
+  nothing, so *"the cron fired and correctly had nothing to do"* and *"the
+  cron never fired"* no longer look identical.
+- **A dispatch where every send failed no longer marks the issue as sent.**
+  The marker is what stops the cron retrying, so a total failure used to
+  mark the issue sent and it was never sent again — the letter was silently
+  dropped for good. The marker is now written only when at least one
+  recipient took the mail.
+- **The operator can now see the letter's history.** The Newsletter Studio
+  in `/admin` has a **Dispatch History** panel reading the new log, and
+  `scripts/check_newsletter_chain.mjs` answers the whole question in one
+  command: the site answers, the cron route is locked, the subscriber list
+  holds no undeliverable address, the suppression list reads, every
+  published issue has gone out, the last attempt did not fail, and the
+  sending domain is verified.
+- **The Tyrone services finally have an image.** Three catalogue rows —
+  Personal Training, Custom Meal Plan, Meal Plan Payment Plan — pointed at
+  `/people/tyrone.webp`, which was never in `public/`: a 404 on every
+  request. There is no photograph of Tyrone anywhere in the repository, so
+  the asset is a branded monogram card in the Imperium tile language rather
+  than an invented portrait — `public/people/tyrone.webp`, 800×1000, 15 KB.
 - **The checks are green.** The visual audit is clean across 36 routes at
   375px, the schema reference check passes (19 tables, 52 column
-  references), the cron-auth audit reports nothing, and the build and the
-  typecheck are clean.
+  references), the cron-auth audit reports nothing, the build and the
+  typecheck are clean, and the new newsletter check is green.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -93,6 +92,9 @@ Both are settled against production:
    **Set the same new token in two places** — `telegram-bot/.env` and the
    Vercel variable `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and
    the bridge script will now say whether the two copies are the same bot.
+   Note that Vercel Production and Preview each hold **their own** copy of
+   the dead token, so a rotation that touches only one leaves the other
+   dead.
 3. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
    Telegram who the token belongs to (`getMe`), caches the answer and builds
    the `t.me` deep link from that, so the link cannot point at a bot the
@@ -138,18 +140,50 @@ Both are settled against production:
    bogus promo earned no discount (10139), and the deleted `/api/checkout`
    answers 404. **What is left is a business decision, not a defect:** the
    Archive rebrand holds the storefront closed, and reopening `/shop` is the
-   operator's call. Note that the catalogue is not empty: three Tyrone
-   services sit in `products` with prices and descriptions, and their image
-   path `/people/tyrone.webp` does not exist in `public/`.
-8. **Watch the first send of the weekly brief.** The published issue
-   ("The River and the Stone") has never gone out — there is no
-   `newsletter_sent` record in the tenant event log — and the cron runs
-   daily at 11:00 UTC. The subscriber list is clean now, so the first send
-   should land on the ten real subscribers. If it does not, the send record
-   in `inbound_imperium_events` (event type `newsletter_sent`) says how
-   many went out and how many failed.
+   operator's call. The catalogue is not empty: three Tyrone services sit in
+   `products` with prices and descriptions, and their image path
+   `/people/tyrone.webp` **now exists**.
+8. **~~Watch the first send of the weekly brief.~~ RESOLVED — 2026-11-01.**
+   The letter went out on 2026-10-22 (10 of 11). What was missing was not
+   the send but the evidence, and that is now in place: the dispatch attempt
+   log, the admin panel and `node scripts/check_newsletter_chain.mjs`.
+   **The remaining half of this item is the operator's, not the agent's:**
+   the letter is *weekly* and there is still only **one** published issue,
+   sent eleven days ago. Publishing is the approval step the cron waits
+   for, so until a second issue is published the cron has nothing to send
+   and correctly says so. Publish one and the next run takes it.
+9. **Watch the first cron run against the new code.** The dispatch log
+   starts empty and fills from the first run of the new build. The cron
+   fires daily at **11:00 UTC (04:00 MST)**. One command proves it:
+   `node scripts/check_newsletter_chain.mjs` — it reports the age of the
+   last attempt and fails if the last attempt failed.
+10. **Tyrone's coaching pages are still unbuilt.** `/tyronengouamo` and
+   `/tyronengouamo/referral` exist in neither the source nor the sitemap
+   and both 404, while three paid coaching services sit priced in the
+   catalogue with nothing to sell them on. The brief says they are
+   "specified but never implemented"; they are a landing page away from
+   revenue, and the landing-page pattern to clone is
+   `28principles/page.tsx`. This is a build, not a fix.
 
 ## 🔬 Why
+- **A record that is only written on success is not a record.** The brief's
+  send row was written once the mail was on its way, so every earlier
+  failure was invisible. The operator's way of checking the letter — "look
+  at the send record" — answered nothing about the failures that matter
+  most. Every attempt has to leave a mark, and the mark has to say what
+  happened.
+- **"Nothing to send" and "the cron never ran" look the same from
+  outside.** The cron had answered 200 for eleven days and the operator
+  could not tell a healthy no-op from a dead schedule. A run that does
+  nothing is still a run, and it says so.
+- **An unreadable log is not a fact.** The send log could not be read, and
+  the code answered "sent" — so the letter was skipped and the cron
+  reported success. The safe reading of an unknown is *unknown*, and an
+  unknown that stops the letter has to be loud, not silent.
+- **A failure must not look like a success.** Every send failing still
+  wrote the "sent" marker, which is the one thing that stops the cron from
+  trying again. The issue was marked done and never went out. The marker
+  now means what it says.
 - **A client-side gate is not a gate.** The dashboard checks the session in
   the browser and hides itself from anyone who is not an admin — and then
   calls three handlers that checked nothing. The browser gate decides what
@@ -234,6 +268,9 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-01 | revenue | The weekly letter was unobservable, not broken. The brief's premise was wrong — the tenant event log carries a `newsletter_sent` row from 2026-10-22 (11 recipients, 10 sent, 1 failed) and the cron has answered 200 every day since, correctly, because only one issue is published and it has gone. What was missing was the evidence: a dispatch that failed before the mail left no record at all, a failed send-log read made the cron skip the issue and report success, and a total send failure still wrote the "sent" marker that stops the cron retrying — so the letter could be silently dropped for good. Every attempt now writes a `newsletter_dispatch` row (sent / partial / failed / skipped, with the source and the reason), the unreadable-log case is a 500 and a recorded failure, the marker is written only when a recipient took the mail, and the admin studio shows the history | ~260 |
+| 2026-11-01 | ops | `scripts/check_newsletter_chain.mjs`: one command proves the whole letter — the site answers, the cron route is locked, no active subscriber sits at a reserved domain, the suppression list reads, every published issue has gone out, the last attempt did not fail, and the sending domain is verified. Exit 0 healthy / 1 broken and named / 3 could not run. It also corrected the brief: the letter went out on 2026-10-22, 10 of 11 | ~290 |
+| 2026-11-01 | visual | The three Tyrone coaching services in the catalogue pointed at `/people/tyrone.webp`, which was never in `public/` — a 404 on every request, and the merch placeholder in its place. There is no photograph of Tyrone anywhere in the repository, so the asset is a branded monogram card in the Imperium tile language rather than an invented portrait: `public/people/tyrone.webp`, 800×1000, 15 KB | ~30 |
 | 2026-10-31 | revenue | The weekly brief was a bounce farm. Five probe addresses left on the Imperium subscriber list by earlier automated probes were still active, and none of them can receive mail — `example.com` has no MX record — so the first send of the Intelligence Brief would have bounced six times out of eight, against the sending domain the $20 membership's letter depends on. `lib/server/mailable.ts` now refuses reserved documentation domains in all three mailing paths (the brief, the test send, the welcome email); a capture at one is still recorded but nothing is mailed to it; the five stale addresses were unsubscribed in the live list and this session's own probe rows were deleted | ~150 |
 | 2026-10-31 | security | `isAdminRequest` read `is_admin` off the first row matching the address, on a shared table where one address can carry several rows, so an operator with a second ordinary row for their address could be refused with a 401 on a button that had always worked. The query filters on `is_admin` instead. The session bearer was proved against production at the same time: a magic link minted for the operator's admin account with no mail sent produced a token every guarded route accepted with 200 | ~40 |
 | 2026-10-31 | ops | Production and Preview were compared through the Vercel REST API rather than the CLI: 43 records, the same 25 names in each environment, no duplicates. The CLI's listing calls `POSTGRES_PASSWORD` Production-only although its record covers both | ~10 |
@@ -314,6 +351,34 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
+- **a-record-written-only-on-success-is-not-a-record** (fleet, applies to
+  every write path that has a history) — the send row was written once the
+  mail was on its way, so every failure before that point left nothing
+  behind, and the operator's way of checking the letter answered nothing
+  about the failures that matter most. **Every attempt has to leave a
+  mark, and the mark has to say what happened** — `sent`, `partial`,
+  `failed`, `skipped`, with the source and the reason. A history that
+  records only the happy path is not a history.
+- **an-unreadable-log-is-not-a-fact** (fleet, applies to every log that
+  gates an action) — a send log that could not be read was answered
+  "already sent", so the cron skipped the issue and reported *200 "no
+  newsletters to send"* while the letter quietly stopped going out. The
+  safe reading of an unknown is **unknown**, and an unknown that stops the
+  work has to be **loud**: a 500 and a recorded failure, not a cheerful
+  no-op. Both readings refuse to act; only one of them tells the operator.
+- **a-marker-must-mean-what-it-says** (fleet) — the row that stops the
+  next run from repeating the work was written even when every attempt
+  failed, so a total failure marked the job done and it was never done
+  again. The marker is written only when the thing it names actually
+  happened.
+- **prove-every-chain-with-a-script** (fleet) — a chain with a link at
+  every step (a payment, a bridge, a letter) fails link by link and
+  silently. Give each one a command that asks every question the operator
+  would ask, in the order they would ask it, and names the first broken
+  link. Three exist here: `check_payment_chain.mjs`,
+  `check_telegram_bridge.mjs`, `check_newsletter_chain.mjs`. **A script
+  also corrects the brief**: the newsletter one found that the letter had
+  gone out on 2026-10-22, which the brief had recorded as never sent.
 - **form-backend-nodemailer** — Next.js API route that handles form submissions and sends email via no
 - **seo-metadata-nextjs** — Standard Next.js metadata export with title, description, openGraph, a
 - **fleet-transport-split** (Imperium) — dispatch sends locally through the shared
@@ -580,7 +645,8 @@ with the `products.slug` migration decision in the same entry. **Recorded
   `scripts/sync-trees.sh` — the canonical copy is the production root, and
   a brief written into `web/` is a brief that drifts
 - Before every push run `node scripts/check-schema-refs.mjs`,
-  `node scripts/check_telegram_bridge.mjs` and
+  `node scripts/check_telegram_bridge.mjs`,
+  `node scripts/check_newsletter_chain.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
 - **Never deploy from a retired worktree.** Two directories still hold a
   `.vercel/project.json` pointing at the **production** project
