@@ -28,6 +28,7 @@ export function ArchiveFooter() {
                             <Link href="/archive/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">The Archive</Link>
                             <Link href="/newsletter/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Newsletter</Link>
                             <Link href="/partners/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Partners</Link>
+                            <Link href="/tyronengouamo/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Coaching</Link>
                             <Link href="/mission-statement/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">About Imperium</Link>
                         </nav>
                     </div>

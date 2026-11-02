@@ -677,3 +677,75 @@
  .auth-shell { padding: 34px 16px 52px; }
  .auth-card { padding: 28px 22px 26px; }
 }
+
+/* Tyrone Ngouamo's coaching surface: the same editorial language as The
+   Archive — paper, ink and bronze — with the offers laid out as three
+   priced cards. */
+.coaching-hero { position: relative; isolation: isolate; overflow: hidden; color: #f3eddf; background: #262b27; }
+.coaching-hero-inner { display: grid; gap: 38px; padding-block: 68px 62px; }
+@media (min-width: 900px) { .coaching-hero-inner { grid-template-columns: 1.4fr .6fr; align-items: center; gap: 56px; } }
+.coaching-hero .editorial-kicker { color: #cfbb8e; }
+.coaching-hero h1 { margin-top: 18px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(44px, 6.2vw, 78px); line-height: 1.06; letter-spacing: -.04em; }
+.coaching-hero h1 em { color: #c7ac72; font-style: italic; }
+.coaching-hero-deck { margin-top: 20px; max-width: 30ch; font-family: var(--font-serif); font-size: clamp(20px, 2.1vw, 27px); line-height: 1.38; color: #e6e1d4; }
+.coaching-hero-copy { margin-top: 16px; max-width: 46ch; font-size: 15px; line-height: 1.85; color: #cfcabb; }
+.coaching-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: 30px; }
+.coaching-hero-facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 32px; padding-top: 20px; border-top: 1px solid #d6c49b30; font-size: 10px; font-weight: 500; letter-spacing: .13em; text-transform: uppercase; color: #d2cbb9; }
+.coaching-hero-portrait { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border: 1px solid #d6c49b2e; border-radius: 6px; background: #2f352f; }
+.coaching-hero-portrait img { object-fit: cover; }
+.coaching-section { padding-block: 64px; }
+.coaching-section-alt { border-block: 1px solid #d2d1c7; background: #e9e6dc; }
+.coaching-heading h2 { margin-top: 15px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.14; letter-spacing: -.03em; }
+.coaching-heading p { margin-top: 16px; max-width: 62ch; font-size: 15px; line-height: 1.85; color: #6c6f63; }
+.coaching-offers { display: grid; gap: 22px; margin-top: 40px; }
+@media (min-width: 820px) { .coaching-offers { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.coaching-offer { display: flex; flex-direction: column; border: 1px solid #d1d0c5; border-radius: 6px; background: linear-gradient(#f6f3ebee, #f6f3ebee), url('/editorial/card-marble-v1.webp') center / cover, #f6f3eb; }
+.coaching-offer-head { padding: 26px 24px 20px; border-bottom: 1px solid #dedcd1; }
+.coaching-offer-price { display: flex; align-items: baseline; gap: 8px; }
+.coaching-offer-price strong { font-family: var(--font-serif); font-size: 34px; font-weight: 400; letter-spacing: -.02em; }
+.coaching-offer-price span { font-size: 12px; color: #7a7a6c; }
+.coaching-offer h3 { margin-top: 12px; font-family: var(--font-serif); font-size: 21px; font-weight: 400; line-height: 1.28; }
+.coaching-offer-summary { margin-top: 10px; font-size: 14px; line-height: 1.75; color: #6c6f63; }
+.coaching-offer-list { flex: 1; padding: 20px 24px 6px; }
+.coaching-offer-list li { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.7; color: #4f5449; }
+.coaching-offer-list li + li { margin-top: 9px; }
+.coaching-offer-list svg { flex-shrink: 0; margin-top: 4px; color: #92784e; }
+.coaching-offer-cta { padding: 20px 24px 26px; }
+.coaching-offer-cta .editorial-button { width: 100%; }
+.coaching-offer-note { margin-top: 11px; font-size: 11px; color: #8a897b; text-align: center; }
+.coaching-steps { display: grid; gap: 26px; margin-top: 40px; }
+@media (min-width: 760px) { .coaching-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.coaching-step { border-top: 1px solid #c9c8bb; padding-top: 18px; }
+.coaching-step span { font-family: var(--font-serif); font-size: 13px; letter-spacing: .08em; color: #92784e; }
+.coaching-step h3 { margin-top: 10px; font-family: var(--font-serif); font-size: 20px; font-weight: 400; line-height: 1.3; }
+.coaching-step p { margin-top: 9px; font-size: 13.5px; line-height: 1.75; color: #6c6f63; }
+.coaching-columns { display: grid; gap: 28px; margin-top: 38px; }
+@media (min-width: 820px) { .coaching-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.coaching-faq { margin-top: 34px; border-top: 1px solid #d2d1c7; }
+.coaching-faq details { border-bottom: 1px solid #d2d1c7; }
+.coaching-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 62px; cursor: pointer; font-family: var(--font-serif); font-size: 19px; list-style: none; }
+.coaching-faq summary::-webkit-details-marker { display: none; }
+.coaching-faq p { padding-bottom: 22px; max-width: 64ch; font-size: 14.5px; line-height: 1.85; color: #6c6f63; }
+.coaching-closing { color: #ebe6da; background: #2a302b; }
+.coaching-closing-inner { padding-block: 64px 68px; }
+.coaching-closing h2 { margin-top: 16px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(30px, 3.6vw, 46px); line-height: 1.16; letter-spacing: -.03em; }
+.coaching-closing h2 em { color: #c4af7d; }
+.coaching-closing p { margin-top: 18px; max-width: 56ch; font-size: 15px; line-height: 1.85; color: #cecec0; }
+.coaching-closing .editorial-kicker { color: #baa57c; }
+.coaching-share { display: grid; gap: 28px; margin-top: 38px; }
+@media (min-width: 860px) { .coaching-share { grid-template-columns: .9fr 1.1fr; align-items: center; } }
+.coaching-share-card { position: relative; aspect-ratio: 1200 / 630; overflow: hidden; border: 1px solid #d6c49b30; border-radius: 6px; background: #232824; }
+.coaching-share-card img { object-fit: cover; }
+.coaching-share-links { display: grid; gap: 12px; }
+.coaching-share-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; padding: 12px 18px; border: 1px solid #d6c49b30; border-radius: 5px; color: #e6e1d4; font-size: 14px; }
+.coaching-share-link:hover { border-color: #a99970; }
+.coaching-share-link span:first-child { min-width: 0; }
+.coaching-share-link small { display: block; margin-top: 3px; color: #a9a795; font-size: 11.5px; }
+.coaching-copy { display: inline-flex; min-height: 40px; flex-shrink: 0; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid #a9997066; border-radius: 4px; background: transparent; color: #e4d1a4; font-size: 12px; cursor: pointer; transition: border-color .2s, color .2s; }
+.coaching-copy:hover { border-color: #c9b37c; color: #f0e2bd; }
+.coaching-copy.is-copied { border-color: #7ea27c; color: #bcd7b8; }
+@media (max-width: 640px) {
+ .coaching-hero-inner { padding-block: 52px 46px; }
+ .coaching-section { padding-block: 50px; }
+ .coaching-closing-inner { padding-block: 52px 56px; }
+}
