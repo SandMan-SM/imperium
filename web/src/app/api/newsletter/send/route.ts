@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Test email sent', recipientCount: 1 });
     }
 
-    const result = await dispatchNewsletter(newsletter as NewsletterRow);
+    const result = await dispatchNewsletter(newsletter as NewsletterRow, { source: 'admin' });
     if (!result.ok) {
       return NextResponse.json(
         { error: result.error || 'Failed to send newsletter' },

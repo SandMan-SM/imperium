@@ -28,7 +28,20 @@ import { resendService } from '@/lib/resend';
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://secretimperium.com').replace(/\/+$/, '');
 const FEDERATION_SITE = 'imperium';
 const SEND_EVENT_TYPE = 'newsletter_sent';
+const DISPATCH_EVENT_TYPE = 'newsletter_dispatch';
 const SEND_CONCURRENCY = 5;
+
+/**
+ * How an attempt ended.
+ *
+ * `sent`    — every recipient took the mail.
+ * `partial` — some took it, some did not.
+ * `failed`  — the dispatch did not happen (no key, no recipients, unreadable
+ *             send log) or every send failed.
+ * `skipped` — there was nothing to do (no published issue, or every published
+ *             issue has already gone out).
+ */
+export type DispatchOutcome = 'sent' | 'partial' | 'failed' | 'skipped';
 
 export type NewsletterRow = {
   id: string;
@@ -54,6 +67,20 @@ export type DispatchResult = {
   sent: number;
   failed: number;
   error?: string;
+};
+
+/** One row of the dispatch history — every attempt, however it ended. */
+export type DispatchAttempt = {
+  id: string;
+  outcome: DispatchOutcome | string;
+  source: string;
+  newsletterId: string | null;
+  newsletterTitle: string | null;
+  recipientCount: number;
+  sent: number;
+  failed: number;
+  reason: string | null;
+  at: string;
 };
 
 function normalizeEmail(value: unknown): string {
@@ -231,24 +258,61 @@ export async function sendToAddress(
 
 /**
  * Send the brief to every eligible subscriber and record the send.
+ *
+ * Every exit writes a dispatch record, so the operator can tell a cron that
+ * did nothing from a cron that never ran. That distinction used to be
+ * invisible: the send record was only written once the mail was on its way,
+ * so every failure before that point — no API key, no recipients, an
+ * unreadable send log — left nothing behind at all.
  */
-export async function dispatchNewsletter(newsletter: NewsletterRow): Promise<DispatchResult> {
+export async function dispatchNewsletter(
+  newsletter: NewsletterRow,
+  options: { source?: string } = {},
+): Promise<DispatchResult> {
+  const source = options.source ?? 'unknown';
+
   if (!resendService.isConfigured()) {
-    return {
-      ok: false,
+    const error = 'RESEND_API_KEY is not configured for this deployment';
+    await recordDispatch({
+      outcome: 'failed',
+      source,
+      newsletterId: newsletter.id,
+      newsletterTitle: newsletter.title,
       recipientCount: 0,
       sent: 0,
       failed: 0,
-      error: 'RESEND_API_KEY is not configured for this deployment',
-    };
+      reason: error,
+    });
+    return { ok: false, recipientCount: 0, sent: 0, failed: 0, error };
   }
 
   const { emails, error: recipientError } = await getBriefRecipients();
   if (recipientError) {
+    await recordDispatch({
+      outcome: 'failed',
+      source,
+      newsletterId: newsletter.id,
+      newsletterTitle: newsletter.title,
+      recipientCount: 0,
+      sent: 0,
+      failed: 0,
+      reason: recipientError,
+    });
     return { ok: false, recipientCount: 0, sent: 0, failed: 0, error: recipientError };
   }
   if (emails.length === 0) {
-    return { ok: false, recipientCount: 0, sent: 0, failed: 0, error: 'No recipients found' };
+    const error = 'No recipients found';
+    await recordDispatch({
+      outcome: 'failed',
+      source,
+      newsletterId: newsletter.id,
+      newsletterTitle: newsletter.title,
+      recipientCount: 0,
+      sent: 0,
+      failed: 0,
+      reason: error,
+    });
+    return { ok: false, recipientCount: 0, sent: 0, failed: 0, error };
   }
 
   const subject = newsletter.title;
@@ -274,11 +338,36 @@ export async function dispatchNewsletter(newsletter: NewsletterRow): Promise<Dis
     }
   }
 
-  await recordSend(newsletter.id, { recipientCount: emails.length, sent, failed });
-
   if (sent === 0) {
-    return { ok: false, recipientCount: emails.length, sent, failed, error: 'Every send failed' };
+    // No recipient took the mail, so the issue has NOT gone out. It must not
+    // be marked as sent: the marker is what stops the cron from trying
+    // again, and a failed dispatch has to be retried.
+    await recordDispatch({
+      outcome: 'failed',
+      source,
+      newsletterId: newsletter.id,
+      newsletterTitle: newsletter.title,
+      recipientCount: emails.length,
+      sent: 0,
+      failed,
+      reason: 'Every send failed',
+    });
+    return { ok: false, recipientCount: emails.length, sent: 0, failed, error: 'Every send failed' };
   }
+
+  // The marker is written only once at least one recipient has the mail.
+  await recordSend(newsletter.id, { recipientCount: emails.length, sent, failed });
+  await recordDispatch({
+    outcome: sent === emails.length ? 'sent' : 'partial',
+    source,
+    newsletterId: newsletter.id,
+    newsletterTitle: newsletter.title,
+    recipientCount: emails.length,
+    sent,
+    failed,
+    reason: sent === emails.length ? null : `${failed} recipient(s) did not take the mail`,
+  });
+
   return { ok: true, recipientCount: emails.length, sent, failed };
 }
 
@@ -350,12 +439,109 @@ export async function getSendRecords(): Promise<SendRecord[]> {
 }
 
 /**
+ * Write one row of dispatch history. Called for every attempt, whatever it
+ * ended as, so "the cron ran and had nothing to do" is distinguishable from
+ * "the cron never ran".
+ */
+export async function recordDispatch(detail: {
+  outcome: DispatchOutcome;
+  source: string;
+  newsletterId: string | null;
+  newsletterTitle?: string | null;
+  recipientCount: number;
+  sent: number;
+  failed: number;
+  reason?: string | null;
+}): Promise<void> {
+  const sb = getAdminClient();
+  if (!sb) return;
+
+  const { data: business } = await sb
+    .from('omni_businesses')
+    .select('id')
+    .eq('slug', FEDERATION_SITE)
+    .maybeSingle();
+  const businessId = (business as { id?: string } | null)?.id ?? null;
+
+  const at = new Date().toISOString();
+  const { error } = await sb.from('inbound_imperium_events').insert({
+    business_id: businessId,
+    event_type: DISPATCH_EVENT_TYPE,
+    event_category: 'newsletter',
+    action: detail.outcome,
+    target_type: 'newsletter',
+    target_id: detail.newsletterId,
+    target_area: 'newsletter',
+    path: '/newsletter',
+    payload: {
+      source: detail.source,
+      newsletterTitle: detail.newsletterTitle ?? null,
+      recipientCount: detail.recipientCount,
+      sent: detail.sent,
+      failed: detail.failed,
+      reason: detail.reason ?? null,
+      at,
+    },
+    value_text: detail.newsletterId,
+    created_at: at,
+  });
+  if (error) {
+    console.error('[newsletter-dispatch] failed to record dispatch:', error.message);
+  }
+}
+
+/**
+ * The dispatch history, newest first.
+ */
+export async function getDispatchAttempts(limit = 50): Promise<DispatchAttempt[]> {
+  const sb = getAdminClient();
+  if (!sb) return [];
+
+  const { data, error } = await sb
+    .from('inbound_imperium_events')
+    .select('id, action, target_id, payload, created_at')
+    .eq('event_type', DISPATCH_EVENT_TYPE)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error('[newsletter-dispatch] failed to read dispatch attempts:', error.message);
+    return [];
+  }
+
+  const attempts: DispatchAttempt[] = [];
+  for (const row of data ?? []) {
+    const payload = (row as { payload?: Record<string, unknown> | null }).payload ?? {};
+    attempts.push({
+      id: String((row as { id?: string | null }).id ?? ''),
+      outcome: String((row as { action?: string | null }).action ?? 'unknown'),
+      source: String(payload.source ?? 'unknown'),
+      newsletterId: (row as { target_id?: string | null }).target_id ?? null,
+      newsletterTitle: (payload.newsletterTitle as string | null) ?? null,
+      recipientCount: Number(payload.recipientCount ?? 0),
+      sent: Number(payload.sent ?? 0),
+      failed: Number(payload.failed ?? 0),
+      reason: (payload.reason as string | null) ?? null,
+      at: (row as { created_at?: string | null }).created_at ?? String(payload.at ?? ''),
+    });
+  }
+  return attempts;
+}
+
+/**
  * Has this newsletter already been sent? Used to stop the cron from
  * sending the same issue twice.
+ *
+ * The answer now distinguishes "sent" from "could not tell". It used to
+ * answer `true` for both, so a send log that could not be read made the
+ * cron skip the issue and report success — the brief simply stopped going
+ * out, and nothing said so. An unreadable log now stops the cron loudly;
+ * neither reading sends the issue twice.
  */
-export async function hasBeenSent(newsletterId: string): Promise<boolean> {
+export async function getSendState(
+  newsletterId: string,
+): Promise<{ sent: boolean; error?: string }> {
   const sb = getAdminClient();
-  if (!sb) return false;
+  if (!sb) return { sent: false, error: 'capture backend not configured' };
 
   const { data, error } = await sb
     .from('inbound_imperium_events')
@@ -365,9 +551,7 @@ export async function hasBeenSent(newsletterId: string): Promise<boolean> {
     .limit(1);
   if (error) {
     console.error('[newsletter-dispatch] failed to check send state:', error.message);
-    // Fail closed: an unreadable send log must not become a licence to
-    // send the same issue to every subscriber twice.
-    return true;
+    return { sent: false, error: error.message };
   }
-  return Array.isArray(data) && data.length > 0;
+  return { sent: Array.isArray(data) && data.length > 0 };
 }

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Newsletter not found' }, { status: 404 });
     }
 
-    const result = await dispatchNewsletter(newsletter as NewsletterRow);
+    const result = await dispatchNewsletter(newsletter as NewsletterRow, { source: 'webhook' });
     if (!result.ok) {
       return NextResponse.json(
         { error: result.error || 'Failed to dispatch newsletter' },

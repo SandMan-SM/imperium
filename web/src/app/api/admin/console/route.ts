@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Server not configured' }, { status: 500 });
         }
 
-        const [profiles, products, newsletters, metrics, sendEvents] = await Promise.all([
+        const [profiles, products, newsletters, metrics, sendEvents, dispatchEvents] = await Promise.all([
             admin.from('profiles').select('*').order('created_at', { ascending: false }),
             admin.from('products').select('*').order('created_at', { ascending: false }),
             admin.from('newsletters').select('*').order('created_at', { ascending: false }),
@@ -43,6 +43,16 @@ export async function GET(request: Request) {
                 .eq('event_type', 'newsletter_sent')
                 .order('created_at', { ascending: false })
                 .limit(200),
+            // Every dispatch attempt — sent, partial, failed or skipped. The
+            // send record only exists once the mail is on its way, so without
+            // this the operator cannot see a cron that ran and did nothing,
+            // or one that failed before it sent.
+            admin
+                .from('inbound_imperium_events')
+                .select('id, action, target_id, payload, created_at')
+                .eq('event_type', 'newsletter_dispatch')
+                .order('created_at', { ascending: false })
+                .limit(50),
         ]);
 
         const profileRows = (profiles.data || []) as { is_subscribed?: boolean }[];
@@ -56,6 +66,7 @@ export async function GET(request: Request) {
             products: productRows,
             newsletters: newsletters.data || [],
             newsletterSendEvents: sendEvents.data || [],
+            newsletterDispatchEvents: dispatchEvents.data || [],
             metrics: (metrics.data || [])[0] || null,
             stats: {
                 profiles: profileRows.length,

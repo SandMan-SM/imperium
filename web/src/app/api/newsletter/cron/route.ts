@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import {
   dispatchNewsletter,
-  hasBeenSent,
+  getSendState,
+  recordDispatch,
   type NewsletterRow,
 } from '@/lib/server/newsletter-dispatch';
 
@@ -56,25 +57,81 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error('Cron: Error fetching newsletters:', error);
+      await recordDispatch({
+        outcome: 'failed',
+        source: 'cron',
+        newsletterId: null,
+        recipientCount: 0,
+        sent: 0,
+        failed: 0,
+        reason: `could not read the published issues: ${error.message}`,
+      });
       return NextResponse.json({ error: 'Database error' }, { status: 500 });
     }
 
+    if (!candidates || candidates.length === 0) {
+      // A cron that ran and had nothing to do must leave a trace. Otherwise
+      // "the cron fired and correctly did nothing" and "the cron never fired"
+      // look identical from the outside.
+      await recordDispatch({
+        outcome: 'skipped',
+        source: 'cron',
+        newsletterId: null,
+        recipientCount: 0,
+        sent: 0,
+        failed: 0,
+        reason: 'no published issue',
+      });
+      return NextResponse.json({ message: 'No newsletters to send', processed: 0 });
+    }
+
     let newsletter: NewsletterRow | null = null;
-    for (const candidate of candidates ?? []) {
+    for (const candidate of candidates) {
       const row = candidate as NewsletterRow;
-      if (!(await hasBeenSent(row.id))) {
+      const state = await getSendState(row.id);
+      if (state.error) {
+        // The send log could not be read. The old code treated that as "it
+        // has been sent", skipped the issue and answered 200 — so a broken
+        // log silently starved the letter of every subscriber. Neither
+        // reading sends twice; only one of them tells the operator.
+        console.error(`Cron: could not read the send log: ${state.error}`);
+        await recordDispatch({
+          outcome: 'failed',
+          source: 'cron',
+          newsletterId: row.id,
+          newsletterTitle: row.title,
+          recipientCount: 0,
+          sent: 0,
+          failed: 0,
+          reason: `send log unreadable: ${state.error}`,
+        });
+        return NextResponse.json(
+          { error: 'Could not read the send log; refusing to guess' },
+          { status: 500 },
+        );
+      }
+      if (!state.sent) {
         newsletter = row;
         break;
       }
     }
 
     if (!newsletter) {
+      await recordDispatch({
+        outcome: 'skipped',
+        source: 'cron',
+        newsletterId: null,
+        recipientCount: 0,
+        sent: 0,
+        failed: 0,
+        reason: 'every published issue has already been sent',
+      });
       return NextResponse.json({ message: 'No newsletters to send', processed: 0 });
     }
 
     console.log(`Cron: Sending newsletter "${newsletter.title}" (ID: ${newsletter.id})`);
 
-    const result = await dispatchNewsletter(newsletter);
+    const result = await dispatchNewsletter(newsletter, { source: 'cron' });
 
     if (result.ok) {
       console.log(`Cron: Sent to ${result.sent} recipients (${result.failed} failed)`);
@@ -91,6 +148,15 @@ export async function GET(req: Request) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('Cron Error:', error);
+    await recordDispatch({
+      outcome: 'failed',
+      source: 'cron',
+      newsletterId: null,
+      recipientCount: 0,
+      sent: 0,
+      failed: 0,
+      reason: message,
+    });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

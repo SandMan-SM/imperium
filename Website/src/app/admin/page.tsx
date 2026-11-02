@@ -80,6 +80,7 @@ interface ConsolePayload {
     products: ProductRow[];
     newsletters: NewsletterRow[];
     newsletterSendEvents: NewsletterSendEvent[];
+    newsletterDispatchEvents: NewsletterDispatchEvent[];
     metrics: Metrics | null;
     stats: { profiles: number; products: number; subs: number };
 }
@@ -155,6 +156,26 @@ interface NewsletterSendEvent {
     target_id?: string | null;
     payload?: SendEventPayload | null;
     created_at?: string | null;
+}
+
+/**
+ * One dispatch attempt. The send record only exists once the mail is on its
+ * way, so the attempt log is what shows a cron that ran and had nothing to
+ * do, or one that failed before it sent.
+ */
+interface NewsletterDispatchEvent {
+    id?: string | null;
+    action?: string | null;
+    target_id?: string | null;
+    created_at?: string | null;
+    payload?: {
+        source?: string;
+        newsletterTitle?: string | null;
+        recipientCount?: number;
+        sent?: number;
+        failed?: number;
+        reason?: string | null;
+    } | null;
 }
 
 /** Body returned by /api/newsletter/send. */
@@ -1308,6 +1329,7 @@ function NewsletterStudio() {
     const [sendingTest, setSendingTest] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [selectedNewsletter, setSelectedNewsletter] = useState<NewsletterRow | null>(null);
+    const [dispatchEvents, setDispatchEvents] = useState<NewsletterDispatchEvent[]>([]);
     const [stats, setStats] = useState<{ free: number; premium: number; total: number }>({ free: 0, premium: 0, total: 0 });
 
     const loadData = useCallback(async () => {
@@ -1341,6 +1363,8 @@ function NewsletterStudio() {
                 return sent ? { ...nl, sent_at: sent.sent_at, recipient_count: sent.recipient_count } : nl;
             })
         );
+
+        setDispatchEvents((payload.newsletterDispatchEvents || []) as NewsletterDispatchEvent[]);
     }, []);
 
     useEffect(() => {
@@ -1638,6 +1662,46 @@ function NewsletterStudio() {
                     </div>
                 </div>
             )}
+
+            {/* Dispatch history — every attempt, however it ended. */}
+            <div className="mt-8">
+                <h4 className="text-sm font-light tracking-wide uppercase text-white/40 mb-4">Dispatch History</h4>
+                {dispatchEvents.length === 0 ? (
+                    <div className="p-4 bg-black/20 border border-white/5 rounded-lg text-xs text-white/30">
+                        No dispatch attempt has been recorded yet.
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {dispatchEvents.map((event) => {
+                            const outcome = event.action || 'unknown';
+                            const tone =
+                                outcome === 'sent' ? 'text-green-400'
+                                : outcome === 'partial' ? 'text-yellow-400'
+                                : outcome === 'failed' ? 'text-red-400'
+                                : 'text-white/40';
+                            return (
+                                <div key={event.id || event.created_at} className="bg-black/20 border border-white/5 rounded-lg p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className={`text-[10px] uppercase tracking-wider ${tone}`}>{outcome}</span>
+                                        <span className="text-[10px] text-white/30">
+                                            {event.created_at ? new Date(event.created_at).toLocaleString() : ''}
+                                        </span>
+                                    </div>
+                                    <div className="text-xs text-white/50 mt-1">
+                                        {event.payload?.newsletterTitle || 'No issue'} · source {event.payload?.source || 'unknown'}
+                                        {typeof event.payload?.recipientCount === 'number' && event.payload.recipientCount > 0 && (
+                                            <> · {event.payload.sent}/{event.payload.recipientCount} sent</>
+                                        )}
+                                    </div>
+                                    {event.payload?.reason && (
+                                        <div className="text-xs text-white/30 mt-1">{event.payload.reason}</div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
