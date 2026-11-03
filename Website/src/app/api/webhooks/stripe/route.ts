@@ -5,6 +5,7 @@ import type { Stripe } from 'stripe';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getStripe } from '@/lib/stripe-helper';
 import { getAdminClient } from '@/lib/server/imperium-capture';
+import { awardReferralCommission } from '@/lib/server/referrals';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const PURCHASE_EVENT_TYPE = 'purchase_recorded';
@@ -337,6 +338,15 @@ export async function POST(req: Request) {
         if (session.mode === 'subscription' || (session.metadata && session.metadata['premium'] === 'true')) {
           if (profile) {
             await grantMembership(profile, 'active', true);
+
+            // A membership bought through somebody else's referral earns
+            // that member a commission. It is recorded once, against the
+            // referral row, and the member sees it in their portal.
+            await awardReferralCommission(supabaseAdmin, {
+              referredId: profile.id,
+              amountCents: session.amount_total ?? null,
+              subscriptionId: typeof session.subscription === 'string' ? session.subscription : null,
+            });
           }
         }
 

@@ -129,11 +129,18 @@ export async function GET(request: Request) {
                     return NextResponse.json({ error: "Failed to fetch referral data" }, { status: 500 });
                 }
 
+                // The `referrals` table has no `status` and no `commission`
+                // column. The reward it does carry is `reward_amount` —
+                // written when the referral's membership payment cleared —
+                // so a referral that has earned is one with a reward on it.
+                // Reading the two columns that are not there returned an
+                // empty result and a NaN earnings figure, which is a number
+                // nobody can act on.
                 data = {
                     totalReferrals: referralData.length,
-                    successfulReferrals: referralData.filter(r => r.status === 'completed').length,
-                    pendingReferrals: referralData.filter(r => r.status === 'pending').length,
-                    referralEarnings: referralData.reduce((sum, item) => sum + parseFloat(item.commission || 0), 0),
+                    successfulReferrals: referralData.filter(r => Number(r.reward_amount || 0) > 0).length,
+                    pendingReferrals: referralData.filter(r => Number(r.reward_amount || 0) <= 0).length,
+                    referralEarnings: referralData.reduce((sum, item) => sum + Number(item.reward_amount || 0), 0),
                     topReferrers: referralData.reduce((acc, item) => {
                         acc[item.referrer_id] = (acc[item.referrer_id] || 0) + 1;
                         return acc;

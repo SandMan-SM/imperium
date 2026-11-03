@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { COACH, REFERRAL, REFERRAL_STEPS, OFFERS } from "@/lib/tyrone";
-import { ShareLinks } from "./ShareLinks";
+import { ReferralLinks } from "./ReferralLinks";
 
 const SITE_URL = "https://secretimperium.com";
 const PAGE_URL = `${SITE_URL}/tyronengouamo/referral/`;
@@ -59,6 +59,9 @@ const SHARE_LINKS = [
         label: "Imperium Elite membership",
         detail: `${REFERRAL.membershipPrice} a month — the referral pays ${REFERRAL.commission} commission.`,
         url: REFERRAL.membershipUrl,
+        // The membership is the offer that carries a commission, so this is
+        // the link that is replaced with the member's own referral link.
+        referral: true,
     },
 ];
 
@@ -77,8 +80,9 @@ export default function ReferralPage() {
                         </p>
                         <p className="coaching-hero-copy">
                             There is a share card below and links you can copy straight into a
-                            message. If a referral joins {REFERRAL.membershipName}, the member
-                            portal pays you {REFERRAL.commission} commission on the membership.
+                            message. Your referral link records the referral: when somebody takes
+                            {REFERRAL.membershipName} through it, you earn {REFERRAL.commission} of
+                            that membership.
                         </p>
                         <div className="coaching-hero-actions">
                             <Link className="editorial-button" href="/tyronengouamo/">
@@ -107,8 +111,8 @@ export default function ReferralPage() {
                         Share the card, or copy a link and say a sentence about why.
                     </h2>
                     <p>
-                        The link is what records the referral. The sentence is what makes somebody
-                        actually open it.
+                        Your referral link is what records the referral. The sentence is what makes
+                        somebody actually open it.
                     </p>
                     <div className="coaching-share">
                         <figure className="coaching-share-card">
@@ -120,7 +124,7 @@ export default function ReferralPage() {
                                 className="object-cover"
                             />
                         </figure>
-                        <ShareLinks links={SHARE_LINKS} />
+                        <ReferralLinks staticLinks={SHARE_LINKS} />
                     </div>
                 </div>
             </section>
@@ -160,9 +164,10 @@ export default function ReferralPage() {
                                 {REFERRAL.commission} commission on a membership.
                             </h3>
                             <p className="mt-4 text-[14.5px] leading-[1.85] text-[#6c6f63]">
-                                The member portal states a {REFERRAL.commission} commission on every
-                                referral. Coaching sessions and meal plans are bought directly and
-                                carry no commission — so the page does not promise one.
+                                {REFERRAL.commissionNote} Your member portal shows every referral you
+                                have sent and everything you have earned. Coaching sessions and meal
+                                plans are bought directly and carry no commission — so the page does
+                                not promise one.
                             </p>
                         </div>
                     </div>

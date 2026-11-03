@@ -4,7 +4,8 @@ import { useState } from "react";
 import { redirect } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import AdminDashboard from "../admin/page";
-import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, Gift, LogOut } from "lucide-react";
+import ReferralPanel from "./ReferralPanel";
+import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, LogOut } from "lucide-react";
 import Link from "next/link";
 import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
@@ -106,7 +107,80 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                                 <p className="text-white/40 text-sm">Schedule your consultation</p>
                             </div>
                         </button>
+
+                        {/* A member is the one who refers. The referral link
+                            was only ever offered to free accounts, so a
+                            paying member — the only person who can earn a
+                            commission — could not get one. */}
+                        <button
+                            onClick={() => setActiveTab("affiliate")}
+                            className="flex items-center gap-4 p-4 sm:p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl hover:border-imperium-gold/40 transition-all group text-left w-full"
+                        >
+                            <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-imperium-gold/10 flex items-center justify-center flex-shrink-0">
+                                <LinkIcon className="text-imperium-gold w-5 h-6" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Referral Link</h3>
+                                <p className="text-white/40 text-sm">Earn 30% commission on a referral</p>
+                            </div>
+                        </button>
                     </div>
+
+                    {/* The premium buttons set a tab, so the tab has to
+                        answer. Four of them used to set a tab that rendered
+                        nothing at all — a button that does nothing is worse
+                        than no button. */}
+                    {activeTab === "principles" && (
+                        <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
+                            <h3 className="text-white font-medium mb-2">28 Principles</h3>
+                            <p className="text-white/40 text-sm mb-4">
+                                The full sequence — five phases, twenty-eight units — is open to you.
+                            </p>
+                            <Link
+                                href="/principles/"
+                                className="inline-block bg-imperium-gold text-imperium-bg px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-white transition-colors"
+                            >
+                                Continue the Doctrine
+                            </Link>
+                        </div>
+                    )}
+
+                    {activeTab === "newsletter" && (
+                        <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
+                            <h3 className="text-white font-medium mb-2">Premium Newsletter</h3>
+                            <p className="text-white/40 text-sm mb-4">
+                                The Intelligence Brief, every week. Every published issue is on the archive.
+                            </p>
+                            <Link
+                                href="/newsletter/"
+                                className="inline-block bg-imperium-gold text-imperium-bg px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-white transition-colors"
+                            >
+                                Read the brief
+                            </Link>
+                        </div>
+                    )}
+
+                    {activeTab === "community" && (
+                        <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
+                            <h3 className="text-white font-medium mb-2">Private Community</h3>
+                            <p className="text-white/40 text-sm">
+                                The private room opens to members as the cohort fills. There is no door to
+                                walk through yet — ask the Imperium team and you will be added.
+                            </p>
+                        </div>
+                    )}
+
+                    {activeTab === "call" && (
+                        <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
+                            <h3 className="text-white font-medium mb-2">1 on 1 Call</h3>
+                            <p className="text-white/40 text-sm">
+                                The accountability call is booked directly with the Imperium team. Ask in
+                                your reply to the weekly brief and it will be arranged.
+                            </p>
+                        </div>
+                    )}
+
+                    {activeTab === "affiliate" && <ReferralPanel />}
 
                     <div className="mt-8 pt-6 border-t border-white/[0.06]">
                         <button
@@ -181,31 +255,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                     </a>
                 </div>
 
-                {activeTab === "affiliate" && (
-                    <div className="mt-6 p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-imperium-gold/20 rounded-xl">
-                        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-                            <Gift className="w-5 h-5 text-imperium-gold" />
-                            Affiliate Program
-                        </h3>
-                        <p className="text-white/40 text-sm mb-4">
-                            Share Imperium with your network and earn 30% commission on every referral.
-                        </p>
-                        <div className="space-y-3">
-                            <div className="p-4 bg-black/30 rounded-lg">
-                                <p className="text-white/30 text-xs uppercase tracking-wider mb-1">Your Referral Link</p>
-                                <p className="text-white text-sm font-mono">imperium.com/ref/{profile?.id?.slice(0, 8) || 'user123'}</p>
-                            </div>
-                            <button
-                                className="w-full py-3 bg-imperium-gold text-imperium-bg rounded-lg text-sm font-medium hover:bg-white transition-colors"
-                                onClick={() => {
-                                    navigator.clipboard.writeText(`imperium.com/ref/${profile?.id?.slice(0, 8) || 'user123'}`);
-                                }}
-                            >
-                                Copy Referral Link
-                            </button>
-                        </div>
-                    </div>
-                )}
+                {activeTab === "affiliate" && <ReferralPanel />}
 
                 <div className="mt-8 pt-6 border-t border-white/[0.06]">
                     <button

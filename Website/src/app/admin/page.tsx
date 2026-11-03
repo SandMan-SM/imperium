@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import { Users, Package, Mail, Search, PlusCircle, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, X, ChevronLeft, ChevronRight, Settings, Send, RefreshCw, Check, AlertCircle, Eye, MousePointer } from "lucide-react";
+import { Users, Package, Mail, Search, PlusCircle, Loader2, Crown, TrendingUp, BookOpen, LogOut, ShoppingBag, X, ChevronLeft, ChevronRight, Settings, Send, RefreshCw, Check, AlertCircle, Eye, MousePointer, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ReferralsView from "./ReferralsView";
 
 interface Metrics {
     total_users: number;
@@ -17,7 +18,7 @@ interface Metrics {
     avg_purchases_per_user: number;
 }
 
-type AdminTab = "crm" | "inventory" | "comms" | "principles" | "settings" | "analytics";
+type AdminTab = "crm" | "inventory" | "comms" | "principles" | "settings" | "analytics" | "referrals";
 type UserView = "free" | "premium" | "admin";
 
 /** Row shape used by the CRM profile list. */
@@ -317,6 +318,7 @@ export default function AdminDashboard() {
         { id: "crm" as AdminTab, label: "Client CRM", icon: Users },
         { id: "inventory" as AdminTab, label: "Inventory", icon: Package },
         { id: "comms" as AdminTab, label: "Newsletter Studio", icon: Mail },
+        { id: "referrals" as AdminTab, label: "Referrals", icon: LinkIcon },
     ];
 
     return (
@@ -392,6 +394,7 @@ export default function AdminDashboard() {
                     {activeTab === "crm" && <CRMView />}
                     {activeTab === "inventory" && <ProductManager />}
                     {activeTab === "comms" && <NewsletterStudio />}
+                    {activeTab === "referrals" && <ReferralsView />}
                     {activeTab === "settings" && <SettingsView />}
                 </div>
             </main>

@@ -153,17 +153,21 @@ export const FAQ = [
 /**
  * The referral offer.
  *
- * The referral mechanic that actually exists: a member's referral code lives
- * in their profile, and anyone who signs up with it is linked to them. The
- * member portal states a 30% commission on the membership — this page repeats
- * that figure rather than inventing a better one. The coaching offers are
- * bought directly and carry no commission, so the page does not imply one.
+ * The referral mechanic that now exists: a member's referral code lives in
+ * their profile, the link they share carries that code, and the referral is
+ * recorded against them when the person they referred takes the membership.
+ * The commission is a share of that membership, written onto the referral
+ * when the payment clears, and paid out by the Imperium team.
+ *
+ * The coaching offers are bought directly and carry no commission, so the
+ * page does not imply one.
  */
 export const REFERRAL = {
     membershipName: "Imperium Elite",
     membershipPrice: "$20 / month",
     membershipUrl: "https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07",
     commission: "30%",
+    commissionNote: "30% of the membership — $6.00 on a $20.00 membership — paid once that membership's payment clears.",
     shareLine: "Strength, nutrition, and the principles behind both.",
     card: "/people/tyrone-referral-card.webp",
     cardAlt:
@@ -172,16 +176,16 @@ export const REFERRAL = {
 
 export const REFERRAL_STEPS = [
     {
-        title: "Share the card or a link.",
-        body: "The card, the coaching page, or a direct link to one offer. Send it the way you would send anything else worth reading.",
+        title: "Share your link.",
+        body: "Your referral link is in your member portal, with the card and the coaching page beside it. Send it the way you would send anything else worth reading.",
     },
     {
-        title: "They join or book.",
-        body: "A membership, a session, or a meal plan. The link you send is the one they land on, so the referral is recorded against you.",
+        title: "They take the membership.",
+        body: "The referral is recorded when somebody opens your link and takes Imperium Elite. The coaching sessions and meal plans are bought directly, and carry no commission.",
     },
     {
         title: "The referral pays.",
-        body: `Members of the affiliate programme earn ${REFERRAL.commission} commission on the membership, as the member portal states. Coaching sessions are bought directly and carry no commission.`,
+        body: `${REFERRAL.commissionNote} Your portal shows every referral you have sent and everything you have earned.`,
     },
 ] as const;
 

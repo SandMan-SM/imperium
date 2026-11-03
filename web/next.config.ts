@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Next writes its own AGENTS.md and CLAUDE.md into the app directory on
+  // every dev run. The repo holds two app trees and a CI check that they are
+  // byte-identical, so a generated file in one of them is drift waiting to
+  // happen. The repo already carries its own agent instructions.
+  agentRules: false,
   // The repo holds two app trees (Website/ is the production root, web/ is a
   // mirror), so Next finds two lockfiles and infers the whole repository as
   // the workspace root. Pin it to the app's own directory: the build then

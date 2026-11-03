@@ -37,6 +37,30 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
+ * Records the referral the visitor arrived with.
+ *
+ * The referral code was put in the browser when the member's link was
+ * opened, and the server holds it in a cookie. The claim is a single
+ * request, and it is given a deadline so a slow network cannot hold the
+ * sign-in open.
+ */
+async function claimPendingReferral(): Promise<void> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) return;
+
+    await fetch("/api/referrals/claim", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch (error) {
+    console.error("Error claiming referral:", error);
+  }
+}
+
+/**
  * Reads the signed-in person's profile from the server.
  *
  * The browser can no longer read `profiles` directly. The fleet's RLS
@@ -266,6 +290,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       });
+
+      // A visitor who arrived through somebody's referral link carries the
+      // code in their browser. It is claimed the moment there is an account
+      // to attach it to, so the referral is recorded against the member who
+      // sent it and the commission can be earned.
+      if (!error) {
+        await claimPendingReferral();
+      }
+
       return { error };
     } catch (error) {
       return { error: error as Error };

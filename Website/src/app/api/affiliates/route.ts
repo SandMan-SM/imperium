@@ -4,21 +4,39 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from "next/server";
 
-import { createClient } from "@supabase/supabase-js";
+import { getAdminClient } from "@/lib/server/imperium-capture";
+import { consumeRateWindow, requestIp } from "@/lib/server/rate-limit";
 import { isAdminRequest } from "@/lib/server/admin-auth";
 
 export async function POST(request: Request) {
     try {
+        // This form writes a row carrying an address, so the caller's IP is
+        // counted before anything is written. The limiter is the shared one,
+        // not a second copy of it.
+        const ip = requestIp(request);
+        const limited = consumeRateWindow(`affiliate:${ip}`);
+        if (!limited.ok) {
+            return NextResponse.json(
+                { error: "Too many attempts. Please try again shortly." },
+                { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } },
+            );
+        }
+
         const { email, firstName, lastName, affiliateCode } = await request.json();
 
         if (!email || !affiliateCode) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        // The read used to be made with the anon key. The fleet's own RLS
+        // policies do not open `affiliates` to anonymous readers, so every
+        // code — including a real one — was answered "Invalid affiliate
+        // code" and the route could never work. It is read here with the
+        // service-role key, where RLS does not apply.
+        const supabase = getAdminClient();
+        if (!supabase) {
+            return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+        }
 
         // Check if affiliate code exists and is valid
         const { data: affiliate, error: affiliateError } = await supabase
@@ -68,10 +86,10 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Missing affiliate code" }, { status: 400 });
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        const supabase = getAdminClient();
+        if (!supabase) {
+            return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+        }
 
         const { data: affiliate, error } = await supabase
             .from('affiliates')
@@ -113,10 +131,10 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Unsupported status" }, { status: 400 });
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        );
+        const supabase = getAdminClient();
+        if (!supabase) {
+            return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+        }
 
         const { data: application, error } = await supabase
             .from('affiliate_applications')
