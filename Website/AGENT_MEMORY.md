@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 1, 2026 11:58 PM
+> Synthetic Intelligence Memory | Updated: November 02, 2026 10:51 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,51 +21,62 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-Two halves of work: the weekly letter became observable, and the coaching
-offers became sellable. Both are shipped and live.
-- **The Intelligence Brief HAS gone out — the earlier brief was wrong.** The
-  tenant event log carries a `newsletter_sent` row from
-  **2026-10-22T11:00:43Z**: the published issue "The River and the Stone"
-  reached **11 recipients, 10 sent and 1 failed**. The letter is not broken
-  and has not been broken; it has simply been **unobservable**.
-- **A dispatch that failed left no record at all.** The send row was only
-  written once the mail was on its way, so every failure before that point
-  was invisible. Every dispatch attempt now writes its own row —
-  `newsletter_dispatch`, with the outcome (`sent`, `partial`, `failed`,
-  `skipped`), the source, the counts and the reason.
-- **A broken send log silently starved the letter.** `hasBeenSent` answered
-  `true` when the read failed, so the cron skipped the issue and reported
-  *"No newsletters to send"* with a **200**. It now stops **loudly**: an
-  unreadable log is a 500 and a recorded failure. A total send failure no
-  longer marks the issue as sent, so the letter is no longer dropped for
-  good. `scripts/check_newsletter_chain.mjs` answers the whole question in
-  one command, and `/admin` has a **Dispatch History** panel.
-- **`CRON_SECRET` was rotated** in Vercel (Production and Preview, same
-  value). The route refuses an unauthenticated caller with **401** and
-  answers **200** only with the bearer. The temp copy was deleted; Vercel
-  is the only place the value lives.
-- **Tyrone's coaching pages exist and are live.** `/tyronengouamo`,
-  `/tyronengouamo/referral/` and `/tyronengouamo/booked/` are deployed, in
-  the site's editorial language, with a skeleton, JSON-LD, a route OG
-  image, sitemap entries and a footer link. The referral page carries a
-  share card (`public/people/tyrone-referral-card.webp`) and copyable
-  links. `/booked` exists because Stripe redirects there after payment —
-  a redirect target that 404s is a failed sale.
-- **The coaching offers had the wrong checkout.** All three catalogue rows
-  pointed at the **$20/month membership link**, so a buyer clicking
-  "Personal Training — $150" would have been charged $20 a month for a
-  subscription they did not ask for. Each offer now has its own Stripe
-  product, price and payment link ($150 one-time, $297 one-time, $99 a
-  month), created by `scripts/stripe_tyrone_offers.mjs`, which writes the
-  ids back onto the catalogue rows and **retires the superseded links** so
-  a stale checkout cannot be opened.
-- **The offers, the copy and the links live in one place.**
-  `src/lib/tyrone.ts` is the source of truth, so the price on the page and
-  the price charged cannot drift apart.
-- **The checks are green.** The visual audit is clean across 38 routes at
-  375px, the schema reference check passes (19 tables, 52 column
-  references), the build and the typecheck are clean, and the newsletter
-  chain is healthy.
+One piece of work, and it is the priority this brief had been carrying for
+weeks: **the 30% referral commission is now real.** The promise the site
+made on two pages is now backed by a mechanism, a ledger and a payout.
+- **The portal's referral link was fake.** It was built from the first eight
+  characters of the profile's uuid, pointing at `imperium.com/ref/…` — a
+  domain the site does not serve, and a route that did not exist. Copying
+  it produced something that looked like a referral link and could never
+  earn anybody a commission. The portal now shows the member's **own code**
+  and the link built from it, and both pages agree on what it says.
+- **The 30% was a sentence with nothing behind it.** No member had a code,
+  no referral was ever recorded, and no commission was ever calculated.
+  `src/lib/server/referrals.ts` is now the single owner of the mechanic:
+  the code, the link, the claim, the commission and the ledger. It lives in
+  one place so the link a member shares, the referral that is recorded, the
+  commission that is earned and the figure the member sees cannot drift
+  apart.
+- **The chain is proven end to end against the live database.** Two
+  throwaway accounts walked the whole journey — code issued, `/ref/<code>`
+  sets the cookie and redirects, the referred member claims it, the
+  referrer sees the referral, the commission is earned at **$6.00** (30% of
+  the $20.00 membership), the claim is idempotent, an unauthenticated claim
+  is refused with 401 and a self-referral is refused. **10 of 10 checks
+  pass.** The script is `node /tmp/imperium-referral-e2e.mjs` — it still
+  needs to move into `scripts/` so it can outlive the session.
+- **The live table supplied its own defaults, and that broke the payout.**
+  The database fills `reward_amount` with **0** on insert, so the test for
+  "this commission is already earned" (`reward_amount !== null`) read the
+  default as a payout and returned early — the commission was never
+  written. The test is now "is the amount above zero", which is what the
+  column means. The unit was also changed from cents to **dollars**, to
+  match the `reward_currency` column beside it.
+- **A referral is recorded when the referred member takes the membership,
+  not when the link is opened.** The commission is written by the Stripe
+  webhook on `checkout.session.completed`, and by the claim route when the
+  membership was paid before the account existed (through
+  `resolveMembership`, because Stripe is the ledger and not the flag). It is
+  written once: a replayed webhook or a second sign-in cannot double it.
+- **The operator can pay the commission and mark that they did.**
+  `/admin` carries a **Referrals** tab — the ledger, the names on both
+  sides, the total waiting to be paid, and a **Mark paid** button that
+  records the payout the team made. The member's portal stops showing the
+  money as waiting once it is recorded.
+- **Three silent defects around the programme are gone.** The analytics
+  route was reading two columns that do not exist (`status`, `commission`)
+  and reporting `NaN` earnings; the affiliate route was reading the fleet
+  tables with the **anon** key, so every lookup answered "Invalid affiliate
+  code"; and the duplicate referral route was generating codes a second
+  way. All three now read the same module, with the service-role key.
+- **Two dead ends in the portal are answered.** The four premium buttons
+  (28 Principles, Newsletter, Community, 1-on-1 Call) either point at a
+  route that exists or say plainly that the thing is not open yet, instead
+  of going nowhere.
+- **The checks are green.** The build is clean, the schema reference check
+  passes (19 tables, 55 column references), the visual audit is clean
+  across all 38 sitemap routes at 375px plus the 12 routes the sitemap does
+  not list, and the newsletter chain is healthy.
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -167,17 +178,82 @@ offers became sellable. Both are shipped and live.
     will name a coaching purchase the moment one exists. What cannot be
     faked is the card: the operator's own checkout, once, proves the whole
     path the same way it proves the membership.
-12. **The referral page states a commission the site has never paid.**
-    The copy says **30%**, because the member portal at `/portal` says 30%
-    — but the referral chain records a link and nothing else: there is no
-    payout code behind it. Either implement the payout or change the copy
-    on **both** pages together. Do not leave the two pages disagreeing.
+12. **~~The referral page states a commission the site has never paid.~~
+    DONE — 2026-11-02.** The commission is implemented rather than watered
+    down, so the two pages now agree and the 30% is real. A member has a
+    code, a link that resolves, a referral that is recorded, a commission
+    that is earned at 30% of the membership, a ledger the operator can pay
+    from, and a payout marker that stops the portal asking for money that
+    has already been sent. **The chain is proved against the live
+    database, 10 checks out of 10.** What is left is the operator's: pay
+    the first real referral when one exists, and decide the payout window
+    (the copy says "once the membership payment has cleared", which is a
+    promise about timing that no code enforces).
 13. **Tyrone has no photograph, and the pages now say so.** The hero card
     is a branded monogram, and its alt text says so in as many words. If
     a real portrait arrives, replace the asset and the alt text together —
     a monogram captioned as a photograph would be a lie on the page.
+14. **The referral proof lives in `/tmp` and must move into the repo.**
+    `/tmp/imperium-referral-e2e.mjs` is the script that proves the whole
+    chain against the live database, and `/tmp` is not a durable place for
+    it. Move it to `scripts/check_referral_chain.mjs`, give it the same
+    shape as the other three chain scripts — exit 0 healthy, exit 1 broken
+    and named, exit 3 could not run — and add it to the pre-push list in
+    the Rules. It also needs to clean up after itself the way the others
+    do, and it currently leaves probe accounts behind if it dies between
+    creating them and reaching its `finally` block.
+15. **The referral link is a personal URL, and nothing tells the search
+    engines it is one.** `/ref/<code>` is a redirect route and is not in
+    the sitemap, which is right. But a member's link is shareable, so it
+    will be crawled and indexed from wherever it is pasted. Give the route
+    a `robots` noindex and make sure the redirect carries no indexable
+    body — a redirect answers 302 and nothing more, so the only thing to
+    check is that it does not fall through to a rendered page.
+16. **The first real referral has not happened, so the ledger has never
+    been used by a person.** Every row in `referrals` is one this
+    session's own proof created and deleted. The operator's next action
+    after shipping is to open their own link, send it to somebody, and
+    watch the ledger fill — the mechanic is proven, but it has never run
+    outside a test.
 
 ## 🔬 Why
+- **A number on two pages is a promise, and a promise with no mechanism
+  behind it is a lie told politely.** The referral programme promised 30%
+  and the referral page repeated it, and neither page was wrong about what
+  the other said — which is exactly why it survived. There was no code
+  behind the promise: no member had a code, no referral was recorded, and
+  no commission was ever calculated. **The fix was to make the promise
+  true, not to lower it.** Lowering it would have kept the site in the
+  business of promising what it cannot keep.
+- **A link that looks real and earns nothing is worse than no link.** The
+  portal built a referral link from the profile's uuid, pointing at a
+  domain the site does not serve and a route that did not exist. It was
+  copyable, it looked like a referral link, and it could never earn
+  anybody anything. A member who sent it to a friend and got no credit
+  would have concluded the programme was a lie.
+- **A default value is not a fact about the row.** The database fills
+  `reward_amount` with 0 on insert. The code asked "is this amount
+  present?" and the answer was always yes, so the code believed every
+  commission had already been earned and returned without writing one.
+  The row said *nothing has been earned yet* and the code read it as
+  *everything has been paid*. **A zero is not the same as an unknown, and
+  a default is not the same as a decision.**
+- **A commission is earned by a membership, not by a click.** A referral
+  that is counted at the moment the link is opened pays for clicks; a
+  referral that is counted when the membership clears pays for members.
+  The commission is written by the payment path, so the money the site
+  promises comes out of the money that arrived.
+- **The database's units are the row's units.** `reward_amount` sits
+  beside `reward_currency`, and the column stores dollars. Storing cents
+  in a column named next to `USD` produces a row that reads correctly to
+  nobody — a hundred-fold error that a careful reader of the schema would
+  catch and a careless one would ship.
+- **A payout nobody can record is a payout nobody can make.** The money
+  leaves the business by hand — a bank transfer — so the only durable
+  evidence that it happened is a mark in the database. Without that mark
+  the member's portal keeps showing the money as waiting, and the operator
+  has no list of what is owed to whom. The ledger and the **Mark paid**
+  button are how the two agree.
 - **A record that is only written on success is not a record.** The brief's
   send row was written once the mail was on its way, so every earlier
   failure was invisible. The operator's way of checking the letter — "look
@@ -292,11 +368,17 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 57
-- Lines written: 6210
+- Sessions: 58
+- Lines written: 7610
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
+|---|---|---|---|
+| 2026-11-02 | revenue | The 30% referral commission is now real. `src/lib/server/referrals.ts` is the single owner of the mechanic — the code, the link, the claim, the commission and the ledger — so the link a member shares, the referral that is recorded, the commission that is earned and the figure the member sees cannot drift apart. A member gets a code, `/ref/<code>` sets the cookie and redirects, the claim is idempotent, the commission is written by the Stripe webhook (or by the claim route when the membership was paid before the account existed), and the operator pays it from a new **Referrals** tab in `/admin`. Proved against the live database: 10 of 10 checks pass, commission earned at $6.00 on a $20.00 membership | ~1400 |
+| 2026-11-02 | backend | The database fills `reward_amount` with 0 on insert, so the test for "this commission is already earned" read the default as a payout and returned early — the commission was never written. The test is now "is the amount above zero", and the unit was changed from cents to dollars to match the `reward_currency` column beside it | ~60 |
+| 2026-11-02 | backend | The portal's referral link was built from the first eight characters of the profile's uuid, pointing at `imperium.com/ref/…` — a domain the site does not serve and a route that did not exist. The portal now shows the member's own code and the link built from it | ~120 |
+| 2026-11-02 | backend | Three silent defects around the referral programme are gone. The analytics route was reading two columns that do not exist (`status`, `commission`) and reporting `NaN` earnings; the affiliate route was reading the fleet tables with the **anon** key, so every lookup answered "Invalid affiliate code"; and the duplicate referral route generated codes a second way. All three now read the same module, with the service-role key | ~90 |
+| 2026-11-02 | visual | The four premium buttons in the portal (28 Principles, Newsletter, Community, 1-on-1 Call) either went nowhere or were dead. Each now points at a route that exists or says plainly that the thing is not open yet | ~100 |
 |---|---|---|---|
 | 2026-11-01 | revenue | Tyrone's coaching pages exist and are live: `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/` — the last because Stripe redirects the buyer there after payment, and a redirect target that 404s is a failed sale. The landing page carries the three offers at their real prices, how it works, who it is for and the questions people ask; the referral page carries a share card and copyable links. All of it lives in `src/lib/tyrone.ts` so the price on the page and the price charged cannot drift | ~640 |
 | 2026-11-01 | revenue | All three coaching offers pointed at the **$20/month membership link**, so a buyer clicking "Personal Training — $150" would have been charged $20 a month for a subscription they did not ask for. `scripts/stripe_tyrone_offers.mjs` now creates a product, a price and a payment link per offering ($150 one-time, $297 one-time, $99 a month), writes the ids back onto the catalogue rows, and retires the superseded links so a stale checkout cannot be opened | ~270 |
@@ -383,6 +465,51 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
+- **a-promise-with-no-mechanism-behind-it-is-a-lie-told-politely**
+  (fleet, applies to every commission, referral, bonus or reward) — two
+  pages agreed on 30% and neither page was wrong about the other, which is
+  why it survived every review. There was no code behind it: no code
+  issued, no referral recorded, no commission calculated. **The fix is to
+  make the promise true, not to lower it** — lowering it keeps the site in
+  the business of promising what it cannot keep, and a real mechanic
+  costs less than the credibility it spends. Ask of any reward on the
+  site: what row records it, what writes that row, and what does the
+  member see when it happens? If there is no answer to all three, the
+  sentence is marketing copy.
+- **a-link-that-looks-real-and-earns-nothing-is-worse-than-no-link**
+  (fleet) — the portal's referral link was copyable, looked like a
+  referral link, pointed at a domain the site does not serve and a route
+  that did not exist, and could never earn anybody anything. **A member who
+  sends it and gets no credit concludes the programme is a lie.** Every
+  link a member is given to share must be exercised: follow it, land
+  somewhere real, and follow it as the person who was not invited to the
+  site.
+- **a-default-value-is-not-a-fact-about-the-row** (fleet, applies to every
+  table with database defaults) — `reward_amount` is filled with **0** on
+  insert, so asking "has this been set?" is always true and the code
+  believed every commission was already paid. **A zero is not the same as
+  an unknown, and a default is not the same as a decision.** Test for the
+  thing you mean — an amount above zero, a non-empty string, a timestamp —
+  and never for "is the column not null" when the column has a default.
+  Probe the live table before writing the test: `scripts/check-schema-refs.mjs`
+  checks that a column exists, not what the database puts in it.
+- **a-column-sits-next-to-the-column-that-names-its-unit** (fleet) —
+  `reward_amount` sits beside `reward_currency`, so the row stores
+  dollars. Storing cents in a column whose neighbour says `USD` produces
+  a hundred-fold error that reads correctly to nobody. **Find the unit
+  before you write the arithmetic, and store the unit the row names.**
+- **the-money-path-earns-the-reward-not-the-click** (fleet, applies to
+  every commission) — count the referral when the referred member's
+  membership clears, not when the link is opened. The reward then comes
+  out of the money that arrived, and a member who clicks and never buys
+  costs nothing. Where the payment can precede the account, resolve the
+  membership from the payment itself.
+- **a-payout-nobody-can-record-is-a-payout-nobody-can-make** (fleet) —
+  money that leaves the business by hand needs a mark in the database, or
+  the member's screen keeps asking for money that has already been sent
+  and the operator has no list of what is owed to whom. **The ledger and
+  the "mark paid" button are how the operator's books and the member's
+  screen agree.**
 - **the-price-on-the-page-is-the-price-charged** (fleet, applies to every
   catalogue row that holds a payment link) — three coaching offers all
   pointed at the membership link, so the page said $150 and the checkout
@@ -676,6 +803,20 @@ with the `products.slug` migration decision in the same entry. **Recorded
   live one — verify against Vercel.
 - Never run Supabase migrations
 - Never edit a shared fleet table's schema or RLS policies
+- **The referral commission rate lives in `src/lib/server/referrals.ts` and
+  nowhere else.** `REFERRAL_COMMISSION_RATE` and `MEMBERSHIP_PRICE_CENTS`
+  are the numbers; the copy in `src/lib/tyrone.ts`, the copy in the portal
+  panel and the copy on the referral page all repeat the same 30% in
+  words. **Changing the rate means changing the module and every sentence
+  that names it, in the same change** — that is the exact failure this
+  mechanic was built to end, and the two pages disagreeing is the defect
+  the brief called out
+- **The referral mechanic is one module, not four routes.** `claimReferral`,
+  `ensureReferralCode`, `awardReferralCommission` and `referralSummary`
+  live in `src/lib/server/referrals.ts`. A second copy of the code
+  generator or the claim logic is a second answer to the same question,
+  and the two will drift — the way the old duplicate `/api/referrals`
+  route had already drifted away from the portal's link
 - Read shared fleet tables server side with the service-role key, never from a
   client component — the fleet's own policies make browser reads fail
   silently (see `rls-recursion-breaks-the-client`)
