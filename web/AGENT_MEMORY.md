@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 02, 2026 10:51 PM
+> Synthetic Intelligence Memory | Updated: November 03, 2026 11:44 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -368,7 +368,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 58
+- Sessions: 59
 - Lines written: 7610
 
 ## 🔄 Edit History (DO NOT REPEAT)
@@ -379,7 +379,6 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-11-02 | backend | The portal's referral link was built from the first eight characters of the profile's uuid, pointing at `imperium.com/ref/…` — a domain the site does not serve and a route that did not exist. The portal now shows the member's own code and the link built from it | ~120 |
 | 2026-11-02 | backend | Three silent defects around the referral programme are gone. The analytics route was reading two columns that do not exist (`status`, `commission`) and reporting `NaN` earnings; the affiliate route was reading the fleet tables with the **anon** key, so every lookup answered "Invalid affiliate code"; and the duplicate referral route generated codes a second way. All three now read the same module, with the service-role key | ~90 |
 | 2026-11-02 | visual | The four premium buttons in the portal (28 Principles, Newsletter, Community, 1-on-1 Call) either went nowhere or were dead. Each now points at a route that exists or says plainly that the thing is not open yet | ~100 |
-|---|---|---|---|
 | 2026-11-01 | revenue | Tyrone's coaching pages exist and are live: `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/` — the last because Stripe redirects the buyer there after payment, and a redirect target that 404s is a failed sale. The landing page carries the three offers at their real prices, how it works, who it is for and the questions people ask; the referral page carries a share card and copyable links. All of it lives in `src/lib/tyrone.ts` so the price on the page and the price charged cannot drift | ~640 |
 | 2026-11-01 | revenue | All three coaching offers pointed at the **$20/month membership link**, so a buyer clicking "Personal Training — $150" would have been charged $20 a month for a subscription they did not ask for. `scripts/stripe_tyrone_offers.mjs` now creates a product, a price and a payment link per offering ($150 one-time, $297 one-time, $99 a month), writes the ids back onto the catalogue rows, and retires the superseded links so a stale checkout cannot be opened | ~270 |
 | 2026-11-01 | revenue | The weekly letter was unobservable, not broken. The brief's premise was wrong — the tenant event log carries a `newsletter_sent` row from 2026-10-22 (11 recipients, 10 sent, 1 failed) and the cron has answered 200 every day since, correctly, because only one issue is published and it has gone. What was missing was the evidence: a dispatch that failed before the mail left no record at all, a failed send-log read made the cron skip the issue and report success, and a total send failure still wrote the "sent" marker that stops the cron retrying — so the letter could be silently dropped for good. Every attempt now writes a `newsletter_dispatch` row (sent / partial / failed / skipped, with the source and the reason), the unreadable-log case is a 500 and a recorded failure, the marker is written only when a recipient took the mail, and the admin studio shows the history | ~260 |
