@@ -190,11 +190,16 @@ const issues = await sb(
     'newsletters?select=id,title,published,created_at&published=eq.true&order=created_at&limit=50',
 );
 const sentMarks = await sb(
-    'inbound_imperium_events?select=target_id,payload,created_at&event_type=eq.newsletter_sent&order=created_at&limit=200',
+    'inbound_imperium_events?select=target_id,payload,created_at&event_type=eq.newsletter_sent&order=created_at.desc&limit=200',
 );
 
+// The most recent send record for each issue. An issue that was sent twice
+// — once badly, once well — is judged on the send that actually carried
+// the letter, not on the first attempt that failed.
 const sentMap = new Map();
-for (const row of sentMarks.body || []) {
+for (const row of (sentMarks.body || []).slice().sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+)) {
     if (row.target_id && !sentMap.has(row.target_id)) sentMap.set(row.target_id, row);
 }
 
@@ -224,13 +229,19 @@ if (issues.status !== 200) {
 
 // --- 7. the dispatch history ------------------------------------------------
 const attempts = await sb(
-    'inbound_imperium_events?select=id,action,target_id,payload,created_at&event_type=eq.newsletter_dispatch&order=created_at&limit=20',
+    'inbound_imperium_events?select=id,action,target_id,payload,created_at&event_type=eq.newsletter_dispatch&order=created_at.desc&limit=20',
 );
 
 if (attempts.status !== 200) {
     record('Dispatch: the attempt log can be read', false, `HTTP ${attempts.status}`);
 } else {
-    const rows = attempts.body || [];
+    // Newest first. The order of the query is not relied on — the attempt
+    // the check judges is chosen by its own timestamp, because reading the
+    // *oldest* row and calling it "the last attempt" makes a healthy cron
+    // look dead as soon as the log fills up.
+    const rows = (attempts.body || []).slice().sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
     record(
         'Dispatch: the attempt log can be read',
         true,

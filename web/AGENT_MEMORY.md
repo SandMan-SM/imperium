@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 03, 2026 11:44 PM
+> Synthetic Intelligence Memory | Updated: November 03, 2026 11:53 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -21,62 +21,62 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-One piece of work, and it is the priority this brief had been carrying for
-weeks: **the 30% referral commission is now real.** The promise the site
-made on two pages is now backed by a mechanism, a ledger and a payout.
-- **The portal's referral link was fake.** It was built from the first eight
-  characters of the profile's uuid, pointing at `imperium.com/ref/…` — a
-  domain the site does not serve, and a route that did not exist. Copying
-  it produced something that looked like a referral link and could never
-  earn anybody a commission. The portal now shows the member's **own code**
-  and the link built from it, and both pages agree on what it says.
-- **The 30% was a sentence with nothing behind it.** No member had a code,
-  no referral was ever recorded, and no commission was ever calculated.
-  `src/lib/server/referrals.ts` is now the single owner of the mechanic:
-  the code, the link, the claim, the commission and the ledger. It lives in
-  one place so the link a member shares, the referral that is recorded, the
-  commission that is earned and the figure the member sees cannot drift
-  apart.
-- **The chain is proven end to end against the live database.** Two
-  throwaway accounts walked the whole journey — code issued, `/ref/<code>`
-  sets the cookie and redirects, the referred member claims it, the
-  referrer sees the referral, the commission is earned at **$6.00** (30% of
-  the $20.00 membership), the claim is idempotent, an unauthenticated claim
-  is refused with 401 and a self-referral is refused. **10 of 10 checks
-  pass.** The script is `node /tmp/imperium-referral-e2e.mjs` — it still
-  needs to move into `scripts/` so it can outlive the session.
-- **The live table supplied its own defaults, and that broke the payout.**
-  The database fills `reward_amount` with **0** on insert, so the test for
-  "this commission is already earned" (`reward_amount !== null`) read the
-  default as a payout and returned early — the commission was never
-  written. The test is now "is the amount above zero", which is what the
-  column means. The unit was also changed from cents to **dollars**, to
-  match the `reward_currency` column beside it.
-- **A referral is recorded when the referred member takes the membership,
-  not when the link is opened.** The commission is written by the Stripe
-  webhook on `checkout.session.completed`, and by the claim route when the
-  membership was paid before the account existed (through
-  `resolveMembership`, because Stripe is the ledger and not the flag). It is
-  written once: a replayed webhook or a second sign-in cannot double it.
-- **The operator can pay the commission and mark that they did.**
-  `/admin` carries a **Referrals** tab — the ledger, the names on both
-  sides, the total waiting to be paid, and a **Mark paid** button that
-  records the payout the team made. The member's portal stops showing the
-  money as waiting once it is recorded.
-- **Three silent defects around the programme are gone.** The analytics
-  route was reading two columns that do not exist (`status`, `commission`)
-  and reporting `NaN` earnings; the affiliate route was reading the fleet
-  tables with the **anon** key, so every lookup answered "Invalid affiliate
-  code"; and the duplicate referral route was generating codes a second
-  way. All three now read the same module, with the service-role key.
-- **Two dead ends in the portal are answered.** The four premium buttons
-  (28 Principles, Newsletter, Community, 1-on-1 Call) either point at a
-  route that exists or say plainly that the thing is not open yet, instead
-  of going nowhere.
-- **The checks are green.** The build is clean, the schema reference check
-  passes (19 tables, 55 column references), the visual audit is clean
-  across all 38 sitemap routes at 375px plus the 12 routes the sitemap does
-  not list, and the newsletter chain is healthy.
+Two things, and both of them are about **keeping** what the last session
+built rather than adding to it: the referral proof moved out of `/tmp` into
+the repo, and the referral link is now explicitly unindexable. A third
+script was added for the gap nobody was watching — the coaching offers.
+- **The referral proof lives in the repo now.** `scripts/check_referral_chain.mjs`
+  walks the whole journey — code issued, link built, link redirects and sets
+  the cookie, the referral claimed, the referrer sees it, the commission
+  earned at **$6.00**, the claim idempotent, an anonymous claim refused
+  with 401, a self referral refused — and proves the database is clean
+  afterwards. **15 of 15 checks pass.**
+- **It reads the commission rate from the module, not from a copy of it.**
+  The rate and the membership price are parsed out of
+  `src/lib/server/referrals.ts`, so the check cannot become a second
+  answer to what the rate is. Change the rate and the check follows.
+- **It cleans up after itself, and it cleans up after itself when it
+  dies.** The old script left probe accounts in the live database if it was
+  killed between creating them and reaching its `finally`. The new one
+  registers signal and exit handlers, removes the referral rows before the
+  profile rows before the auth user (the foreign keys run that way), and
+  **sweeps the accounts an earlier run left behind** before it starts. The
+  database is verified clean at the end of every run.
+- **The referral link asks not to be indexed.** `/ref/<code>` is a
+  personal URL — one member's link, meant to be followed by one person.
+  Every branch of the redirect now carries `X-Robots-Tag: noindex, nofollow`,
+  `/ref` is disallowed in `robots.txt`, and the redirect carries no body
+  for a crawler to index.
+- **The coaching offers finally have a check.** Last session fixed a real
+  defect — every coaching offer pointed at the $20 membership link, so a
+  buyer clicking "$150" was taken to a subscription checkout. **Nothing
+  kept it fixed.** `scripts/check_coaching_offers.mjs` now proves, for each
+  offer and for the membership, that the catalogue row is sellable, the
+  payment link is active, the link points at the recorded price and is
+  bound to that catalogue row, the amount charged is the catalogue price,
+  the price on the **live page** is the price charged, and the page the
+  buyer lands on after paying exists. **33 of 33 checks pass.**
+- **The newsletter check was reading the oldest attempt and calling it the
+  last one.** The dispatch log was queried with `order=created_at` —
+  ascending — so `rows[0]` was the first attempt ever. The check reported
+  *"the cron ran 48.5 hours ago"* on a cron that had run **20 hours**
+  earlier, and would have reported a dead cron every day from now on. The
+  order is explicit now, and the attempt is chosen by its own timestamp.
+- **A marker on a catalogue row now means what it says.** The three
+  coaching rows still carried `needs_real_stripe_link: true` from before
+  they had links of their own. It is `false` now, and the script that
+  writes those rows clears it on every write-back.
+
+## 📈 What Is Now Proven, and By What
+| Chain | Script | Exit |
+|---|---|---|
+| Payment → membership | `scripts/check_payment_chain.mjs` | 0 complete / 1 broken / 3 error |
+| Referral → commission → payout | `scripts/check_referral_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
+| Coaching offer → page price → Stripe | `scripts/check_coaching_offers.mjs` | 0 sound / 1 broken / 3 could not run |
+| Newsletter → cron → dispatch | `scripts/check_newsletter_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
+| Telegram bridge | `scripts/check_telegram_bridge.mjs` | 0 wired / 1 broken |
+| Schema references | `scripts/check-schema-refs.mjs` | 0 clean / 1 phantom table or column |
+| Visual, mobile, links, theme | `scripts/check_visual.mjs` | 0 clean / 1 finding |
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -193,28 +193,55 @@ made on two pages is now backed by a mechanism, a ledger and a payout.
     is a branded monogram, and its alt text says so in as many words. If
     a real portrait arrives, replace the asset and the alt text together —
     a monogram captioned as a photograph would be a lie on the page.
-14. **The referral proof lives in `/tmp` and must move into the repo.**
-    `/tmp/imperium-referral-e2e.mjs` is the script that proves the whole
-    chain against the live database, and `/tmp` is not a durable place for
-    it. Move it to `scripts/check_referral_chain.mjs`, give it the same
-    shape as the other three chain scripts — exit 0 healthy, exit 1 broken
-    and named, exit 3 could not run — and add it to the pre-push list in
-    the Rules. It also needs to clean up after itself the way the others
-    do, and it currently leaves probe accounts behind if it dies between
-    creating them and reaching its `finally` block.
-15. **The referral link is a personal URL, and nothing tells the search
-    engines it is one.** `/ref/<code>` is a redirect route and is not in
-    the sitemap, which is right. But a member's link is shareable, so it
-    will be crawled and indexed from wherever it is pasted. Give the route
-    a `robots` noindex and make sure the redirect carries no indexable
-    body — a redirect answers 302 and nothing more, so the only thing to
-    check is that it does not fall through to a rendered page.
+14. **~~The referral proof lives in `/tmp` and must move into the repo.~~
+    DONE — 2026-11-03.** `scripts/check_referral_chain.mjs` proves the whole
+    chain against the live database: **15 of 15 checks pass.** It reads the
+    commission rate and the membership price out of
+    `src/lib/server/referrals.ts` rather than restating them, so it cannot
+    become a second answer to what the rate is. It cleans up after itself
+    however it ends — signal handlers and an exit hook, referral rows
+    before profile rows before the auth user — and it sweeps the probe
+    accounts an earlier run left behind before it starts. The database is
+    verified clean at the end of every run.
+15. **~~The referral link is a personal URL, and nothing tells the search
+    engines it is one.~~ DONE — 2026-11-03.** Every branch of `/ref/<code>`
+    answers `X-Robots-Tag: noindex, nofollow`, the redirect carries an
+    empty body, and `/ref` is disallowed in `robots.txt`. The check proves
+    all three.
 16. **The first real referral has not happened, so the ledger has never
     been used by a person.** Every row in `referrals` is one this
     session's own proof created and deleted. The operator's next action
     after shipping is to open their own link, send it to somebody, and
     watch the ledger fill — the mechanic is proven, but it has never run
     outside a test.
+17. **The coaching offers were fixed once and nothing kept them fixed.**
+    DONE — 2026-11-03. `scripts/check_coaching_offers.mjs` proves the
+    catalogue row, the Stripe link, the price, the price **on the live
+    page** and the page the buyer lands on after paying all agree, for
+    each of the three coaching offers and for the membership. **33 of 33
+    checks pass.** The next thing it will catch is a price edited in one
+    place and not the other.
+18. **~~The coaching rows still carry a flag that says they need a real
+    Stripe link.~~ DONE — 2026-11-03.** `products.metadata.needs_real_stripe_link`
+    was still `true` on all three Tyrone rows, though it had been false
+    since 2026-11-01, when `scripts/stripe_tyrone_offers.mjs` gave each
+    offer its own product, price and payment link. A marker that does not
+    mean what it says is worse than no marker. The flag is now `false` on
+    all three rows, and **the script that writes those rows now clears it**,
+    so it cannot go stale again. The rest of each row's metadata is kept.
+19. **The merchandising rows point at retired Stripe links.** Six `products`
+    rows carry `stripe_url` values whose links were retired on 2026-11-01
+    (`active=false`), and their `in_stock` is still `true`. The storefront
+    is closed, so nothing is sold through them — but if `/shop` is ever
+    reopened, those rows will offer dead checkouts. `scripts/check_coaching_offers.mjs`
+    does not cover them on purpose: they are merchandise, not coaching, and
+    their sellability is the operator's reopening decision (priority 7).
+20. **~~A check that judges the newest thing has to say so in the query.~~
+    DONE — 2026-11-03.** The newsletter check read the *oldest* dispatch
+    attempt and called it the last one, so it reported a healthy cron as
+    dead. It is fixed, and the other chain scripts were read for the same
+    defect: `check_payment_chain.mjs` already ordered descending, and the
+    two new scripts do not read a "latest" row at all.
 
 ## 🔬 Why
 - **A number on two pages is a promise, and a promise with no mechanism
@@ -310,6 +337,32 @@ made on two pages is now backed by a mechanism, a ledger and a payout.
   page needed a card; the card was drawn in the house style and rendered
   to WebP with the vendored `sharp`, so what a visitor saves is a real
   image and not a broken link.
+- **A proof that lives in `/tmp` is a proof that stops existing.** The
+  referral chain was proved against the live database, and the script that
+  proved it lived in a directory the operating system clears. The mechanic
+  was real; the evidence was not durable, and the next session would have
+  had to rebuild it from nothing.
+- **A script that leaves a mess is a script that will be run once.** The
+  old proof created two accounts in the live database and deleted them in a
+  `finally` block — which a killed process never reaches. A check that
+  dirties the database is a check nobody runs twice, so the cleanup cannot
+  depend on reaching the end.
+- **The order of the deletes is the order of the foreign keys.** A
+  referral row points at `profiles(id)`. Delete the profile first and the
+  referral row either blocks the delete or survives it, and a row that
+  survives says somebody was referred by somebody who no longer exists.
+- **A link that is personal should say so.** A member's referral link is
+  meant to be pasted into a message and followed by one person. It is not
+  a page, and the only thing it should ever be indexed as is nothing.
+- **A fix that nobody checks is a fix until the next edit.** The coaching
+  offers all pointed at the $20 membership link; that was found and fixed,
+  and the brief wrote a rule about it. A rule that is only written down
+  is not a rule — one price edited in the page and not the catalogue puts
+  the whole defect back, and the buyer finds out at the checkout.
+- **Three prices that are supposed to be one price need three checks.** The
+  page says one number, the catalogue says another and Stripe charges a
+  third. Checking any two of them is not enough: the check has to compare
+  the number the buyer reads to the number the account takes.
 
 - **A shared limiter beats two copies of one.** The capture pipeline's
   rate limiter was module-private, so the referral route could not use it
@@ -368,17 +421,23 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 59
-- Lines written: 7610
+- Sessions: 60
+- Lines written: 8510
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-03 | ops | The newsletter check was reading the **oldest** attempt and calling it "the last attempt". The dispatch log was queried with `order=created_at` — ascending — so `rows[0]` was the first attempt ever, and the check reported "the cron ran 48.5 hours ago" on a cron that had run 20 hours earlier. The order is now explicit and the attempt is chosen by its own timestamp, and the send record for an issue is judged on the send that carried the letter rather than the first attempt that failed | ~40 |
+| 2026-11-03 | backend | The catalogue rows still said they needed a real Stripe link long after they had one: `products.metadata.needs_real_stripe_link` was `true` on all three Tyrone rows. It is now `false`, and `scripts/stripe_tyrone_offers.mjs` clears it on every write-back, so the marker cannot go stale again. The rest of each row's metadata is preserved | ~40 |
+| 2026-11-03 | revenue | The coaching offers were fixed once and nothing kept them fixed. `scripts/check_coaching_offers.mjs` proves, for each of the three coaching offers and for the membership, that the catalogue row is sellable, the payment link is active, the link points at the recorded price and is bound to that catalogue row through Stripe's own `metadata.product_id`, the amount charged is the catalogue price, **the price on the live page is the price charged**, and the page the buyer lands on after paying exists. 33 of 33 checks pass against production | ~330 |
+| 2026-11-03 | ops | The referral proof moved out of `/tmp` into `scripts/check_referral_chain.mjs` — 15 checks, exit 0 healthy / 1 broken / 3 could not run. It reads the commission rate and the membership price out of `src/lib/server/referrals.ts` so it cannot become a second answer to what the rate is, it removes the referral rows before the profile rows before the auth user, it registers signal and exit handlers so a killed process still cleans up, and it sweeps the probe accounts an earlier run left behind before it starts | ~430 |
+| 2026-11-03 | seo | `/ref/<code>` is a personal URL and now says so: every branch of the redirect carries `X-Robots-Tag: noindex, nofollow`, the redirect body is empty, and `/ref` is disallowed in `robots.txt` | ~60 |
 | 2026-11-02 | revenue | The 30% referral commission is now real. `src/lib/server/referrals.ts` is the single owner of the mechanic — the code, the link, the claim, the commission and the ledger — so the link a member shares, the referral that is recorded, the commission that is earned and the figure the member sees cannot drift apart. A member gets a code, `/ref/<code>` sets the cookie and redirects, the claim is idempotent, the commission is written by the Stripe webhook (or by the claim route when the membership was paid before the account existed), and the operator pays it from a new **Referrals** tab in `/admin`. Proved against the live database: 10 of 10 checks pass, commission earned at $6.00 on a $20.00 membership | ~1400 |
 | 2026-11-02 | backend | The database fills `reward_amount` with 0 on insert, so the test for "this commission is already earned" read the default as a payout and returned early — the commission was never written. The test is now "is the amount above zero", and the unit was changed from cents to dollars to match the `reward_currency` column beside it | ~60 |
 | 2026-11-02 | backend | The portal's referral link was built from the first eight characters of the profile's uuid, pointing at `imperium.com/ref/…` — a domain the site does not serve and a route that did not exist. The portal now shows the member's own code and the link built from it | ~120 |
 | 2026-11-02 | backend | Three silent defects around the referral programme are gone. The analytics route was reading two columns that do not exist (`status`, `commission`) and reporting `NaN` earnings; the affiliate route was reading the fleet tables with the **anon** key, so every lookup answered "Invalid affiliate code"; and the duplicate referral route generated codes a second way. All three now read the same module, with the service-role key | ~90 |
 | 2026-11-02 | visual | The four premium buttons in the portal (28 Principles, Newsletter, Community, 1-on-1 Call) either went nowhere or were dead. Each now points at a route that exists or says plainly that the thing is not open yet | ~100 |
+|---|---|---|---|
 | 2026-11-01 | revenue | Tyrone's coaching pages exist and are live: `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/` — the last because Stripe redirects the buyer there after payment, and a redirect target that 404s is a failed sale. The landing page carries the three offers at their real prices, how it works, who it is for and the questions people ask; the referral page carries a share card and copyable links. All of it lives in `src/lib/tyrone.ts` so the price on the page and the price charged cannot drift | ~640 |
 | 2026-11-01 | revenue | All three coaching offers pointed at the **$20/month membership link**, so a buyer clicking "Personal Training — $150" would have been charged $20 a month for a subscription they did not ask for. `scripts/stripe_tyrone_offers.mjs` now creates a product, a price and a payment link per offering ($150 one-time, $297 one-time, $99 a month), writes the ids back onto the catalogue rows, and retires the superseded links so a stale checkout cannot be opened | ~270 |
 | 2026-11-01 | revenue | The weekly letter was unobservable, not broken. The brief's premise was wrong — the tenant event log carries a `newsletter_sent` row from 2026-10-22 (11 recipients, 10 sent, 1 failed) and the cron has answered 200 every day since, correctly, because only one issue is published and it has gone. What was missing was the evidence: a dispatch that failed before the mail left no record at all, a failed send-log read made the cron skip the issue and report success, and a total send failure still wrote the "sent" marker that stops the cron retrying — so the letter could be silently dropped for good. Every attempt now writes a `newsletter_dispatch` row (sent / partial / failed / skipped, with the source and the reason), the unreadable-log case is a 500 and a recorded failure, the marker is written only when a recipient took the mail, and the admin studio shows the history | ~260 |
@@ -549,10 +608,48 @@ with the `products.slug` migration decision in the same entry. **Recorded
   every step (a payment, a bridge, a letter) fails link by link and
   silently. Give each one a command that asks every question the operator
   would ask, in the order they would ask it, and names the first broken
-  link. Three exist here: `check_payment_chain.mjs`,
-  `check_telegram_bridge.mjs`, `check_newsletter_chain.mjs`. **A script
+  link. Five exist here: `check_payment_chain.mjs`,
+  `check_telegram_bridge.mjs`, `check_newsletter_chain.mjs`,
+  `check_referral_chain.mjs`, `check_coaching_offers.mjs`. **A script
   also corrects the brief**: the newsletter one found that the letter had
   gone out on 2026-10-22, which the brief had recorded as never sent.
+- **a-proof-that-lives-in-tmp-is-a-proof-that-stops-existing** (fleet) —
+  a script in a temporary directory is a script that will be gone before
+  the next session needs it, and the mechanic it proved will have to be
+  rebuilt from nothing. **The proof lives in the repo, beside the code it
+  proves** — `scripts/`, never `/tmp`.
+- **a-script-that-leaves-a-mess-is-a-script-nobody-runs-twice** (fleet) —
+  a check that creates rows in the live database has to be able to remove
+  them however it ends: `finally` blocks do not run when the process is
+  killed. Register the cleanup against the signals and against `exit`,
+  remove the rows in the order of the foreign keys, and **sweep the
+  leftovers from earlier runs before the run starts** — a check that
+  dirties the database is a check nobody runs again.
+- **a-check-that-restates-the-number-it-checks-is-a-second-answer** (fleet)
+  — a script that hard-codes "30%" and "$20" is a second owner of the
+  rate, and it will disagree with the module the moment either changes.
+  Read the numbers out of the module the app uses, so the check follows
+  the change instead of failing it.
+- **a-fix-that-nobody-checks-is-a-fix-until-the-next-edit** (fleet) — the
+  coaching offers all pointed at the membership link; that was fixed, and
+  the brief wrote a rule about it. A rule that is only written down is not
+  a rule. One price edited in the page and not the catalogue puts the
+  defect straight back, and the buyer finds out at the checkout. **Give
+  the fix a command.**
+- **a-price-has-three-homes** (fleet, applies to every catalogue row that
+  holds a payment link) — the page says one number, the catalogue says
+  another and Stripe charges a third. Comparing any two is not enough: the
+  check has to compare the number the buyer reads to the number the
+  account takes. Bind the link to the row (Stripe's own
+  `metadata.product_id`) so the link cannot be quietly pointed at a
+  different price.
+- **an-ascending-order-answers-with-the-oldest-row** (fleet) — Postgres
+  sorts ascending by default, so `order=created_at` puts the **first**
+  attempt ever at `rows[0]`. A check that calls that "the last attempt"
+  reports a healthy cron as dead the moment the log fills up. Order
+  explicitly with `.desc`, and pick the row by its own timestamp rather
+  than by its position. **A check that judges the newest thing must say so
+  in the query.**
 - **form-backend-nodemailer** — Next.js API route that handles form submissions and sends email via no
 - **seo-metadata-nextjs** — Standard Next.js metadata export with title, description, openGraph, a
 - **fleet-transport-split** (Imperium) — dispatch sends locally through the shared
@@ -834,8 +931,20 @@ with the `products.slug` migration decision in the same entry. **Recorded
   a brief written into `web/` is a brief that drifts
 - Before every push run `node scripts/check-schema-refs.mjs`,
   `node scripts/check_telegram_bridge.mjs`,
-  `node scripts/check_newsletter_chain.mjs` and
+  `node scripts/check_newsletter_chain.mjs`,
+  `node scripts/check_referral_chain.mjs`,
+  `node scripts/check_coaching_offers.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
+- **`scripts/check_referral_chain.mjs` writes to the live database.** It
+  creates two throwaway accounts, walks the journey and removes them. The
+  cleanup is registered against `SIGINT`, `SIGTERM`, `SIGHUP` and `exit`,
+  and every run sweeps the accounts an earlier run left behind — but if
+  the machine is killed hard, the next run is what cleans up. Point it at
+  a local server with `PROOF_BASE=http://localhost:3100`.
+- **A price has three homes — the page, the catalogue and the Stripe
+  account — and a check that compares only two of them is not a check.**
+  `scripts/check_coaching_offers.mjs` compares all three, including the
+  number the buyer actually reads on the live page.
 - **A coaching offer's price and link live in `src/lib/tyrone.ts` and in
   the `products` row, and they must match.** Changing one without the other
   re-creates the defect this session fixed — a page that says $150 and a
