@@ -25,6 +25,7 @@ export function ArchiveFooter() {
                     <div>
                         <h2 className="mb-3 text-[14px] font-semibold text-[#252820]">Explore</h2>
                         <nav aria-label="Footer navigation" className="flex flex-col items-start gap-1">
+                            <Link href="/apply/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Apply to Success Empire</Link>
                             <Link href="/archive/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">The Archive</Link>
                             <Link href="/newsletter/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Newsletter</Link>
                             <Link href="/partners/" className="flex min-h-11 items-center py-2 text-[14px] text-[#565c50] transition-colors hover:text-[#343f25] hover:underline hover:underline-offset-4">Partners</Link>

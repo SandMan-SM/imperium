@@ -13,6 +13,7 @@ export function GET() {
 - All archive resources are readable without an account.
 
 ## Pages
+- Apply to join Success Empire: https://secretimperium.com/apply/
 - The Archive: https://secretimperium.com/archive/
 - Newsletter: https://secretimperium.com/newsletter/
 - Partners: https://secretimperium.com/partners/

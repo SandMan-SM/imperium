@@ -5,6 +5,7 @@ const SITE_URL = "https://secretimperium.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },
+    { url: `${SITE_URL}/apply/`, changeFrequency: "monthly", priority: .9 },
     { url: `${SITE_URL}/archive/`, changeFrequency: "weekly", priority: .9 },
     { url: `${SITE_URL}/newsletter/`, changeFrequency: "weekly", priority: .8 },
     { url: `${SITE_URL}/partners/`, changeFrequency: "monthly", priority: .7 },

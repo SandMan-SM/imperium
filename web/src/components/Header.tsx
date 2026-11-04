@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { SUCCESS_EMPIRE } from "@/lib/success-empire";
 
 const navigation = [
     { label: "The Archive", href: "/archive/" },
@@ -45,7 +46,7 @@ export function Header() {
                     <span className="mt-1.5 hidden text-[12px] leading-none text-[#62675b] lg:block">The resource library</span>
                 </Link>
 
-                <nav aria-label="Main navigation" className="hidden items-center gap-5 md:flex lg:gap-8">
+                <nav aria-label="Main navigation" className="hidden items-center gap-5 min-[1120px]:flex xl:gap-7">
                     {navigation.map((item) => (
                         <Link
                             key={item.href}
@@ -58,15 +59,15 @@ export function Header() {
                     ))}
                 </nav>
 
-                <div className="hidden items-center gap-4 md:flex">
+                <div className="hidden items-center gap-4 min-[1120px]:flex">
                     <Link
                         href={accountHref}
                         className="flex min-h-11 items-center text-[14px] text-[#565c50] transition-colors hover:text-[#252820]"
                     >
                         {accountLabel}
                     </Link>
-                    <Link href="/archive/" className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#252820] bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:border-[#454c37] hover:bg-[#454c37]">
-                        Browse resources
+                    <Link href={SUCCESS_EMPIRE.applicationPath} className="header-apply inline-flex min-h-11 items-center justify-center rounded-md border border-[#252820] bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:border-[#454c37] hover:bg-[#454c37]" data-track="success_empire_apply" data-track-area="header">
+                        Apply now
                     </Link>
                 </div>
 
@@ -77,14 +78,14 @@ export function Header() {
                     aria-expanded={open}
                     aria-controls="mobile-navigation"
                     aria-label={open ? "Close navigation" : "Open navigation"}
-                    className="flex h-11 w-11 items-center justify-center rounded-md border border-[#d7d7cd] text-[#252820] transition-colors hover:border-[#737759] hover:bg-[#eeede5] md:hidden"
+                    className="flex h-11 w-11 items-center justify-center rounded-md border border-[#d7d7cd] text-[#252820] transition-colors hover:border-[#737759] hover:bg-[#eeede5] min-[1120px]:hidden"
                 >
                     {open ? <X size={21} aria-hidden="true" /> : <Menu size={21} aria-hidden="true" />}
                 </button>
             </div>
 
             {open && (
-                <nav id="mobile-navigation" aria-label="Mobile navigation" className="max-h-[calc(100dvh-82px)] overflow-y-auto border-t border-[#d7d7cd] bg-[#f7f5ef] px-5 pb-6 pt-2 md:hidden">
+                <nav id="mobile-navigation" aria-label="Mobile navigation" className="max-h-[calc(100dvh-82px)] overflow-y-auto border-t border-[#d7d7cd] bg-[#f7f5ef] px-5 pb-6 pt-2 min-[1120px]:hidden">
                     {navigation.map((item) => (
                         <Link
                             key={item.href}
@@ -99,8 +100,8 @@ export function Header() {
                     <Link href={accountHref} onClick={() => setOpen(false)} className="flex min-h-12 items-center border-b border-[#e4e3da] py-3 text-[16px] text-[#565c50] transition-colors hover:text-[#525a3d]">
                         {accountLabel}
                     </Link>
-                    <Link href="/archive/" onClick={() => setOpen(false)} className="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:bg-[#454c37]">
-                        Browse resources
+                    <Link href={SUCCESS_EMPIRE.applicationPath} onClick={() => setOpen(false)} className="header-apply mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-[#252820] px-5 text-[14px] font-medium text-[#f7f5ef] transition-colors hover:bg-[#454c37]" data-track="success_empire_apply" data-track-area="mobile-header">
+                        Apply now
                     </Link>
                 </nav>
             )}
