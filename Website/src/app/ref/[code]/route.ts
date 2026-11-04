@@ -18,6 +18,11 @@ import { findReferrerByCode, REFERRAL_COOKIE } from '@/lib/server/referrals';
  * An unknown code is not an error page. A shared link that has been typed
  * by hand, or a code that was revoked, still sends the visitor to the site
  * — it simply earns nobody a commission.
+ *
+ * The link is a personal URL. It is meant to be pasted into a message and
+ * followed by one person, not indexed and ranked like a page, so every
+ * response carries `X-Robots-Tag: noindex` — a member's link is the one
+ * thing here that must never end up in a search result.
  */
 
 const CODE_PATTERN = /^[A-HJ-NP-Z2-9]{8}$/;
@@ -28,6 +33,13 @@ function safeTarget(value: string | null): string {
     if (!value) return '/';
     if (!value.startsWith('/') || value.startsWith('//')) return '/';
     return value;
+}
+
+/** A redirect that carries no indexable body and asks not to be indexed. */
+function referralRedirect(target: string, origin: string): NextResponse {
+    const response = NextResponse.redirect(new URL(target, origin), 302);
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
 }
 
 export async function GET(
@@ -41,7 +53,7 @@ export async function GET(
     const target = safeTarget(url.searchParams.get('to'));
 
     if (!CODE_PATTERN.test(code)) {
-        return NextResponse.redirect(new URL(target, url.origin), 302);
+        return referralRedirect(target, url.origin);
     }
 
     const admin = getAdminClient();
@@ -50,10 +62,10 @@ export async function GET(
     if (!referrer) {
         // The code is unknown. The visitor still goes to the site — they
         // simply do not carry a referral.
-        return NextResponse.redirect(new URL(target, url.origin), 302);
+        return referralRedirect(target, url.origin);
     }
 
-    const response = NextResponse.redirect(new URL(target, url.origin), 302);
+    const response = referralRedirect(target, url.origin);
     response.cookies.set(REFERRAL_COOKIE, code, {
         httpOnly: true,
         sameSite: 'lax',
