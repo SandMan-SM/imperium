@@ -7,6 +7,8 @@
     "audit:telegram": "node check_telegram_bridge.mjs",
     "audit:newsletter": "node check_newsletter_chain.mjs",
     "audit:payment": "node check_payment_chain.mjs",
+    "audit:referral": "node check_referral_chain.mjs",
+    "audit:coaching": "node check_coaching_offers.mjs",
     "audit:visual": "node check_visual.mjs https://secretimperium.com 375",
     "audit:overflow": "node check_overflow.mjs https://secretimperium.com 375"
   },

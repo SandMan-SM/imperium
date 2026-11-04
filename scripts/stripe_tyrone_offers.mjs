@@ -204,6 +204,19 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
     process.exit(3);
 }
 
+// The catalogue rows carry a `needs_real_stripe_link` flag from before the
+// offers had links of their own. It has been false since this script first
+// ran, and a marker that does not mean what it says is worse than no
+// marker — so the write-back clears it, and keeps whatever else the row
+// keeps in its metadata.
+const existingRows = await (
+    await fetch(
+        `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/products?select=id,metadata&id=in.(${OFFERS.map((offer) => offer.row).join(',')})`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } },
+    )
+).json();
+const metadataByRow = new Map((existingRows || []).map((row) => [row.id, row.metadata || {}]));
+
 for (const entry of written) {
     if (!entry.offer) continue;
     const response = await fetch(
@@ -221,6 +234,10 @@ for (const entry of written) {
                 stripe_price_id: entry.priceId,
                 stripe_url: entry.url,
                 payment_link_url: entry.url,
+                metadata: {
+                    ...(metadataByRow.get(entry.offer.row) || {}),
+                    needs_real_stripe_link: false,
+                },
             }),
         },
     );
