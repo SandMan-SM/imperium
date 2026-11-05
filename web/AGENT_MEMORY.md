@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 04, 2026 11:03 PM
+> Synthetic Intelligence Memory | Updated: November 04, 2026 11:15 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -9,6 +9,16 @@
 > **`web/` IS A BYTE-IDENTICAL MIRROR OF `Website/`.** Edit either, then run
 > `scripts/sync-trees.sh`. `scripts/sync-trees.sh --check` fails on drift and
 > CI (`.github/workflows/check-tree-sync.yml`) enforces it on every push.
+> **THE LIVE SURFACE CHANGED UNDER THIS BRIEF (2026-11-04).** Another agent
+> rebuilt the home page as the **Success Empire** application surface
+> (commit `dd9a198`, deployed as `dpl_5kcgF4uNpoi2CUDLmZDh6huxkFmR` at
+> 03:53 PT) and it is what production serves now. The home page carries
+> **no price and no payment link**, and the membership offer moved with it:
+> $20 + the Stripe link now live on **`/archive/`, `/newsletter/`,
+> `/principles/`, `/tyronengouamo/` and `/tyronengouamo/referral/`** — five
+> pages, not one. Do not read the old briefs as descriptions of the live
+> site: the Archive is still the content library, but the front door is an
+> application form.
 
 ## 📊 Health Scores
 | Metric | Score | Bar |
@@ -25,6 +35,46 @@ Two things, and both of them are about **keeping** what the last session
 built rather than adding to it: the referral proof moved out of `/tmp` into
 the repo, and the referral link is now explicitly unindexable. A third
 script was added for the gap nobody was watching — the coaching offers.
+- **The offer check had gone stale, and it went stale silently.** Another
+  agent rebuilt the home page as the Success Empire surface, which carries
+  no price and no payment link. `scripts/check_coaching_offers.mjs` named
+  the home page as *the* page the membership is sold from, so it read a
+  page that no longer carried the offer and reported a defect that was
+  really a page that had moved. **A check that names the page an offer
+  lives on goes stale the day the offer moves.** The pages are candidates
+  now, not owners: every surface that carries an offer's link has to carry
+  its price, and the offer has to be on at least one of them. The
+  membership is on **five** live pages, all showing **$20**. **47 of 47
+  checks pass.**
+- **The merchandise catalogue was wrong where nothing could reach it, and
+  it was wrong in the way that hurts.** Three rows named a payment link
+  that had been retired — the checkout a buyer would open refuses to take
+  money — and three named a live link that charged **$44** for a tee the
+  catalogue says is **$29.99** (and $88 for $79.99, $80 for $59.99). The
+  storefront is closed, so no buyer has met either defect. **A closed
+  storefront is not a reason to leave the catalogue wrong.** The
+  catalogue is the truth — it is what the page shows, what the site's own
+  checkout charges, and what `sync-products` builds the Stripe price from
+  — so the account was brought to it: a fresh price at the catalogue
+  amount, a fresh link bound to the catalogue row, and the superseded
+  links retired. **Nothing costs a different amount than it says it does.**
+- **The catalogue now has a check of its own.**
+  `scripts/check_catalogue_sellability.mjs` asks the same five questions
+  of **every** row in `products` — does the link exist, is it active, does
+  it point at the recorded price, is the amount charged the catalogue
+  price, and does the page the buyer lands on exist — and it adds the one
+  question the coaching check could not ask of a closed shop: **a row
+  marked in stock must be buyable.** **62 of 62 checks pass.**
+- **Money is compared in cents, not in dollars.** The repair script
+  decided a $79.99 row needed repairing when the link charged $79.99,
+  because `79.99 * 100` is `7998.999999999999` in binary floating point.
+  Two equal prices said they differed, and the script would have created a
+  new link on every run — a fix that never settles.
+- **The trees were reconciled with production.** Another agent's
+  Success Empire build was on `origin/main` and the local branch was a
+  commit behind it, so the local tree was not the tree that serves the
+  site. The merge is in, the brief was written into `Website/` (the
+  canonical copy) and mirrored, and the two trees are identical again.
 - **The referral proof lives in the repo now.** `scripts/check_referral_chain.mjs`
   walks the whole journey — code issued, link built, link redirects and sets
   the cookie, the referral claimed, the referrer sees it, the commission
@@ -55,7 +105,7 @@ script was added for the gap nobody was watching — the coaching offers.
   payment link is active, the link points at the recorded price and is
   bound to that catalogue row, the amount charged is the catalogue price,
   the price on the **live page** is the price charged, and the page the
-  buyer lands on after paying exists. **33 of 33 checks pass.**
+  buyer lands on after paying exists.
 - **The newsletter check was reading the oldest attempt and calling it the
   last one.** The dispatch log was queried with `order=created_at` —
   ascending — so `rows[0]` was the first attempt ever. The check reported
@@ -73,6 +123,7 @@ script was added for the gap nobody was watching — the coaching offers.
 | Payment → membership | `scripts/check_payment_chain.mjs` | 0 complete / 1 broken / 3 error |
 | Referral → commission → payout | `scripts/check_referral_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
 | Coaching offer → page price → Stripe | `scripts/check_coaching_offers.mjs` | 0 sound / 1 broken / 3 could not run |
+| Catalogue row → live link → charged price | `scripts/check_catalogue_sellability.mjs` | 0 sound / 1 broken / 3 could not run |
 | Newsletter → cron → dispatch | `scripts/check_newsletter_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
 | Telegram bridge | `scripts/check_telegram_bridge.mjs` | 0 wired / 1 broken |
 | Schema references | `scripts/check-schema-refs.mjs` | 0 clean / 1 phantom table or column |
@@ -229,21 +280,72 @@ script was added for the gap nobody was watching — the coaching offers.
     mean what it says is worse than no marker. The flag is now `false` on
     all three rows, and **the script that writes those rows now clears it**,
     so it cannot go stale again. The rest of each row's metadata is kept.
-19. **The merchandising rows point at retired Stripe links.** Six `products`
-    rows carry `stripe_url` values whose links were retired on 2026-11-01
-    (`active=false`), and their `in_stock` is still `true`. The storefront
-    is closed, so nothing is sold through them — but if `/shop` is ever
-    reopened, those rows will offer dead checkouts. `scripts/check_coaching_offers.mjs`
-    does not cover them on purpose: they are merchandise, not coaching, and
-    their sellability is the operator's reopening decision (priority 7).
+19. **~~The merchandising rows point at retired Stripe links.~~ DONE —
+    2026-11-04.** The state was worse than the brief said: **three** rows
+    named a retired link (the checkout refuses to take money) and **three
+    named a live link that charged the wrong price** — $44 for a $29.99
+    tee, $88 for a $79.99 hoodie, $80 for a $59.99 sweatpants. All six
+    said `in_stock=true`. The storefront is closed, so nothing could reach
+    them, which is exactly why nothing kept them honest.
+    `scripts/stripe_merch_links.mjs` brought the account to the catalogue
+    (a price at the catalogue amount, a link bound to the catalogue row,
+    the superseded links retired) and
+    `scripts/check_catalogue_sellability.mjs` now asks the question of
+    every row in `products`. **62 of 62 checks pass.**
 20. **~~A check that judges the newest thing has to say so in the query.~~
     DONE — 2026-11-03.** The newsletter check read the *oldest* dispatch
     attempt and called it the last one, so it reported a healthy cron as
     dead. It is fixed, and the other chain scripts were read for the same
     defect: `check_payment_chain.mjs` already ordered descending, and the
     two new scripts do not read a "latest" row at all.
+21. **~~The offer check named the home page as the page the membership is
+    sold from.~~ DONE — 2026-11-04.** The home page is now the Success
+    Empire surface and carries no offer, so the check read a page that had
+    moved and reported a defect that was not there. The pages are
+    candidates now, not owners: every surface carrying an offer's link has
+    to carry its price, and the offer has to be on at least one of them.
+    **47 of 47 checks pass.**
+22. **The front door changed and the briefs did not.** Another agent rebuilt
+    the home page as an application funnel and deployed it (03:53 PT,
+    2026-11-04). The membership offer is on `/archive/`, `/newsletter/`,
+    `/principles/`, `/tyronengouamo/` and `/tyronengouamo/referral/`.
+    **Read the live site, not this brief, before describing the site.** The
+    local branch was also behind `origin/main`, so the tree that was being
+    worked on was not the tree that serves production — the merge is in.
+23. **Reopening `/shop` is still the operator's decision** (priority 7),
+    but the catalogue is now ready for it: every row names a live link
+    that charges the catalogue price and lands the buyer on a page that
+    exists. `node scripts/check_catalogue_sellability.mjs` is the command
+    to run before that decision is taken.
 
 ## 🔬 Why
+- **A check that names the page an offer lives on goes stale the day the
+  offer moves.** The coaching check named the home page as *the* place the
+  membership was sold. Another agent rebuilt that page, and the check did
+  not notice — it kept reading the home page, found no price, and reported
+  a defect. The failure is not that the page changed; it is that the check
+  had an opinion about where the offer lives and never checked whether the
+  opinion was still true. **Ask the page, not the address of the page.**
+- **A closed storefront is not a reason to leave the catalogue wrong.**
+  Nothing could reach the merchandise rows, so nothing complained, and the
+  rows went on saying `in_stock=true` while naming a checkout that
+  refused to take money and prices the catalogue did not state. The
+  silence was the defect's cover. **Reachability is not correctness.**
+- **The catalogue is the truth, and the account is a copy of it.** The page
+  shows the catalogue price, the site's own checkout charges it, and
+  `sync-products` builds the Stripe price *from* it. When the account
+  disagreed, the account was the copy that had drifted — and the fix was
+  to bring the copy to the source, not to move the price.
+- **Money is compared in cents.** `79.99 * 100` is `7998.999999999999` in
+  binary floating point, so two equal prices said they differed, and a
+  repair script that believed them would create a new payment link on
+  every run. **A fix that never settles is not a fix.**
+- **The tree being worked on has to be the tree that serves the site.**
+  The local branch was a commit behind `origin/main`, and `origin/main`
+  held another agent's build. Every fix made against the stale tree would
+  have shipped as a no-op — or worse, have been reverted by the next
+  deploy from the other side.
+
 - **A number on two pages is a promise, and a promise with no mechanism
   behind it is a lie told politely.** The referral programme promised 30%
   and the referral page repeated it, and neither page was wrong about what
@@ -421,12 +523,16 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 60
-- Lines written: 8510
+- Sessions: 61
+- Lines written: 8930
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-04 | revenue | The merchandise catalogue was wrong where nothing could reach it. Three rows named a retired payment link — the checkout refuses to take money — and three named a live link that charged a price the catalogue did not say ($44 for a $29.99 tee, $88 for a $79.99 hoodie, $80 for a $59.99 sweatpants), while all six said `in_stock=true`. The storefront is closed, so no buyer had met either defect, which is why nothing kept them honest. `scripts/stripe_merch_links.mjs` brings the account to the catalogue — the catalogue is what the page shows, what the site's own checkout charges, and what `sync-products` builds the Stripe price from — creating a price at the catalogue amount, a link bound to the catalogue row, and retiring the superseded links. It is idempotent: a row whose link is live and charges the catalogue price is left alone | ~330 |
+| 2026-11-04 | ops | `scripts/check_catalogue_sellability.mjs` asks the coaching check's five questions of **every** row in `products` — link exists, link active, link points at the recorded price, amount charged is the catalogue price, the page the buyer lands on exists — and adds the question a closed shop could not be asked: a row marked in stock must actually be buyable. 62 of 62 checks pass against production | ~250 |
+| 2026-11-04 | ops | The offer check had gone stale without saying so. `scripts/check_coaching_offers.mjs` named the home page as *the* page the membership is sold from; the home page was rebuilt as the Success Empire surface and carries no price and no link, so the check reported a defect that was really a page that had moved. The pages are candidates now, not owners — every surface that carries an offer's link has to carry its price, and the offer has to be on at least one of them. The membership is on five live pages, all showing $20. 47 of 47 checks pass | ~90 |
+| 2026-11-04 | repo | The local branch was a commit behind `origin/main`, which held another agent's Success Empire build — the tree being worked on was not the tree that serves production. The merge is in, `AGENT_MEMORY.md` was written into the canonical `Website/` copy (the mirror had a better edit-history table and a newer timestamp, so it was taken as the base), and the two trees are identical again | ~60 |
 | 2026-11-03 | ops | The newsletter check was reading the **oldest** attempt and calling it "the last attempt". The dispatch log was queried with `order=created_at` — ascending — so `rows[0]` was the first attempt ever, and the check reported "the cron ran 48.5 hours ago" on a cron that had run 20 hours earlier. The order is now explicit and the attempt is chosen by its own timestamp, and the send record for an issue is judged on the send that carried the letter rather than the first attempt that failed | ~40 |
 | 2026-11-03 | backend | The catalogue rows still said they needed a real Stripe link long after they had one: `products.metadata.needs_real_stripe_link` was `true` on all three Tyrone rows. It is now `false`, and `scripts/stripe_tyrone_offers.mjs` clears it on every write-back, so the marker cannot go stale again. The rest of each row's metadata is preserved | ~40 |
 | 2026-11-03 | revenue | The coaching offers were fixed once and nothing kept them fixed. `scripts/check_coaching_offers.mjs` proves, for each of the three coaching offers and for the membership, that the catalogue row is sellable, the payment link is active, the link points at the recorded price and is bound to that catalogue row through Stripe's own `metadata.product_id`, the amount charged is the catalogue price, **the price on the live page is the price charged**, and the page the buyer lands on after paying exists. 33 of 33 checks pass against production | ~330 |
@@ -522,6 +628,33 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
+- **a-check-that-names-the-page-an-offer-lives-on-goes-stale-the-day-the-
+  offer-moves** (fleet, applies to every check that reads a page) — the
+  offer check named the home page as *the* page the membership is sold
+  from; the home page was rebuilt without the offer and the check
+  reported a defect that was a page that had moved. **Ask the page, not
+  the address of the page.** A check should find the pages that carry the
+  offer, require the offer to be on at least one of them, and require
+  every one of them to carry the price. That survives a rebuild; a
+  hard-coded path does not.
+- **a-closed-storefront-is-not-a-reason-to-leave-the-catalogue-wrong**
+  (fleet, applies to every closed surface) — nothing could reach the
+  merchandise rows, so nothing complained, and three rows named a retired
+  link while three named a link that charged a price the catalogue did not
+  say. **Reachability is not correctness.** A row that says it is in stock
+  must be buyable at the price the catalogue states, whether or not
+  anybody is looking today.
+- **the-catalogue-is-the-truth-and-the-account-is-a-copy-of-it** (fleet,
+  applies to every catalogue row) — the page shows the catalogue price,
+  the checkout charges it, and the sync builds the Stripe price from it.
+  When the account disagrees, the account is the copy that drifted, and
+  the repair is to bring the copy to the source — not to move the price.
+- **money-is-compared-in-cents-not-in-dollars** (every project) —
+  `79.99 * 100` is `7998.999999999999` in binary floating point, so two
+  equal prices compared unequal and a repair script would have created a
+  new payment link on every run. Compare amounts in the smallest unit the
+  ledger uses, and round before you compare.
+
 - **a-promise-with-no-mechanism-behind-it-is-a-lie-told-politely**
   (fleet, applies to every commission, referral, bonus or reward) — two
   pages agreed on 30% and neither page was wrong about the other, which is
@@ -932,8 +1065,23 @@ with the `products.slug` migration decision in the same entry. **Recorded
   `node scripts/check_telegram_bridge.mjs`,
   `node scripts/check_newsletter_chain.mjs`,
   `node scripts/check_referral_chain.mjs`,
-  `node scripts/check_coaching_offers.mjs` and
+  `node scripts/check_coaching_offers.mjs`,
+  `node scripts/check_catalogue_sellability.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
+- **The catalogue is the truth for every merchandise price.**
+  `scripts/stripe_merch_links.mjs` brings the Stripe account to the
+  `products` row — the price the page shows and the checkout charges — and
+  retires what it replaces. Run it after any change to a catalogue price.
+- **The membership offer is on five live pages, not one.** `/archive/`,
+  `/newsletter/`, `/principles/`, `/tyronengouamo/` and
+  `/tyronengouamo/referral/` each carry the $20 link and the $20 price.
+  The home page is the Success Empire application surface and carries
+  **neither** — do not read the offer's absence there as a defect, and do
+  not add it there without the operator asking for it.
+- **Another agent may deploy to this surface.** `federation.surfaces` for
+  `secretimperium.com` records the last deploy, and the changelog names
+  the commit it shipped. Read it before assuming the local tree is what
+  production serves — and `git fetch` before working.
 - **`scripts/check_referral_chain.mjs` writes to the live database.** It
   creates two throwaway accounts, walks the journey and removes them. The
   cleanup is registered against `SIGINT`, `SIGTERM`, `SIGHUP` and `exit`,
