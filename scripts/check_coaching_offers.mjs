@@ -51,6 +51,21 @@ const COACHING_PAGE = '/tyronengouamo';
 /** The catalogue rows that are the coaching offers. */
 const COACHING_TIER = 'tyrone';
 
+/**
+ * The public surfaces an offer can be sold from.
+ *
+ * The check used to name the home page as the page the membership is sold
+ * from. That was true once and stopped being true: the home page was
+ * rebuilt as the Success Empire surface, which carries no price and no
+ * payment link. The check did not notice — it kept reading the home page,
+ * found no price on it, and reported a defect that was really a page that
+ * had moved. **A check that names the page an offer lives on goes stale the
+ * day the offer moves.** So the pages are candidates, not owners: an offer is
+ * sold from whichever of them carries its link, and every page that carries
+ * the link has to carry the price too.
+ */
+const SURFACES = ['/', '/archive/', '/newsletter/', '/principles/', COACHING_PAGE, `${COACHING_PAGE}/referral/`];
+
 const results = [];
 
 function record(label, ok, detail) {
@@ -150,16 +165,12 @@ record(
 );
 
 // --- 2. the pages ------------------------------------------------------------
-let coachingHtml = '';
-let homeHtml = '';
-{
-    const page = await siteFetch(COACHING_PAGE);
-    coachingHtml = page.text;
-    record('Page: the coaching page answers', page.status === 200, `HTTP ${page.status}`);
-
-    const home = await siteFetch('/');
-    homeHtml = home.text;
-    record('Page: the home page answers', home.status === 200, `HTTP ${home.status}`);
+/** Every candidate surface, with the HTML a buyer would read. */
+const surfaces = [];
+for (const path of SURFACES) {
+    const page = await siteFetch(path);
+    surfaces.push({ path, status: page.status, text: page.text });
+    record(`Page: ${path} answers`, page.status === 200, `HTTP ${page.status}`);
 }
 
 // --- 3. the Stripe links -----------------------------------------------------
@@ -192,7 +203,7 @@ if (!STRIPE_KEY) {
  * deliberately kept out of the merchandise grid, and its sellability is the
  * live payment link.
  */
-async function checkOffer(row, html, pageLabel, options = {}) {
+async function checkOffer(row, pageLabel, options = {}) {
     const { requireInStock = false, requireBinding = false } = options;
     const url = row.stripe_url || row.payment_link_url;
 
@@ -249,13 +260,31 @@ async function checkOffer(row, html, pageLabel, options = {}) {
         `charged=$${amount ?? 'unknown'} catalogue=$${row.price}`,
     );
 
+    // The pages that carry this offer's link are the pages the buyer reads
+    // before paying. Each of them has to carry the price as well: a link
+    // with no price beside it is a checkout the buyer cannot price, and a
+    // price that disagrees with the charge is the defect this check exists
+    // to catch. The offer has to be on at least one of them, or there is
+    // nothing to buy.
+    const carrying = surfaces.filter((surface) => surface.status === 200 && surface.text.includes(url));
+
     record(
-        `${pageLabel}: the price on the page is the price charged`,
-        pageShowsAmount(html, row.price) && html.includes(url),
-        pageShowsAmount(html, row.price) && html.includes(url)
-            ? `$${row.price}`
-            : `the page does not show $${row.price} with this link`,
+        `${pageLabel}: the offer is on a live page`,
+        carrying.length > 0,
+        carrying.length > 0
+            ? carrying.map((surface) => surface.path).join(', ')
+            : 'no live page carries this link',
     );
+
+    for (const surface of carrying) {
+        record(
+            `${pageLabel}: the price on ${surface.path} is the price charged`,
+            pageShowsAmount(surface.text, row.price),
+            pageShowsAmount(surface.text, row.price)
+                ? `$${row.price}`
+                : `${surface.path} does not show $${row.price}`,
+        );
+    }
 
     const redirect = detail.body?.after_completion?.redirect?.url || null;
     if (!redirect) {
@@ -273,14 +302,14 @@ async function checkOffer(row, html, pageLabel, options = {}) {
 }
 
 for (const row of coaching) {
-    await checkOffer(row, coachingHtml, `Offer: ${row.name}`, {
+    await checkOffer(row, `Offer: ${row.name}`, {
         requireInStock: true,
         requireBinding: true,
     });
 }
 
 for (const row of membership) {
-    await checkOffer(row, homeHtml, 'Membership');
+    await checkOffer(row, 'Membership');
 }
 
 // --- verdict -----------------------------------------------------------------
