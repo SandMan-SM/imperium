@@ -1,0 +1,37 @@
+# The verified project Root Directory is Website/. Upload only that application.
+/*
+!/Website
+!/Website/**
+# Keep workstation files out of the application bundle.
+.git
+.vercel
+.env*
+**/.env*
+node_modules
+**/node_modules/**
+.next
+.next-*
+**/.next/**
+**/.next-*/**
+**/.vercel/**
+**/.vercel-*/**
+**/*.md
+**/docs/**
+Website/apply_migration_direct.js
+Website/scripts/*.js
+**/*.tsbuildinfo
+**/.DS_Store
+**/.cache/**
+**/coverage/**
+**/playwright-report/**
+**/test-results/**
+**/*.log
+**/*.tar.gz
+**/.claude/**
+**/.codex/**
+**/.membership-secret
+venv
+env
+.venv
+**/__pycache__/**
+**/*.pyc
