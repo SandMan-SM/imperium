@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 05, 2026 11:03 PM
+> Synthetic Intelligence Memory | Updated: November 05, 2026 11:40 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,10 +31,46 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-Two things, and both of them are about **keeping** what the last session
-built rather than adding to it: the referral proof moved out of `/tmp` into
-the repo, and the referral link is now explicitly unindexable. A third
-script was added for the gap nobody was watching — the coaching offers.
+The commission rate had eleven homes and nobody was watching any of them.
+- **The commission was a promise with eleven copies of the number.** The
+  referral programme pays 30% of a $20 membership. That rate was written
+  out in **eleven** places — the module that does the arithmetic, the brand
+  facts, the coaching copy, the referral page, the member's portal, every
+  "join now" button, the terms page and a testimonial — and the membership
+  price itself in **ten** of them. They all agreed. **Nothing kept them
+  agreeing.** One price edited in one place and not the other puts the
+  defect straight back, and for a *rate* the site would go on promising a
+  commission it does not pay.
+- **`src/lib/membership.ts` is now the one owner.** The rate, the price in
+  cents and every label the site writes are in one client-safe module; the
+  server module imports the numbers rather than keeping its own, and every
+  surface derives its words. **The arithmetic is in the module, so the
+  floating-point traps are closed there:** `0.3 * 100` is
+  `30.000000000000004`, and `2000 * 0.3` is not exactly `600`, so the
+  percentage is rounded and the commission is rounded in cents — the unit
+  the ledger stores it in.
+- **The portal said "6.00 on a 20.00 membership"** — the two amounts with
+  no dollar signs on them, because they were typed into a sentence. The
+  sentence now derives them and says **$6.00 on a $20.00 membership**.
+- **The referral page's share card said "$20 / month a month".** The
+  membership price was a string that already said "/month", and the
+  sentence appended " a month" to it. It is one sentence now, and it says
+  what it means.
+- **The membership checkout link was written down twice** — in
+  `lib/brand.ts` and in `lib/tyrone.ts` — and a rotation would leave one
+  copy stale. The coaching module imports the brand module's link now, and
+  the check proves the link in the source is the catalogue's link, is
+  active, and charges the catalogue price.
+- **`scripts/check_referral_terms.mjs` gives the rule a command.**
+  **15 of 15 checks pass.** It reads the rate and the price out of the
+  owner rather than restating them, proves no other file writes the rate,
+  the commission or the price in words (comments excluded — a comment
+  states nothing to a buyer), proves the module that pays the commission
+  imports the numbers instead of keeping its own, proves the live referral
+  page states the derived rate, the derived commission and the derived
+  price, and proves the catalogue and the Stripe price agree with the
+  owner. **The scan is not vacuous: it finds eleven restatements in the
+  tree this session started from, and none in the tree it ended with.**
 - **The offer check had gone stale, and it went stale silently.** Another
   agent rebuilt the home page as the Success Empire surface, which carries
   no price and no payment link. `scripts/check_coaching_offers.mjs` named
@@ -122,6 +158,7 @@ script was added for the gap nobody was watching — the coaching offers.
 |---|---|---|
 | Payment → membership | `scripts/check_payment_chain.mjs` | 0 complete / 1 broken / 3 error |
 | Referral → commission → payout | `scripts/check_referral_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
+| Membership price and commission rate → the words on the page | `scripts/check_referral_terms.mjs` | 0 in agreement / 1 broken / 3 could not run |
 | Coaching offer → page price → Stripe | `scripts/check_coaching_offers.mjs` | 0 sound / 1 broken / 3 could not run |
 | Catalogue row → live link → charged price | `scripts/check_catalogue_sellability.mjs` | 0 sound / 1 broken / 3 could not run |
 | Newsletter → cron → dispatch | `scripts/check_newsletter_chain.mjs` | 0 healthy / 1 broken / 3 could not run |
@@ -138,9 +175,10 @@ script was added for the gap nobody was watching — the coaching offers.
    to `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
    The Stripe account still shows **zero customers and zero subscriptions**;
    the only paid session is a $0 verification session. Twenty sessions exist,
-   and the ones that reached the $20 link are all expired and unpaid. When
-   the card runs, prove it in one command:
-   `node scripts/check_payment_chain.mjs <the-address>`.
+   and the ones that reached the $20 link are all expired and unpaid.
+   **Re-confirmed 2026-11-05**: still zero customers, still zero
+   subscriptions, still no paid session. When the card runs, prove it in one
+   command: `node scripts/check_payment_chain.mjs <the-address>`.
 2. **Get a working Telegram token from BotFather.** There is **no valid
    token anywhere** — the local `.env.local`, the bot's `.env` and the one
    that was committed to `AGENTS.md` all answer `401 Unauthorized`, and so
@@ -154,7 +192,9 @@ script was added for the gap nobody was watching — the coaching offers.
    the bridge script will now say whether the two copies are the same bot.
    Note that Vercel Production and Preview each hold **their own** copy of
    the dead token, so a rotation that touches only one leaves the other
-   dead.
+   dead. **Re-confirmed 2026-11-05**: the bot's token and the site's own
+   copy both still answer `401 Unauthorized`, so the bot's half of the
+   bridge is dead and the site's half is dead with it.
 3. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
    Telegram who the token belongs to (`getMe`), caches the answer and builds
    the `t.me` deep link from that, so the link cannot point at a bot the
@@ -317,8 +357,62 @@ script was added for the gap nobody was watching — the coaching offers.
     that charges the catalogue price and lands the buyer on a page that
     exists. `node scripts/check_catalogue_sellability.mjs` is the command
     to run before that decision is taken.
+24. **~~The commission rate had eleven homes and the membership price had
+    ten.~~ DONE — 2026-11-05.** `src/lib/membership.ts` owns the rate, the
+    price and every label the site writes; the server module imports the
+    numbers rather than keeping its own; every surface derives its words.
+    `scripts/check_referral_terms.mjs` proves it — **15 of 15 checks
+    pass**, and the scan finds eleven restatements in the tree this session
+    started from and none in the tree it ended with.
+25. **The rates and prices that still have more than one home are the
+    ones the owner does not cover.** The coaching offers' own prices live
+    in `src/lib/tyrone.ts` and in the `products` rows, and the catalogue
+    check already compares the two — but the *copy* on the coaching page
+    is a third copy, and it is checked only by the offer check reading
+    the live page. That is enough for the three offers, and it is why
+    nothing else needs a module of its own. **If a new offer is added,
+    put its price in `src/lib/tyrone.ts` and give it a catalogue row, or
+    it will have three homes and no check.**
+26. **The two operator-blocked items have not moved.** Priorities 1 and 2
+    are re-confirmed against the live account this session: the Stripe
+    account still shows **zero customers and zero subscriptions**, and both
+    copies of the Telegram token still answer **401 Unauthorized**. Until
+    a human supplies the card and the token, the money path and the bot
+    are unproven in the only way that counts.
 
 ## 🔬 Why
+- **A number with eleven homes is a number with no owner.** The referral
+  programme promised 30% of a $20 membership, and the promise was made in
+  eleven places and the arithmetic was done in one. Every copy agreed, and
+  every copy was free to drift the moment somebody edited one of them. The
+  rule the brief had been carrying — "the rate lives in
+  `src/lib/server/referrals.ts` and nowhere else" — was a rule about where
+  the *number* was typed, and it could not be kept, because the server
+  module is server-only and the copy has to live in the browser. **The
+  owner has to be somewhere both can import**, or the copy ends up
+  restating it.
+- **A price that a page states is a promise, and a promise with eleven
+  copies is a promise eleven times more likely to be wrong.** The fix was
+  not to lower the price or to shorten the sentence. It was to make the
+  copy *derive* the number, so that there is nothing left to keep in
+  step.
+- **The scan had to be strict to be worth anything.** A check that
+  compares the amount on the page with the amount in the module passes
+  when both are wrong in the same way — and worse, it passes on the very
+  defect it was written for: a second, hand-typed copy of a correct
+  number. The rule is **any** amount written out on a line that talks
+  about the membership or the commission, and the copy must derive it.
+  The scan proves it is not vacuous by finding eleven restatements in the
+  tree it started from and none in the tree it ended with.
+- **A comment is not a copy.** The scan drops comments, because a comment
+  may *mention* the rate while explaining why the rate lives where it
+  does. A comment states nothing to a buyer, and a rule that cannot tell
+  a comment from a price teaches the reader to ignore it.
+- **A link is a price too.** The membership checkout URL was written
+  down twice — the brand module and the coaching module — and a rotation
+  of the Stripe link would have left one copy pointing at a retired
+  checkout. The link now has one home and the check compares it with the
+  catalogue's link, so a stale copy is caught before a member follows it.
 - **A check that names the page an offer lives on goes stale the day the
   offer moves.** The coaching check named the home page as *the* place the
   membership was sold. Another agent rebuilt that page, and the check did
@@ -523,12 +617,15 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 61
-- Lines written: 8930
+- Sessions: 62
+- Lines written: 9210
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-05 | revenue | The commission rate had eleven homes and the membership price had ten, and nothing kept them agreeing. The referral programme promises 30% of a $20 membership; that rate was typed into the module that does the arithmetic, the brand facts, the coaching copy, the referral page, the member's portal, every "join now" button, the terms page and a testimonial — and the price into ten of them. The brief's rule ("the rate lives in `src/lib/server/referrals.ts` and nowhere else") could not be kept, because the server module is server-only and the copy has to live in the browser, so the copy restated the number. `src/lib/membership.ts` is the owner now: the rate, the price in cents and every label the site writes, with the arithmetic closed against the floating-point traps (`0.3 * 100` is `30.000000000000004`; `2000 * 0.3` is not exactly `600`). The server module imports the numbers rather than keeping its own, every surface derives its words, and the membership checkout link is written down once instead of twice. Two copy defects fell out: the portal said "6.00 on a 20.00 membership" with no dollar signs, and the referral page's share card said "$20 / month a month" | ~280 |
+| 2026-11-05 | repo | The mirror had drifted by one line: `web/AGENT_MEMORY.md` carried a newer date than the canonical `Website/` copy, which is the exact failure the mirror rule exists to prevent — a brief written into the wrong tree. `scripts/sync-trees.sh` put them back in step and `--check` is clean. The visual audit ran over 39 routes at 375px and found nothing to fix | ~20 |
+| 2026-11-05 | ops | `scripts/check_referral_terms.mjs` gives the rule a command — 15 of 15 checks pass. It reads the rate and the price out of the owner rather than restating them, proves no other file writes the rate, the commission or the price in words (comments excluded), proves the module that pays the commission imports the numbers, proves the live referral page states the derived rate, commission and price, and proves the catalogue, the source link and the Stripe price all agree with the owner. The scan is strict on purpose — any amount written out on a line that talks about the membership or the commission is a violation, even a correct one — and it is not vacuous: eleven restatements in the tree the session started from, none in the tree it ended with. `check_referral_chain.mjs` now reads the numbers from the new owner | ~330 |
 | 2026-11-04 | revenue | The merchandise catalogue was wrong where nothing could reach it. Three rows named a retired payment link — the checkout refuses to take money — and three named a live link that charged a price the catalogue did not say ($44 for a $29.99 tee, $88 for a $79.99 hoodie, $80 for a $59.99 sweatpants), while all six said `in_stock=true`. The storefront is closed, so no buyer had met either defect, which is why nothing kept them honest. `scripts/stripe_merch_links.mjs` brings the account to the catalogue — the catalogue is what the page shows, what the site's own checkout charges, and what `sync-products` builds the Stripe price from — creating a price at the catalogue amount, a link bound to the catalogue row, and retiring the superseded links. It is idempotent: a row whose link is live and charges the catalogue price is left alone | ~330 |
 | 2026-11-04 | ops | `scripts/check_catalogue_sellability.mjs` asks the coaching check's five questions of **every** row in `products` — link exists, link active, link points at the recorded price, amount charged is the catalogue price, the page the buyer lands on exists — and adds the question a closed shop could not be asked: a row marked in stock must actually be buyable. 62 of 62 checks pass against production | ~250 |
 | 2026-11-04 | ops | The offer check had gone stale without saying so. `scripts/check_coaching_offers.mjs` named the home page as *the* page the membership is sold from; the home page was rebuilt as the Success Empire surface and carries no price and no link, so the check reported a defect that was really a page that had moved. The pages are candidates now, not owners — every surface that carries an offer's link has to carry its price, and the offer has to be on at least one of them. The membership is on five live pages, all showing $20. 47 of 47 checks pass | ~90 |
@@ -628,6 +725,18 @@ with the `products.slug` migration decision in the same entry. **Recorded
 | 2026-10-21 | analytics | Analytics beacon proxied same-origin so it is not dropped on imperiumelite.com | ~90 |
 
 ## 🌐 Patterns To Apply
+- **a-number-with-many-homes-has-no-owner** (fleet, applies to every
+  price, rate, fee and promise) — the referral commission was typed into
+  eleven files and the membership price into ten, and the rule "the rate
+  lives in the server module and nowhere else" could not be kept because
+  the server module is server-only and the copy has to live in the
+  browser. **An owner has to be somewhere both can import.** Put the
+  number and the labels derived from it in one client-safe module, make
+  the server import it, and make every surface derive its words. Then
+  **give the rule a command**: any amount written out on a line that talks
+  about the subject is a failure, even a correct one — a check that only
+  compares the values passes on the defect it was written for, because a
+  hand-typed second copy of a correct number is *right*.
 - **a-check-that-names-the-page-an-offer-lives-on-goes-stale-the-day-the-
   offer-moves** (fleet, applies to every check that reads a page) — the
   offer check named the home page as *the* page the membership is sold
@@ -1031,14 +1140,17 @@ with the `products.slug` migration decision in the same entry. **Recorded
   live one — verify against Vercel.
 - Never run Supabase migrations
 - Never edit a shared fleet table's schema or RLS policies
-- **The referral commission rate lives in `src/lib/server/referrals.ts` and
-  nowhere else.** `REFERRAL_COMMISSION_RATE` and `MEMBERSHIP_PRICE_CENTS`
-  are the numbers; the copy in `src/lib/tyrone.ts`, the copy in the portal
-  panel and the copy on the referral page all repeat the same 30% in
-  words. **Changing the rate means changing the module and every sentence
-  that names it, in the same change** — that is the exact failure this
-  mechanic was built to end, and the two pages disagreeing is the defect
-  the brief called out
+- **The membership price and the referral commission rate live in
+  `src/lib/membership.ts` and nowhere else.** `MEMBERSHIP_PRICE_CENTS` and
+  `REFERRAL_COMMISSION_RATE` are the numbers, and every label the site
+  writes — "30%", "$6.00", "$20.00", "$20/month", "$20 / month" — is
+  derived from them in that same module. `src/lib/server/referrals.ts`
+  imports the numbers rather than keeping its own, and `src/lib/brand.ts`
+  derives `priceMonthly` and `priceLabel` from them. **No other file may
+  write an amount or a percentage on a line that talks about the
+  membership or the commission** — `scripts/check_referral_terms.mjs`
+  fails the build on one. Changing the rate is now a one-line change
+  (2026-11-05); it was eleven sentences across six files.
 - **The referral mechanic is one module, not four routes.** `claimReferral`,
   `ensureReferralCode`, `awardReferralCommission` and `referralSummary`
   live in `src/lib/server/referrals.ts`. A second copy of the code
@@ -1065,6 +1177,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
   `node scripts/check_telegram_bridge.mjs`,
   `node scripts/check_newsletter_chain.mjs`,
   `node scripts/check_referral_chain.mjs`,
+  `node scripts/check_referral_terms.mjs`,
   `node scripts/check_coaching_offers.mjs`,
   `node scripts/check_catalogue_sellability.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
