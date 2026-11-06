@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Mail, CheckCircle2, AlertCircle, Loader2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 interface NewsletterContentProps {
   isPremium: boolean;
@@ -81,7 +81,7 @@ function FreeNewsletterContent({ isPremium, isLoggedIn }: NewsletterContentProps
               rel="noopener noreferrer"
               className="btn-primary inline-flex justify-center rounded-xl px-6 py-3 text-sm"
             >
-              Upgrade to Premium — $20/month
+              Upgrade to Premium — {BRAND.priceMonthly}
             </a>
           </aside>
         )}

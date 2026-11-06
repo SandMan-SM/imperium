@@ -7,7 +7,8 @@ import AdminDashboard from "../admin/page";
 import ReferralPanel from "./ReferralPanel";
 import { BookOpen, Mail, Crown, Users, Video, Link as LinkIcon, LogOut } from "lucide-react";
 import Link from "next/link";
-import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { REFERRAL_COMMISSION_LABEL } from "@/lib/membership";
 
 export default function PortalPage() {
     const { user, profile, loading } = useAuth();
@@ -121,7 +122,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h3 className="text-white font-medium group-hover:text-imperium-gold transition-colors">Referral Link</h3>
-                                <p className="text-white/40 text-sm">Earn 30% commission on a referral</p>
+                                <p className="text-white/40 text-sm">Earn {REFERRAL_COMMISSION_LABEL} commission on a referral</p>
                             </div>
                         </button>
                     </div>
@@ -250,7 +251,7 @@ function UserPortal({ userView }: { userView: "free" | "premium" }) {
                         </div>
                         <div className="flex-1 min-w-0">
                             <h3 className="text-imperium-gold font-medium">Upgrade to Premium</h3>
-                            <p className="text-white/40 text-sm">$20/month for full access</p>
+                            <p className="text-white/40 text-sm">{BRAND.priceMonthly} for full access</p>
                         </div>
                     </a>
                 </div>

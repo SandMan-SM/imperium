@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MEMBERSHIP_PRICE_MONTHLY } from "@/lib/membership";
 
 export const metadata: Metadata = {
     title: "Terms of Service — Imperium Elite",
@@ -56,7 +57,7 @@ export default function TermsOfServicePage() {
                     <section>
                         <h2 className="text-xl font-light text-white mb-4">5. Subscription Services</h2>
                         <p className="text-white/60 leading-relaxed mb-4">
-                            Premium subscription services are provided on a monthly basis for $20/month. You agree to pay all charges incurred by you or any users of your account and agree to pay all applicable taxes. We reserve the right to change our subscription fees upon reasonable notice.
+                            Premium subscription services are provided on a monthly basis for {MEMBERSHIP_PRICE_MONTHLY}. You agree to pay all charges incurred by you or any users of your account and agree to pay all applicable taxes. We reserve the right to change our subscription fees upon reasonable notice.
                         </p>
                         <p className="text-white/60 leading-relaxed">
                             You may cancel your subscription at any time through your account settings. Refunds will not be provided for any unused portion of the current billing period.

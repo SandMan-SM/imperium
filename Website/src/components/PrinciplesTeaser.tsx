@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const PRINCIPLES = [
     { num: "01", title: "The Law of Deliberate Action", desc: "Every move is calculated. The sovereign does not react — he responds from a position of preparation and clarity." },
@@ -95,7 +95,7 @@ export function PrinciplesTeaser() {
                         rel="noopener noreferrer"
                         className="px-6 sm:px-8 py-3 sm:py-4 bg-imperium-gold text-[#030712] text-[11px] font-bold tracking-[0.18em] uppercase rounded-full hover:bg-white transition-all duration-200 btn-primary"
                     >
-                        Join Now — $20/month
+                        Join Now — {BRAND.priceMonthly}
                     </a>
                     <Link
                         href="/28principles"

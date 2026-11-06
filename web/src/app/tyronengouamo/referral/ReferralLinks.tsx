@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
+import { MEMBERSHIP_PRICE_MONTHLY_SPACED, REFERRAL_COMMISSION_LABEL } from "@/lib/membership";
 import { ShareLinks } from "./ShareLinks";
 
 interface ShareLink {
@@ -102,7 +103,7 @@ export function ReferralLinks({ staticLinks }: { staticLinks: ShareLink[] }) {
         entry.referral
             ? {
                   ...entry,
-                  detail: "$20 a month — the referral pays 30% commission.",
+                  detail: `${MEMBERSHIP_PRICE_MONTHLY_SPACED} — the referral pays ${REFERRAL_COMMISSION_LABEL} commission.`,
                   url: summary.link as string,
               }
             : entry,

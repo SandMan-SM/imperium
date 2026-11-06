@@ -23,12 +23,18 @@
 
 import { getAdminClient } from './imperium-capture';
 import { BRAND } from '@/lib/brand';
+import { MEMBERSHIP_PRICE_CENTS, REFERRAL_COMMISSION_RATE } from '@/lib/membership';
 
-/** The share of a referral's membership that the referrer earns. */
-export const REFERRAL_COMMISSION_RATE = 0.3;
-
-/** The membership the commission is a share of: $20 a month. */
-export const MEMBERSHIP_PRICE_CENTS = 2000;
+/**
+ * The share of a referral's membership that the referrer earns, and the
+ * membership it is a share of.
+ *
+ * Both numbers live in `lib/membership.ts`, beside the copy that states them
+ * — so the rate this module pays out and the rate the page promises cannot
+ * become two different rates. They are re-exported here because this module
+ * is still where the programme is implemented.
+ */
+export { MEMBERSHIP_PRICE_CENTS, REFERRAL_COMMISSION_RATE };
 
 /** Where the referral code is remembered in the visitor's browser. */
 export const REFERRAL_COOKIE = 'imperium_ref';

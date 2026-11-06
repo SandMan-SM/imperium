@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, Copy, Gift, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import {
+    MEMBERSHIP_PRICE_AMOUNT,
+    REFERRAL_COMMISSION_AMOUNT,
+    REFERRAL_COMMISSION_LABEL,
+} from "@/lib/membership";
 
 type ReferralSummary = {
     code: string | null;
@@ -153,9 +158,9 @@ export default function ReferralPanel() {
 
             <p className="text-white/40 text-sm mt-4">
                 Send the link to somebody who would use the membership. When they open it and take the
-                membership, the referral is recorded against you and you earn 30% of that membership — 6.00
-                on a 20.00 membership. Payouts are made by the Imperium team once the membership payment has
-                cleared, so ask for yours when it is due.
+                membership, the referral is recorded against you and you earn {REFERRAL_COMMISSION_LABEL} of that
+                membership — {REFERRAL_COMMISSION_AMOUNT} on a {MEMBERSHIP_PRICE_AMOUNT} membership. Payouts are made
+                by the Imperium team once the membership payment has cleared, so ask for yours when it is due.
             </p>
         </div>
     );

@@ -57,7 +57,7 @@ const SHARE_LINKS = [
     },
     {
         label: "Imperium Elite membership",
-        detail: `${REFERRAL.membershipPrice} a month — the referral pays ${REFERRAL.commission} commission.`,
+        detail: `${REFERRAL.membershipPrice} — the referral pays ${REFERRAL.commission} commission.`,
         url: REFERRAL.membershipUrl,
         // The membership is the offer that carries a commission, so this is
         // the link that is replaced with the member's own referral link.

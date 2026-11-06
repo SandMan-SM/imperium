@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import { NewsletterOptin } from "@/components/NewsletterOptin";
+import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
     title: "The Arsenal — Imperium Elite",
@@ -51,7 +52,7 @@ export default function ShopPage() {
                 <div className="container mx-auto px-4 max-w-4xl">
                     <NewsletterOptin />
                     <p className="text-center text-[10px] sm:text-[11px] text-white/20 font-bold tracking-widest uppercase mt-6">
-                        Free to join · $20/month for full access · Cancel anytime
+                        Free to join · {BRAND.priceMonthly} for full access · Cancel anytime
                     </p>
                 </div>
             </div>

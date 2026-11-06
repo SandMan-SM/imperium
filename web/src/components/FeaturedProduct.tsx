@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
-import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import { BRAND, STRIPE_CHECKOUT_URL } from "@/lib/brand";
 
 const BENEFITS = [
     "Daily strategic intelligence brief delivered to your inbox",
@@ -41,7 +41,7 @@ export function FeaturedProduct() {
                             <div
                                 className="text-[clamp(1.15rem,5.4vw,2.5rem)] md:text-4xl mb-4 sm:mb-6 md:mb-8 leading-tight opacity-90 font-light tracking-wide font-serif italic text-gradient-gold"
                             >
-                                For $20 a month.
+                                For {BRAND.priceMonthly}.
                             </div>
 
                             <p className="text-white/40 font-light leading-relaxed mb-5 sm:mb-8 md:mb-10 max-w-xl text-[11px] sm:text-sm md:text-base">

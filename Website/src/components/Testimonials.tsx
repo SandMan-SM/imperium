@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { motion } from "framer-motion";
+import { MEMBERSHIP_PRICE } from "@/lib/membership";
 
 type Testimonial = {
     id: number;
@@ -16,7 +17,7 @@ const TESTIMONIALS: Testimonial[] = [
         id: 1,
         name: "Marcus T.",
         handle: "@marcus_builds",
-        quote: "The $20 subscription is the single best financial decision I've made this year. The daily intelligence briefs completely rewired how I think about strategic decision-making.",
+        quote: `The ${MEMBERSHIP_PRICE} subscription is the single best financial decision I've made this year. The daily intelligence briefs completely rewired how I think about strategic decision-making.`,
         rating: 5,
     },
     {

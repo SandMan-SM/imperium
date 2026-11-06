@@ -86,12 +86,13 @@ const ANON_KEY = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
  * The commission rate and the membership price live in
- * `src/lib/server/referrals.ts` and nowhere else. This script reads them
- * from there rather than restating them, so a change to the rate does not
- * turn this check into a lie about the rate.
+ * `src/lib/membership.ts` and nowhere else — the module the copy derives
+ * its words from as well. This script reads them from there rather than
+ * restating them, so a change to the rate does not turn this check into a
+ * lie about the rate.
  */
 function readCommissionNumbers() {
-    const source = join(repoRoot, 'Website', 'src', 'lib', 'server', 'referrals.ts');
+    const source = join(repoRoot, 'Website', 'src', 'lib', 'membership.ts');
     if (!existsSync(source)) return null;
 
     const text = readFileSync(source, 'utf8');
@@ -113,7 +114,7 @@ if (!SUPABASE_URL || !SERVICE_KEY || !ANON_KEY) {
 
 const numbers = readCommissionNumbers();
 if (!numbers) {
-    console.error('Could not read the commission rate and membership price from src/lib/server/referrals.ts');
+    console.error('Could not read the commission rate and membership price from src/lib/membership.ts');
     process.exit(3);
 }
 

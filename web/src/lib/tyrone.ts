@@ -11,6 +11,13 @@
  * their ids back to the catalogue rows.
  */
 
+import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
+import {
+    MEMBERSHIP_PRICE_MONTHLY_SPACED,
+    REFERRAL_COMMISSION_LABEL,
+    REFERRAL_COMMISSION_NOTE,
+} from "@/lib/membership";
+
 export const COACH = {
     name: "Tyrone Ngouamo",
     role: "Strength and nutrition coach",
@@ -164,10 +171,10 @@ export const FAQ = [
  */
 export const REFERRAL = {
     membershipName: "Imperium Elite",
-    membershipPrice: "$20 / month",
-    membershipUrl: "https://buy.stripe.com/4gM4gyfOs2V64an8Dd5AQ07",
-    commission: "30%",
-    commissionNote: "30% of the membership — $6.00 on a $20.00 membership — paid once that membership's payment clears.",
+    membershipPrice: MEMBERSHIP_PRICE_MONTHLY_SPACED,
+    membershipUrl: STRIPE_CHECKOUT_URL,
+    commission: REFERRAL_COMMISSION_LABEL,
+    commissionNote: REFERRAL_COMMISSION_NOTE,
     shareLine: "Strength, nutrition, and the principles behind both.",
     card: "/people/tyrone-referral-card.webp",
     cardAlt:
