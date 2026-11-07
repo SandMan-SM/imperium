@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 05, 2026 11:40 PM
+> Synthetic Intelligence Memory | Updated: November 06, 2026 11:03 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
