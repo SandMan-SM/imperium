@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "audit:cron-auth": "node scripts/audit-cron-auth.mjs",
-    "build": "npm run audit:cron-auth && next build",
+    "audit:relay": "node --test scripts/test-success-empire-relay.mjs",
+    "build": "npm run audit:cron-auth && npm run audit:relay && next build",
     "start": "next start",
     "lint": "eslint"
   },
