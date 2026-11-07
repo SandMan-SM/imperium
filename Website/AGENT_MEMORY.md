@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 05, 2026 11:40 PM
+> Synthetic Intelligence Memory | Updated: November 06, 2026 11:03 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,127 +31,90 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The commission rate had eleven homes and nobody was watching any of them.
-- **The commission was a promise with eleven copies of the number.** The
-  referral programme pays 30% of a $20 membership. That rate was written
-  out in **eleven** places — the module that does the arithmetic, the brand
-  facts, the coaching copy, the referral page, the member's portal, every
-  "join now" button, the terms page and a testimonial — and the membership
-  price itself in **ten** of them. They all agreed. **Nothing kept them
-  agreeing.** One price edited in one place and not the other puts the
-  defect straight back, and for a *rate* the site would go on promising a
-  commission it does not pay.
-- **`src/lib/membership.ts` is now the one owner.** The rate, the price in
-  cents and every label the site writes are in one client-safe module; the
-  server module imports the numbers rather than keeping its own, and every
-  surface derives its words. **The arithmetic is in the module, so the
-  floating-point traps are closed there:** `0.3 * 100` is
-  `30.000000000000004`, and `2000 * 0.3` is not exactly `600`, so the
-  percentage is rounded and the commission is rounded in cents — the unit
-  the ledger stores it in.
-- **The portal said "6.00 on a 20.00 membership"** — the two amounts with
-  no dollar signs on them, because they were typed into a sentence. The
-  sentence now derives them and says **$6.00 on a $20.00 membership**.
-- **The referral page's share card said "$20 / month a month".** The
-  membership price was a string that already said "/month", and the
-  sentence appended " a month" to it. It is one sentence now, and it says
-  what it means.
-- **The membership checkout link was written down twice** — in
-  `lib/brand.ts` and in `lib/tyrone.ts` — and a rotation would leave one
-  copy stale. The coaching module imports the brand module's link now, and
-  the check proves the link in the source is the catalogue's link, is
-  active, and charges the catalogue price.
-- **`scripts/check_referral_terms.mjs` gives the rule a command.**
-  **15 of 15 checks pass.** It reads the rate and the price out of the
-  owner rather than restating them, proves no other file writes the rate,
-  the commission or the price in words (comments excluded — a comment
-  states nothing to a buyer), proves the module that pays the commission
-  imports the numbers instead of keeping its own, proves the live referral
-  page states the derived rate, the derived commission and the derived
-  price, and proves the catalogue and the Stripe price agree with the
-  owner. **The scan is not vacuous: it finds eleven restatements in the
-  tree this session started from, and none in the tree it ended with.**
-- **The offer check had gone stale, and it went stale silently.** Another
-  agent rebuilt the home page as the Success Empire surface, which carries
-  no price and no payment link. `scripts/check_coaching_offers.mjs` named
-  the home page as *the* page the membership is sold from, so it read a
-  page that no longer carried the offer and reported a defect that was
-  really a page that had moved. **A check that names the page an offer
-  lives on goes stale the day the offer moves.** The pages are candidates
-  now, not owners: every surface that carries an offer's link has to carry
-  its price, and the offer has to be on at least one of them. The
-  membership is on **five** live pages, all showing **$20**. **47 of 47
-  checks pass.**
-- **The merchandise catalogue was wrong where nothing could reach it, and
-  it was wrong in the way that hurts.** Three rows named a payment link
-  that had been retired — the checkout a buyer would open refuses to take
-  money — and three named a live link that charged **$44** for a tee the
-  catalogue says is **$29.99** (and $88 for $79.99, $80 for $59.99). The
-  storefront is closed, so no buyer has met either defect. **A closed
-  storefront is not a reason to leave the catalogue wrong.** The
-  catalogue is the truth — it is what the page shows, what the site's own
-  checkout charges, and what `sync-products` builds the Stripe price from
-  — so the account was brought to it: a fresh price at the catalogue
-  amount, a fresh link bound to the catalogue row, and the superseded
-  links retired. **Nothing costs a different amount than it says it does.**
-- **The catalogue now has a check of its own.**
-  `scripts/check_catalogue_sellability.mjs` asks the same five questions
-  of **every** row in `products` — does the link exist, is it active, does
-  it point at the recorded price, is the amount charged the catalogue
-  price, and does the page the buyer lands on exist — and it adds the one
-  question the coaching check could not ask of a closed shop: **a row
-  marked in stock must be buyable.** **62 of 62 checks pass.**
-- **Money is compared in cents, not in dollars.** The repair script
-  decided a $79.99 row needed repairing when the link charged $79.99,
-  because `79.99 * 100` is `7998.999999999999` in binary floating point.
-  Two equal prices said they differed, and the script would have created a
-  new link on every run — a fix that never settles.
-- **The trees were reconciled with production.** Another agent's
-  Success Empire build was on `origin/main` and the local branch was a
-  commit behind it, so the local tree was not the tree that serves the
-  site. The merge is in, the brief was written into `Website/` (the
-  canonical copy) and mirrored, and the two trees are identical again.
-- **The referral proof lives in the repo now.** `scripts/check_referral_chain.mjs`
-  walks the whole journey — code issued, link built, link redirects and sets
-  the cookie, the referral claimed, the referrer sees it, the commission
-  earned at **$6.00**, the claim idempotent, an anonymous claim refused
-  with 401, a self referral refused — and proves the database is clean
-  afterwards. **15 of 15 checks pass.**
-- **It reads the commission rate from the module, not from a copy of it.**
-  The rate and the membership price are parsed out of
-  `src/lib/server/referrals.ts`, so the check cannot become a second
-  answer to what the rate is. Change the rate and the check follows.
-- **It cleans up after itself, and it cleans up after itself when it
-  dies.** The old script left probe accounts in the live database if it was
-  killed between creating them and reaching its `finally`. The new one
-  registers signal and exit handlers, removes the referral rows before the
-  profile rows before the auth user (the foreign keys run that way), and
-  **sweeps the accounts an earlier run left behind** before it starts. The
-  database is verified clean at the end of every run.
-- **The referral link asks not to be indexed.** `/ref/<code>` is a
-  personal URL — one member's link, meant to be followed by one person.
-  Every branch of the redirect now carries `X-Robots-Tag: noindex, nofollow`,
-  `/ref` is disallowed in `robots.txt`, and the redirect carries no body
-  for a crawler to index.
-- **The coaching offers finally have a check.** Last session fixed a real
-  defect — every coaching offer pointed at the $20 membership link, so a
-  buyer clicking "$150" was taken to a subscription checkout. **Nothing
-  kept it fixed.** `scripts/check_coaching_offers.mjs` now proves, for each
-  offer and for the membership, that the catalogue row is sellable, the
-  payment link is active, the link points at the recorded price and is
-  bound to that catalogue row, the amount charged is the catalogue price,
-  the price on the **live page** is the price charged, and the page the
-  buyer lands on after paying exists.
-- **The newsletter check was reading the oldest attempt and calling it the
-  last one.** The dispatch log was queried with `order=created_at` —
-  ascending — so `rows[0]` was the first attempt ever. The check reported
-  *"the cron ran 48.5 hours ago"* on a cron that had run **20 hours**
-  earlier, and would have reported a dead cron every day from now on. The
-  order is explicit now, and the attempt is chosen by its own timestamp.
-- **A marker on a catalogue row now means what it says.** The three
-  coaching rows still carried `needs_real_stripe_link: true` from before
-  they had links of their own. It is `false` now, and the script that
-  writes those rows clears it on every write-back.
+The newest front door had no proof, and the mirror that protects the old ones was quietly eating work.
+- **The application front door was the only chain on the site without a
+  command.** Another agent rebuilt the home page as an application surface
+  (2026-11-04) and the visitor-facing form at `/apply/` became the site's
+  front door: a person arrives, tells Imperium what they want to build, and
+  the site promises them a reply. **Nothing proved that promise still
+  holds.** Every other chain here has a script — the money path, the
+  referral, the coaching offers, the catalogue, the letter, the Telegram
+  bridge — and the newest one, the one a visitor actually walks into, had
+  none. A relay that quietly stops reaching the CRM does not look broken to
+  the person filling in the form; it looks like a business that ignores
+  them.
+- **`scripts/check_apply_chain.mjs` asks the questions a visitor meets in
+  order.** Does the application page exist and carry the form? Can a
+  visitor get to it from the front door? Does the relay answer — is the
+  deployed identity and the upstream still alive? Does the door still
+  refuse a forged origin, a request with no origin at all, the wrong
+  content type, an unreadable body, an application with missing fields and
+  an oversized body? Do the fields the browser sends and the fields the
+  server reads still agree? Can a caller still change the destination, the
+  tenant or the offer? Do the boundary tests still pass? **19 of 19 checks
+  pass against production.**
+- **The check writes nothing, on purpose.** Every probe it makes is
+  refused by the door *before* the relay is reached, so no lead is created
+  and no message is sent. **A proof that dirties the CRM is a proof nobody
+  runs twice** — the same argument that made the referral chain sweep its
+  own probe accounts. The one question production cannot answer from the
+  outside — *does a valid application reach the CRM with both receipts?* —
+  is answered by the boundary suite, which exercises the same module with
+  the network replaced.
+- **The scan is not vacuous.** Renaming one field in the relay
+  (`fullName` to `name`) breaks two independent checks at once: the
+  contract check sees that the browser and the server no longer agree, and
+  the boundary suite fails. A check that cannot fail is a decoration.
+- **The boundary suite existed and nothing ran it.** The relay's nine
+  offline tests — the origin allowlist, the size and content-type bounds,
+  the honeypot, the fixed destination, the fail-closed receipt check — sat
+  in `Website/scripts/` with no npm script and no CI job. **A proof nobody
+  runs is a proof that stops existing the next time the module changes.**
+  `npm run build` now runs it (`npm run audit:relay`), beside the cron
+  authentication audit, so a deploy cannot ship without it. **A boundary
+  test that runs on every build is a rule that cannot lapse.**
+- **The mirror script was overwriting work, and that is how the brief
+  itself drifted twice.** `scripts/sync-trees.sh` copies `Website/` down to
+  `web/` and deletes what is not in the source. It did that without asking,
+  so an edit made in the mirror was destroyed by the next sync — including
+  the intelligence brief, which is written by an agent that reads it from
+  wherever it is standing. The repository carried two different briefs: one
+  of them a day out of date.
+- **The sync now refuses to destroy an edit, and says which file.** Before
+  it copies anything it asks what the copy would change: a file that exists
+  only in the mirror would be deleted (refused), a file with an uncommitted
+  edit in the mirror would lose it (refused), and a file whose last commit
+  in the mirror is newer than the last commit in the production root holds
+  the newer version (refused, and asked to be carried across). Only when
+  every difference is a change that lives in the production root does the
+  copy run. **A copy that silently overwrites work is worse than no copy
+  at all.**
+- **The rule in `CLAUDE.md` was what told the agent to edit the wrong
+  tree.** It said *"Edit in either tree, then run `scripts/sync-trees.sh`"* —
+  which is exactly how an edit in `web/` gets overwritten. The production
+  root is `Website/` and `web/` is its mirror; the instruction now says so,
+  names the canonical copy of the brief, and says to carry an edit across
+  before mirroring.
+- **The nightly agent could push the drift.** The auto-agent workflow ran
+  the agent and pushed whatever it committed, and the tree-sync CI job was
+  skipped by the `[skip ci]` marker the agent's own commits carry. The
+  workflow now repairs the mirror before it pushes, commits the repair, and
+  refuses to push when the mirror holds work the production root does not.
+  It also runs Node **24** (the version the app pins) instead of 20.
+- **The two operator-blocked items have not moved.** The Stripe account
+  still shows **zero customers, zero subscriptions and no paid session**
+  (twenty sessions, all expired and unpaid), and both copies of the Telegram
+  token still answer **401 Unauthorized**. The bridge script names three
+  failures and the fix it wants: one token, from BotFather, in two places.
+- **Everything else is still green.** The schema scan finds no phantom
+  table or column (19 tables, 55 column references). The membership price
+  and the commission rate agree with the catalogue, the page and the
+  account. Every catalogue row that names a link is sellable at the price
+  it states. The coaching offers each show one price and Stripe charges
+  that price. The referral chain earns a $6.00 commission on a $20.00
+  membership and leaves the database clean. The letter's cron ran 19 hours
+  ago and correctly reported that there was nothing to send. The visual
+  audit over 39 routes at 375px found nothing to fix.
 
 ## 📈 What Is Now Proven, and By What
 | Chain | Script | Exit |
@@ -165,6 +128,7 @@ The commission rate had eleven homes and nobody was watching any of them.
 | Telegram bridge | `scripts/check_telegram_bridge.mjs` | 0 wired / 1 broken |
 | Schema references | `scripts/check-schema-refs.mjs` | 0 clean / 1 phantom table or column |
 | Visual, mobile, links, theme | `scripts/check_visual.mjs` | 0 clean / 1 finding |
+| Application front door → relay → CRM | `scripts/check_apply_chain.mjs` | 0 sound / 1 broken / 3 could not run |
 
 ## 🎯 This Session: Do These In Order
 1. **Get the operator's own card through the checkout once.** Still
@@ -176,8 +140,9 @@ The commission rate had eleven homes and nobody was watching any of them.
    The Stripe account still shows **zero customers and zero subscriptions**;
    the only paid session is a $0 verification session. Twenty sessions exist,
    and the ones that reached the $20 link are all expired and unpaid.
-   **Re-confirmed 2026-11-05**: still zero customers, still zero
-   subscriptions, still no paid session. When the card runs, prove it in one
+   **Re-confirmed 2026-11-06**: still zero customers, still zero
+   subscriptions, still no paid session — twenty sessions, all expired and
+   unpaid. When the card runs, prove it in one
    command: `node scripts/check_payment_chain.mjs <the-address>`.
 2. **Get a working Telegram token from BotFather.** There is **no valid
    token anywhere** — the local `.env.local`, the bot's `.env` and the one
@@ -192,9 +157,10 @@ The commission rate had eleven homes and nobody was watching any of them.
    the bridge script will now say whether the two copies are the same bot.
    Note that Vercel Production and Preview each hold **their own** copy of
    the dead token, so a rotation that touches only one leaves the other
-   dead. **Re-confirmed 2026-11-05**: the bot's token and the site's own
+   dead. **Re-confirmed 2026-11-06**: the bot's token and the site's own
    copy both still answer `401 Unauthorized`, so the bot's half of the
-   bridge is dead and the site's half is dead with it.
+   bridge is dead and the site's half is dead with it. **Three of the
+   bridge's sixteen checks fail for this one reason.**
 3. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
    Telegram who the token belongs to (`getMe`), caches the answer and builds
    the `t.me` deep link from that, so the link cannot point at a bot the
@@ -379,6 +345,28 @@ The commission rate had eleven homes and nobody was watching any of them.
     copies of the Telegram token still answer **401 Unauthorized**. Until
     a human supplies the card and the token, the money path and the bot
     are unproven in the only way that counts.
+27. **A valid application has never been sent through the live door.**
+    The relay is hardened and the boundary suite passes, and the door
+    answers a readiness read from production, but **no *valid*
+    application has gone through it** — every live probe this session was
+    a refusal, deliberately, because a proof that dirties the CRM is a
+    proof nobody runs twice. The operator can close this the same way the
+    membership is closed: send one real application once, and watch the
+    lead, the CRM contact and the two notifications land. The receipt
+    contract is exact — `lead_id`, `crm_contact_id`, `analytics_id`, a
+    customer message and an owner message — so a partial success is
+    visible rather than silent.
+28. **The mirror is safe now, but the two trees are still two trees.**
+    The sync refuses to destroy an edit and the nightly workflow repairs
+    the mirror before it pushes. **What would close the class entirely is
+    deleting one of them** — but `web/` is what the tooling and the
+    documentation point at, and removing it is a decision about how this
+    repository is worked, not a bug fix.
+29. **A second published issue is still the letter's next step.**
+    Unchanged from 2026-11-01: the cron is healthy and correctly reports
+    that there is nothing to send, because only one issue has been
+    published and it went out on 2026-10-22. Publishing is the approval
+    step the cron waits for.
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -584,6 +572,37 @@ The commission rate had eleven homes and nobody was watching any of them.
   it found out after filling in the form. Nothing in the checkout may name
   a Stripe resource without checking that the resource is there.
 
+
+- **The front door is the chain nobody watches.** Every chain on this site
+  was proved because it had a command and the operator wanted the answer.
+  The one a *visitor* walks into arrived last and was left unproved, and a
+  relay that stops reaching the CRM does not look broken — it looks like a
+  business that ignores applications. **A promise to a stranger is a
+  promise.**
+- **A proof that dirties someone's CRM is a proof nobody runs twice.** The
+  check asks the deployed door to refuse what it must refuse; every one of
+  those refusals happens before the relay is reached, so no lead is created
+  and no message is sent. **Reachability is not correctness** in the other
+  direction too: a check that writes to production needs somewhere to put
+  what it wrote.
+- **A boundary test that nothing runs is a comment.** The relay's nine
+  offline tests sat in the repository with no npm script and no CI job, so
+  they described the module rather than defending it. **A proof nobody runs
+  is a proof that stops existing the next time the code changes** — and the
+  build is the one place that always runs.
+- **A copy that silently overwrites work is worse than no copy at all.**
+  The mirror deleted the brief it was supposed to protect, twice, and the
+  repository carried two versions of the same file. **A sync that loses an
+  edit teaches everyone not to use it.**
+- **The rule in the documentation was the bug.** `CLAUDE.md` said to edit
+  either tree and then mirror — which is a description of how to lose an
+  edit. **The instruction has to name the owner**, because an agent reads
+  the instruction and not the intent.
+- **A gate that can be skipped is not a gate.** The tree-sync check ran in
+  CI on every push, and the pushes carried `[skip ci]`, so the check did
+  not run on exactly the commits that broke the rule. **A check that fires
+  only when the discipline is already being followed is a decoration.**
+
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
 of them is a migration and needs a council decision. They are written up in
@@ -617,12 +636,16 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 62
-- Lines written: 9210
+- Sessions: 63
+- Lines written: 9590
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-06 | ops | The newest front door had no proof. The Success Empire application at `/apply/` is where a visitor now starts, and it was the only chain on the site without a command — a relay that quietly stops reaching the CRM does not look broken, it looks like a business that ignores applications. `scripts/check_apply_chain.mjs` asks the questions a visitor meets in order: the page exists and carries the form, the front door leads to it, the relay answers from production, and it still refuses a forged origin, a request with no origin, the wrong content type, an unreadable body, missing fields and an oversized body. It also proves the browser and the server agree on the fields, that the caller cannot change the destination, the tenant or the offer, and that the boundary suite still passes. **19 of 19 checks pass.** It writes nothing: every probe is refused before the relay, so no lead is created — a proof that dirties someone's CRM is a proof nobody runs twice. The scan is not vacuous: renaming one field in the relay breaks the contract check and the boundary suite at once | ~230 |
+| 2026-11-06 | build | The relay's nine boundary tests existed and nothing ran them — no npm script, no CI job. A proof nobody runs is a proof that stops existing the next time the module changes. `npm run build` now runs them (`npm run audit:relay`) beside the cron authentication audit, so a deploy cannot ship without them | ~20 |
+| 2026-11-06 | repo | The mirror was overwriting work. `scripts/sync-trees.sh` copied `Website/` down to `web/` and deleted what was not in the source, so an edit made in the mirror was destroyed by the next sync — including the intelligence brief, which is why the repository carried two briefs and one of them was a day out of date. The sync now refuses before it copies: a file only in the mirror, a file with an uncommitted edit in the mirror, and a file whose last commit in the mirror is newer than the last commit in the production root are all refused, and the refusal names the file and says how to carry it across. Only differences that live in the production root are copied. The rule in `CLAUDE.md` that told the agent to "edit in either tree" is corrected to name the owner | ~90 |
+| 2026-11-06 | repo | The nightly agent could push the drift. The auto-agent workflow pushed whatever it committed, and the tree-sync CI job was skipped by the `[skip ci]` marker the agent's own commits carry — a gate that can be switched off is not a gate. The workflow now repairs the mirror before it pushes, commits the repair, and refuses to push when the mirror holds work the production root does not. It also runs Node 24, the version the app pins, instead of 20 | ~40 |
 | 2026-11-05 | revenue | The commission rate had eleven homes and the membership price had ten, and nothing kept them agreeing. The referral programme promises 30% of a $20 membership; that rate was typed into the module that does the arithmetic, the brand facts, the coaching copy, the referral page, the member's portal, every "join now" button, the terms page and a testimonial — and the price into ten of them. The brief's rule ("the rate lives in `src/lib/server/referrals.ts` and nowhere else") could not be kept, because the server module is server-only and the copy has to live in the browser, so the copy restated the number. `src/lib/membership.ts` is the owner now: the rate, the price in cents and every label the site writes, with the arithmetic closed against the floating-point traps (`0.3 * 100` is `30.000000000000004`; `2000 * 0.3` is not exactly `600`). The server module imports the numbers rather than keeping its own, every surface derives its words, and the membership checkout link is written down once instead of twice. Two copy defects fell out: the portal said "6.00 on a 20.00 membership" with no dollar signs, and the referral page's share card said "$20 / month a month" | ~280 |
 | 2026-11-05 | repo | The mirror had drifted by one line: `web/AGENT_MEMORY.md` carried a newer date than the canonical `Website/` copy, which is the exact failure the mirror rule exists to prevent — a brief written into the wrong tree. `scripts/sync-trees.sh` put them back in step and `--check` is clean. The visual audit ran over 39 routes at 375px and found nothing to fix | ~20 |
 | 2026-11-05 | ops | `scripts/check_referral_terms.mjs` gives the rule a command — 15 of 15 checks pass. It reads the rate and the price out of the owner rather than restating them, proves no other file writes the rate, the commission or the price in words (comments excluded), proves the module that pays the commission imports the numbers, proves the live referral page states the derived rate, commission and price, and proves the catalogue, the source link and the Stripe price all agree with the owner. The scan is strict on purpose — any amount written out on a line that talks about the membership or the commission is a violation, even a correct one — and it is not vacuous: eleven restatements in the tree the session started from, none in the tree it ended with. `check_referral_chain.mjs` now reads the numbers from the new owner | ~330 |
@@ -1127,6 +1150,33 @@ with the `products.slug` migration decision in the same entry. **Recorded
   acting on a difference.
 
 
+
+- **the-newest-front-door-has-the-least-evidence** (fleet, applies to
+  every second entrance) — the application's form was added last, and every
+  chain added before it had a command that proved it. A visitor-facing
+  surface with no proof is the surface most likely to be quietly broken.
+  **Ask of every front door: which command would say it is still working?**
+- **a-proof-that-writes-to-someone-elses-system-is-a-proof-nobody-runs**
+  (fleet) — the check asks the deployed door to refuse what it must, and
+  every refusal happens before the relay, so nothing is created and nothing
+  is sent. Where a check cannot avoid writing, it must clean up (see
+  `a-script-that-leaves-a-mess-is-a-script-nobody-runs-twice`).
+- **a-boundary-test-nothing-runs-is-a-comment** (every project) — the
+  relay's offline tests existed and no npm script, no CI job and no build
+  step called them. **Wire the proof into the build**, next to the audit
+  that is already there, and it cannot lapse.
+- **a-copy-that-silently-overwrites-work-is-worse-than-no-copy** (every
+  repo with a mirror) — the sync copied the production root down and
+  deleted whatever was not in it, including edits made in the mirror and
+  including the brief itself. **The sync must refuse to destroy an edit
+  and name the file**, and the rule in the documentation must say which
+  tree is the owner.
+- **a-gate-that-can-be-skipped-is-not-a-gate** (every project) — the
+  tree-sync check ran in CI on every push, and the nightly agent's commits
+  carry `[skip ci]`, so the check never ran on the commits that broke the
+  rule. **Put the check where the push happens**, not where a marker can
+  switch it off.
+
 ## ⚡ Rules
 - Read this file first, every session
 - Never repeat anything in Edit History
@@ -1172,14 +1222,24 @@ with the `products.slug` migration decision in the same entry. **Recorded
   release it with a receipt
 - Write `AGENT_MEMORY.md` into **`Website/`**, then run
   `scripts/sync-trees.sh` — the canonical copy is the production root, and
-  a brief written into `web/` is a brief that drifts
+  a brief written into `web/` is a brief that drifts. **The sync refuses to
+  run when the mirror holds work the production root does not** — an
+  uncommitted edit there, a file only there, or a newer commit there — and
+  it names the file. Carry the change into `Website/` and run it again
+- **Make every change in `Website/`.** `web/` is the mirror. Editing the
+  mirror and then mirroring is how an edit is lost, and the sync now
+  refuses to do it silently
+- **`npm run build` runs the relay's boundary suite** (`npm run
+  audit:relay`) beside the cron audit, so a deploy cannot ship a relay
+  that has lost its origin allowlist, its size bound or its receipt check
 - Before every push run `node scripts/check-schema-refs.mjs`,
   `node scripts/check_telegram_bridge.mjs`,
   `node scripts/check_newsletter_chain.mjs`,
   `node scripts/check_referral_chain.mjs`,
   `node scripts/check_referral_terms.mjs`,
   `node scripts/check_coaching_offers.mjs`,
-  `node scripts/check_catalogue_sellability.mjs` and
+  `node scripts/check_catalogue_sellability.mjs`,
+  `node scripts/check_apply_chain.mjs` and
   `node scripts/check_visual.mjs https://secretimperium.com 375`
 - **The catalogue is the truth for every merchandise price.**
   `scripts/stripe_merch_links.mjs` brings the Stripe account to the
