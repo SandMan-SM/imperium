@@ -35,6 +35,16 @@ jobs:
           git config --global user.email "agent@omni-ai.com"
           git config --global user.name "Omni Auto-Agent"
 
+      - name: The agent needs an API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY is not set in this repository's Actions secrets."
+            echo "The agent cannot run without it. Add it under Settings -> Secrets and variables -> Actions, then re-run this workflow."
+            exit 1
+          fi
+
       - name: Run Agent
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

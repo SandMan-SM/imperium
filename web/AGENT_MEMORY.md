@@ -106,6 +106,16 @@ The newest front door had no proof, and the mirror that protects the old ones wa
   (twenty sessions, all expired and unpaid), and both copies of the Telegram
   token still answer **401 Unauthorized**. The bridge script names three
   failures and the fix it wants: one token, from BotFather, in two places.
+- **The nightly agent has not run for three nights, and it failed quietly.**
+  The auto-agent workflow has been **failing** since at least 2026-11-04:
+  the `ANTHROPIC_API_KEY` secret is not set in this repository's Actions
+  secrets, so `claude --print` answered *"Not logged in · Please run
+  /login"* and the workflow died at the agent step, every time, in about a
+  minute and a half. The only sign was a red tick in the Actions tab. The
+  workflow now checks the key **before** it installs anything and says what
+  is missing and where to add it, instead of failing with a login message
+  that reads like a mistake in the workflow. **The secret itself is the
+  operator's** — it cannot be set from here.
 - **Everything else is still green.** The schema scan finds no phantom
   table or column (19 tables, 55 column references). The membership price
   and the commission rate agree with the catalogue, the page and the
@@ -367,6 +377,13 @@ The newest front door had no proof, and the mirror that protects the old ones wa
     that there is nothing to send, because only one issue has been
     published and it went out on 2026-10-22. Publishing is the approval
     step the cron waits for.
+30. **The nightly agent is still switched off.** `ANTHROPIC_API_KEY` is not
+    set in this repository's Actions secrets, so the auto-agent workflow
+    has failed at the agent step every night since at least 2026-11-04.
+    The workflow now names the missing secret in the failure message; the
+    secret itself is the operator's to add (Settings → Secrets and
+    variables → Actions). Until it is there, the nightly automation
+    contributes nothing and every brief update has to be made by hand.
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -598,6 +615,12 @@ The newest front door had no proof, and the mirror that protects the old ones wa
   either tree and then mirror — which is a description of how to lose an
   edit. **The instruction has to name the owner**, because an agent reads
   the instruction and not the intent.
+- **An automation that fails quietly is an automation nobody is watching.**
+  The nightly agent died on the first night because its key was missing,
+  and it died the same way on the next two, and the only evidence was a
+  red tick in a tab nobody opened. **A failure that names its cause is a
+  failure that gets fixed**; "Not logged in" reads like a workflow
+  mistake, and the workflow was fine.
 - **A gate that can be skipped is not a gate.** The tree-sync check ran in
   CI on every push, and the pushes carried `[skip ci]`, so the check did
   not run on exactly the commits that broke the rule. **A check that fires
@@ -642,6 +665,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-06 | repo | The nightly agent had been dead for three nights. The auto-agent workflow has been failing since at least 2026-11-04 because `ANTHROPIC_API_KEY` is not set in this repository's Actions secrets: `claude --print` answered "Not logged in · Please run /login" and the job died in about a minute and a half, every night, leaving a red tick in a tab nobody opened. The workflow now checks for the key before it installs anything and names the missing secret and where to add it. The secret itself is the operator's — it cannot be set from here, so the nightly automation contributes nothing until it is | ~30 |
 | 2026-11-06 | ops | The newest front door had no proof. The Success Empire application at `/apply/` is where a visitor now starts, and it was the only chain on the site without a command — a relay that quietly stops reaching the CRM does not look broken, it looks like a business that ignores applications. `scripts/check_apply_chain.mjs` asks the questions a visitor meets in order: the page exists and carries the form, the front door leads to it, the relay answers from production, and it still refuses a forged origin, a request with no origin, the wrong content type, an unreadable body, missing fields and an oversized body. It also proves the browser and the server agree on the fields, that the caller cannot change the destination, the tenant or the offer, and that the boundary suite still passes. **19 of 19 checks pass.** It writes nothing: every probe is refused before the relay, so no lead is created — a proof that dirties someone's CRM is a proof nobody runs twice. The scan is not vacuous: renaming one field in the relay breaks the contract check and the boundary suite at once | ~230 |
 | 2026-11-06 | build | The relay's nine boundary tests existed and nothing ran them — no npm script, no CI job. A proof nobody runs is a proof that stops existing the next time the module changes. `npm run build` now runs them (`npm run audit:relay`) beside the cron authentication audit, so a deploy cannot ship without them | ~20 |
 | 2026-11-06 | repo | The mirror was overwriting work. `scripts/sync-trees.sh` copied `Website/` down to `web/` and deleted what was not in the source, so an edit made in the mirror was destroyed by the next sync — including the intelligence brief, which is why the repository carried two briefs and one of them was a day out of date. The sync now refuses before it copies: a file only in the mirror, a file with an uncommitted edit in the mirror, and a file whose last commit in the mirror is newer than the last commit in the production root are all refused, and the refusal names the file and says how to carry it across. Only differences that live in the production root are copied. The rule in `CLAUDE.md` that told the agent to "edit in either tree" is corrected to name the owner | ~90 |
@@ -1171,6 +1195,12 @@ with the `products.slug` migration decision in the same entry. **Recorded
   including the brief itself. **The sync must refuse to destroy an edit
   and name the file**, and the rule in the documentation must say which
   tree is the owner.
+- **an-automation-that-fails-quietly-is-an-automation-nobody-is-watching**
+  (every project) — a nightly job that died three nights running left one
+  red tick behind and no work done. **Check the job's own status before
+  assuming the work happened**, and make the failure say what is missing:
+  a secret that is not set should be named as a missing secret, not as a
+  login prompt.
 - **a-gate-that-can-be-skipped-is-not-a-gate** (every project) — the
   tree-sync check ran in CI on every push, and the nightly agent's commits
   carry `[skip ci]`, so the check never ran on the commits that broke the
