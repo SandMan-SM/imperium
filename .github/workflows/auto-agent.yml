@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
 
@@ -41,7 +41,18 @@ jobs:
         run: |
           cd ..
           claude --print --dangerously-skip-permissions \
-            "Read CLAUDE.md and complete all Agent Priorities. Run 'cd web && npm run build' to verify. Commit with prefix 'agent:'. Never touch .env files."
+            "Read CLAUDE.md and complete all Agent Priorities. Run 'cd web && npm run build' to verify. Commit with prefix 'agent:'. Never touch .env files.
+            The production root is Website/ and web/ is a byte-identical mirror of it. Make every change in Website/, and write the intelligence brief to Website/AGENT_MEMORY.md. If you edited web/ instead, copy the change into Website/ before mirroring. Run scripts/sync-trees.sh so the two trees are identical, and never let the two trees differ."
+
+      - name: Keep the mirror in step with the production root
+        working-directory: .
+        run: |
+          scripts/sync-trees.sh
+          scripts/sync-trees.sh --check
+          if [ -n "$(git status --porcelain -- web/)" ]; then
+            git add web/
+            git commit -m "agent: mirror the production root into web/"
+          fi
 
       - name: Push changes
         run: git push origin HEAD || echo "No changes to push"

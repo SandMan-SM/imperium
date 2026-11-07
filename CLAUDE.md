@@ -31,9 +31,16 @@ docs/         → docs
 ### Tree sync (read before editing)
 Production builds **`Website/`**, not `web/`. The two trees used to drift and the
 non-shipping tree silently swallowed fixes. `web/` is now an exact mirror:
-- Edit in **either** tree, then run `scripts/sync-trees.sh` (mirrors `Website/` -> `web/`).
+- **`Website/` is the owner.** Make the change there, then run `scripts/sync-trees.sh`
+  (mirrors `Website/` -> `web/`). If you edited `web/`, carry the change into
+  `Website/` **before** mirroring — the sync copies down and would otherwise
+  overwrite it.
+- The sync **refuses** to run when the mirror holds work the production root does
+  not (an uncommitted edit, a file only in the mirror, or a newer edit committed
+  there). It says which file and how to carry it across. It never destroys an edit.
 - `scripts/sync-trees.sh --check` fails if they drift; CI enforces it on every push/PR.
 - `AGENT_MEMORY.md` lives in both trees and is kept byte-identical by the sync.
+  The **canonical copy is `Website/AGENT_MEMORY.md`** — write the brief there.
 
 ### Key web paths
 - `web/src/app/` — routes: `(auth)`, `28principles`, `account` (incl. `account/profile`), `admin`, `archive`, `partners`, `resources`, `assessments`, `archetype`, `personality`, `iq`, `eq`, `market`, `mission-statement`, `newsletter` (incl. `newsletter/archive`, `newsletter/unsubscribe`), `shop`, `privacy`, `terms`. The public storefront routes (`/28principles`, `/shop`, `/account`, `/cart`, `/checkout`, `/login`, `/signup`, `/portal`, `/subscribe`) currently **redirect to `/archive/`** — the Archive rebrand is live; the backing routes and APIs are retained.
@@ -78,6 +85,10 @@ node scripts/check_payment_chain.mjs --recent
 
 # Prove the Telegram bridge: will the bot open the paid sequence?
 node scripts/check_telegram_bridge.mjs
+
+# Prove the application front door: can a visitor apply, and does the door
+# still refuse what it must? (writes nothing — every probe is refused first)
+node scripts/check_apply_chain.mjs
 
 # Telegram bot
 cd telegram-bot && source venv/bin/activate && python bot.py
