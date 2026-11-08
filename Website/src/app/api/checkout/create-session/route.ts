@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import type { CartItem } from "@/lib/cart-context";
 import { CheckoutError, createCheckoutSession } from "@/lib/server/checkout-session";
+import { consumeRateWindow, requestIp } from "@/lib/server/rate-limit";
 
 /** Shipping details collected by the checkout form. */
 interface ShippingDetails {
@@ -31,6 +32,9 @@ interface CheckoutRequestBody {
   email?: string;
 }
 
+/** How many checkout sessions one caller may start in the window. */
+const CHECKOUT_MAX = 30;
+
 /** Narrows an unknown thrown value to a plain object so its fields can be read. */
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
@@ -43,6 +47,19 @@ function errorMessage(error: unknown): string | undefined {
 }
 
 export async function POST(request: NextRequest) {
+  // This door mints a live Stripe checkout session for anybody who asks, so
+  // it is counted the way the other public write doors are. A buyer makes a
+  // session or two; a script makes hundreds. The window is wider here than
+  // on the other doors because a buyer may rebuild their cart, and because
+  // the checkout proof asks the door several questions in one run.
+  const limited = consumeRateWindow(`checkout:${requestIp(request)}`, CHECKOUT_MAX);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many checkout attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } },
+    );
+  }
+
   try {
     const body = (await request.json()) as CheckoutRequestBody;
     const { items, shipping, shippingMethod, promoCode, email } = body;

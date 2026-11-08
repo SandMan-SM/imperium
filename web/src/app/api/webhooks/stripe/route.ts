@@ -6,6 +6,11 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { getStripe } from '@/lib/stripe-helper';
 import { getAdminClient } from '@/lib/server/imperium-capture';
 import { awardReferralCommission } from '@/lib/server/referrals';
+import {
+  legacyLineKey,
+  purchaseRecordsFromLineItems,
+  type PurchaseCatalogueRow,
+} from '@/lib/server/purchase-records';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 const PURCHASE_EVENT_TYPE = 'purchase_recorded';
@@ -29,9 +34,12 @@ function errorMessage(error: unknown): string | undefined {
  */
 async function recordPurchase(payload: {
   sessionId: string;
+  lineKey: string;
+  lineIndex: number;
   productId: string | null;
   productName: string | null;
   amount: number;
+  amountCents: number;
   currency: string;
   quantity: number;
   email: string | null;
@@ -59,9 +67,12 @@ async function recordPurchase(payload: {
     target_id: payload.productId,
     payload: {
       stripe_checkout_session: payload.sessionId,
+      line_key: payload.lineKey,
+      line_index: payload.lineIndex,
       product_id: payload.productId,
       product_name: payload.productName,
       amount: payload.amount,
+      amount_cents: payload.amountCents,
       currency: payload.currency,
       quantity: payload.quantity,
       email: payload.email,
@@ -73,6 +84,23 @@ async function recordPurchase(payload: {
   if (error) {
     console.error('Stripe webhook: purchase record failed:', error.message);
   }
+}
+
+/**
+ * The catalogue, as far as a purchase record is concerned.
+ *
+ * A line built by the site's own checkout names its catalogue row on the
+ * line itself, so it never has to be looked up. A line bought through a
+ * Stripe payment link names a price the account already knows, and that
+ * price has to be matched back to the row it belongs to.
+ */
+async function readCatalogue(): Promise<PurchaseCatalogueRow[]> {
+  const { data } = await supabaseAdmin
+    .from('products')
+    .select('id,name,stripe_price_id,stripe_product_id')
+    .limit(500);
+
+  return (data ?? []) as PurchaseCatalogueRow[];
 }
 
 async function upsertProfileByEmail(email: string | null, stripeCustomerId?: string) {
@@ -287,49 +315,57 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        // Fetch line items
-        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id as string, { limit: 100 });
+        // Fetch line items. The product is expanded because a line built by
+        // the site's own checkout says which catalogue row it is on the
+        // product, and that is the only place the answer is written down.
+        const lineItems = await getStripe().checkout.sessions.listLineItems(session.id as string, {
+          limit: 100,
+          expand: ['data.price.product'],
+        });
 
         // Find or create profile
         const email = session.customer_details?.email ?? session.customer_email ?? null;
         const profile = await upsertProfileByEmail(email, session.customer as string | undefined);
 
-        // Record one purchase row per line item
-        for (const li of lineItems.data) {
-          const amount = (li.amount_total ?? session.amount_total ?? 0) / 100;
-          const qty = li.quantity ?? 1;
-          // Try to resolve product by price/product IDs
-          const price = li.price;
-          const priceProduct = price?.product;
-          const priceId = price?.id ?? (typeof priceProduct === 'string' ? priceProduct : null);
-          // Attempt to map product via stripe_price_id or stripe_product_id
-          let productId = null;
-          let productName = null;
-          if (priceId) {
-            const { data: prod } = await supabaseAdmin.from('products').select('id,name').or(`stripe_price_id.eq.${priceId},stripe_product_id.eq.${priceId}`).limit(1);
-            if (prod && prod[0]) {
-              productId = prod[0].id;
-              productName = prod[0].name ?? null;
-            }
-          }
+        // One record per line that was actually bought. The key is the
+        // session and the line, not the session alone — the session alone
+        // recorded only the first line of an order and lost the rest.
+        const records = purchaseRecordsFromLineItems(
+          session.id,
+          lineItems.data,
+          await readCatalogue(),
+        );
 
-          // Idempotency: the checkout session id is the key, so a replayed
-          // Stripe event never records the same purchase twice.
-          const { data: existing } = await supabaseAdmin
-            .from('inbound_imperium_events')
-            .select('id')
-            .eq('event_type', PURCHASE_EVENT_TYPE)
-            .filter('payload->>stripe_checkout_session', 'eq', session.id)
-            .limit(1);
-          if (existing && existing.length) continue;
+        // Idempotency: a replayed Stripe event must not record the same line
+        // twice. A record made before the line key existed is filed under
+        // the session's first line, which is the only line it ever wrote.
+        const { data: existing } = await supabaseAdmin
+          .from('inbound_imperium_events')
+          .select('id,payload')
+          .eq('event_type', PURCHASE_EVENT_TYPE)
+          .filter('payload->>stripe_checkout_session', 'eq', session.id)
+          .limit(100);
+
+        const recorded = new Set<string>();
+        for (const row of existing ?? []) {
+          const key = (row as { payload?: { line_key?: unknown } }).payload?.line_key;
+          recorded.add(typeof key === 'string' && key ? key : legacyLineKey(session.id));
+        }
+
+        for (const record of records) {
+          if (recorded.has(record.lineKey)) continue;
+          recorded.add(record.lineKey);
 
           await recordPurchase({
             sessionId: session.id,
-            productId,
-            productName,
-            amount,
+            lineKey: record.lineKey,
+            lineIndex: record.lineIndex,
+            productId: record.productId,
+            productName: record.productName,
+            amount: record.amountCents / 100,
+            amountCents: record.amountCents,
             currency: session.currency ?? 'usd',
-            quantity: qty,
+            quantity: record.quantity,
             email,
           });
         }

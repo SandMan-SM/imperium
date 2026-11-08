@@ -9,6 +9,12 @@ import {
   shippingOption,
   type CheckoutTotals,
 } from '@/lib/checkout-totals';
+import {
+  CATALOGUE_ID_METADATA_KEY,
+  LINE_KIND_METADATA_KEY,
+  LINE_KIND_MERCH,
+  LINE_KIND_TAX,
+} from './purchase-records';
 
 /**
  * Pricing for the merch checkout.
@@ -205,6 +211,14 @@ function stripeLineItem(
           ? `Size: ${item.size}${item.color ? `, Color: ${item.color}` : ''}`
           : undefined,
         images: image ? [image] : [],
+        // The line says which catalogue row it is. A line built from a price
+        // id that was minted at the moment of the sale cannot be matched
+        // back to the catalogue by its price alone, and a purchase that
+        // cannot be matched is a purchase the operator cannot read.
+        metadata: {
+          [CATALOGUE_ID_METADATA_KEY]: row.id,
+          [LINE_KIND_METADATA_KEY]: LINE_KIND_MERCH,
+        },
       },
       unit_amount: unitAmount,
     },
@@ -304,7 +318,12 @@ export function buildCheckout(options: SessionOptions, origin: string): SessionR
     lineItems.push({
       price_data: {
         currency: 'usd',
-        product_data: { name: 'Sales tax' },
+        product_data: {
+          name: 'Sales tax',
+          // The tax is a line the site adds, not something the buyer
+          // bought, and it says so — so a purchase record never counts it.
+          metadata: { [LINE_KIND_METADATA_KEY]: LINE_KIND_TAX },
+        },
         unit_amount: totals.tax,
       },
       quantity: 1,
