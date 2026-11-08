@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 06, 2026 11:03 PM
+> Synthetic Intelligence Memory | Updated: November 07, 2026 11:34 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,100 +31,84 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The newest front door had no proof, and the mirror that protects the old ones was quietly eating work.
-- **The application front door was the only chain on the site without a
-  command.** Another agent rebuilt the home page as an application surface
-  (2026-11-04) and the visitor-facing form at `/apply/` became the site's
-  front door: a person arrives, tells Imperium what they want to build, and
-  the site promises them a reply. **Nothing proved that promise still
-  holds.** Every other chain here has a script — the money path, the
-  referral, the coaching offers, the catalogue, the letter, the Telegram
-  bridge — and the newest one, the one a visitor actually walks into, had
-  none. A relay that quietly stops reaching the CRM does not look broken to
-  the person filling in the form; it looks like a business that ignores
-  them.
-- **`scripts/check_apply_chain.mjs` asks the questions a visitor meets in
-  order.** Does the application page exist and carry the form? Can a
-  visitor get to it from the front door? Does the relay answer — is the
-  deployed identity and the upstream still alive? Does the door still
-  refuse a forged origin, a request with no origin at all, the wrong
-  content type, an unreadable body, an application with missing fields and
-  an oversized body? Do the fields the browser sends and the fields the
-  server reads still agree? Can a caller still change the destination, the
-  tenant or the offer? Do the boundary tests still pass? **19 of 19 checks
-  pass against production.**
-- **The check writes nothing, on purpose.** Every probe it makes is
-  refused by the door *before* the relay is reached, so no lead is created
-  and no message is sent. **A proof that dirties the CRM is a proof nobody
-  runs twice** — the same argument that made the referral chain sweep its
-  own probe accounts. The one question production cannot answer from the
-  outside — *does a valid application reach the CRM with both receipts?* —
-  is answered by the boundary suite, which exercises the same module with
-  the network replaced.
-- **The scan is not vacuous.** Renaming one field in the relay
-  (`fullName` to `name`) breaks two independent checks at once: the
-  contract check sees that the browser and the server no longer agree, and
-  the boundary suite fails. A check that cannot fail is a decoration.
-- **The boundary suite existed and nothing ran it.** The relay's nine
-  offline tests — the origin allowlist, the size and content-type bounds,
-  the honeypot, the fixed destination, the fail-closed receipt check — sat
-  in `Website/scripts/` with no npm script and no CI job. **A proof nobody
-  runs is a proof that stops existing the next time the module changes.**
-  `npm run build` now runs it (`npm run audit:relay`), beside the cron
-  authentication audit, so a deploy cannot ship without it. **A boundary
-  test that runs on every build is a rule that cannot lapse.**
-- **The mirror script was overwriting work, and that is how the brief
-  itself drifted twice.** `scripts/sync-trees.sh` copies `Website/` down to
-  `web/` and deletes what is not in the source. It did that without asking,
-  so an edit made in the mirror was destroyed by the next sync — including
-  the intelligence brief, which is written by an agent that reads it from
-  wherever it is standing. The repository carried two different briefs: one
-  of them a day out of date.
-- **The sync now refuses to destroy an edit, and says which file.** Before
-  it copies anything it asks what the copy would change: a file that exists
-  only in the mirror would be deleted (refused), a file with an uncommitted
-  edit in the mirror would lose it (refused), and a file whose last commit
-  in the mirror is newer than the last commit in the production root holds
-  the newer version (refused, and asked to be carried across). Only when
-  every difference is a change that lives in the production root does the
-  copy run. **A copy that silently overwrites work is worse than no copy
-  at all.**
-- **The rule in `CLAUDE.md` was what told the agent to edit the wrong
-  tree.** It said *"Edit in either tree, then run `scripts/sync-trees.sh`"* —
-  which is exactly how an edit in `web/` gets overwritten. The production
-  root is `Website/` and `web/` is its mirror; the instruction now says so,
-  names the canonical copy of the brief, and says to carry an edit across
-  before mirroring.
-- **The nightly agent could push the drift.** The auto-agent workflow ran
-  the agent and pushed whatever it committed, and the tree-sync CI job was
-  skipped by the `[skip ci]` marker the agent's own commits carry. The
-  workflow now repairs the mirror before it pushes, commits the repair, and
-  refuses to push when the mirror holds work the production root does not.
-  It also runs Node **24** (the version the app pins) instead of 20.
-- **The two operator-blocked items have not moved.** The Stripe account
-  still shows **zero customers, zero subscriptions and no paid session**
-  (twenty sessions, all expired and unpaid), and both copies of the Telegram
-  token still answer **401 Unauthorized**. The bridge script names three
-  failures and the fix it wants: one token, from BotFather, in two places.
-- **The nightly agent has not run for three nights, and it failed quietly.**
-  The auto-agent workflow has been **failing** since at least 2026-11-04:
-  the `ANTHROPIC_API_KEY` secret is not set in this repository's Actions
-  secrets, so `claude --print` answered *"Not logged in · Please run
-  /login"* and the workflow died at the agent step, every time, in about a
-  minute and a half. The only sign was a red tick in the Actions tab. The
-  workflow now checks the key **before** it installs anything and says what
-  is missing and where to add it, instead of failing with a login message
-  that reads like a mistake in the workflow. **The secret itself is the
-  operator's** — it cannot be set from here.
-- **Everything else is still green.** The schema scan finds no phantom
-  table or column (19 tables, 55 column references). The membership price
-  and the commission rate agree with the catalogue, the page and the
-  account. Every catalogue row that names a link is sellable at the price
-  it states. The coaching offers each show one price and Stripe charges
-  that price. The referral chain earns a $6.00 commission on a $20.00
-  membership and leaves the database clean. The letter's cron ran 19 hours
-  ago and correctly reported that there was nothing to send. The visual
-  audit over 39 routes at 375px found nothing to fix.
+The one money path with no command, and a receipt that could not say what it was for.
+- **The site's own checkout door had never been proved by a command.** Every
+  other chain here has a script — the payment links, the coaching offers, the
+  membership, the referral, the letter, the application door — and the door
+  that turns a cart into a Stripe session, `POST /api/checkout/create-session`,
+  had none. It was checked by hand once, on 2026-10-31, and nothing since
+  kept it true. **A money path without a command is a money path that drifts
+  between the sessions.**
+- **`scripts/check_checkout_chain.mjs` asks the questions a buyer meets in
+  order.** Does the door refuse a cart with nothing in it, shipping that is
+  not complete, and a line that names nothing in the catalogue? Does it
+  ignore the price the caller chose — the cart is a claim, the catalogue is
+  the price? Is the number the buyer is shown the number the account
+  charges? Do the lines, the tax and the shipping add up to it? Is the
+  discount the one the server's own table says, and does a code the server
+  does not honour earn nothing? Does every line say which catalogue row it
+  is? Is the buyer sent back to the live site? **20 checks.**
+- **The proof reads the totals out of the app's own module**, rather than
+  keeping a second answer to what a cart costs. It asks Stripe what the
+  account would actually charge and compares that with what the door
+  quoted, so the comparison cannot be right by construction.
+- **The proof takes no money and writes no rows, but it does create Stripe
+  sessions** — the door answers a real cart with a real session. Every one is
+  expired the moment it is read, an expired session cannot be paid, and the
+  cleanup is registered against the signals and against `exit`, so a killed
+  run still closes what it made. **A proof that leaves a mess is a proof
+  nobody runs twice.**
+- **The check was not vacuous.** It failed on production, in exactly the
+  three places the fix had not reached yet: the bought line named no
+  catalogue row, and the tax line said nothing about what it was. The other
+  seventeen passed against the live site before the change was deployed.
+- **A paid merchandise order could not say what had been bought.** The
+  webhook's idempotency key was the checkout session, so only the **first**
+  line of an order was ever recorded — a buyer who took a hoodie and a
+  beanie left one record behind and the other was lost. And a line built by
+  the site's own checkout carries a price id minted at the moment of the
+  sale, so the catalogue lookup found nothing: the record said "purchased
+  something", with no name and no catalogue row behind it. **The sale was
+  real; the receipt of it was empty.**
+- **Each line now says which catalogue row it is, and each line gets its own
+  key.** The catalogue id is stamped on the line, the tax says it is the
+  tax, and the records are made by one pure module — `src/lib/server/
+  purchase-records.ts` — that decides which lines are purchases and which
+  catalogue row each one belongs to. **A purchase that cannot be named is a
+  purchase the operator cannot read.**
+- **The tax could have been recorded as a purchase.** It is a line the site
+  adds, and the old code read every line of the session as something the
+  buyer had bought. It only escaped by accident — the tax line is added
+  last, and the session-keyed dedupe had already stopped the loop by then.
+  **A guard that works by luck is not a guard.**
+- **The door was open.** It mints live Stripe sessions for anybody who asks,
+  and it was the only public write door on the site with no limiter on it. It
+  is counted now, the way the capture forms and the referral route are, with
+  a window wide enough for a buyer who rebuilds their cart and for the proof
+  to ask its questions in one run.
+- **The new decision is tested offline and runs on every build.** Nine
+  boundary tests for the purchase records — the tax is not a purchase, every
+  line of a multi-line order is recorded, a line bought through a payment
+  link is matched by the price the account knows, a line that names nothing
+  is still recorded and says so — wired into `npm run build` beside the
+  relay suite and the cron audit. **A boundary test that nothing runs is a
+  comment.**
+- **The three newest checks had no npm script.** `check_apply_chain`,
+  `check_catalogue_sellability` and `check_referral_terms` existed and could
+  only be run by remembering their file names. All three, and the new
+  checkout check, now have one.
+- **The mirror had drifted again, in the same way as last time.** The
+  previous session wrote the brief into `web/AGENT_MEMORY.md` — the mirror —
+  and the production root was left a day behind. The only difference was
+  the timestamp line. The brief is written into `Website/AGENT_MEMORY.md`
+  and the trees are in step.
+- **The two operator-blocked items have not moved.** The Stripe account still
+  shows **zero customers, zero subscriptions and no paid session**, and both
+  copies of the Telegram token still answer **401 Unauthorized**.
+- **Everything else is still green.** The application door answers 19 of 19.
+  The catalogue sells 62 of 62. The coaching offers are sound at 47 of 47.
+  The membership and the commission agree at 15 of 15. The visual audit ran
+  over 39 routes at 375px and found nothing to fix.
 
 ## 📈 What Is Now Proven, and By What
 | Chain | Script | Exit |
@@ -139,251 +123,129 @@ The newest front door had no proof, and the mirror that protects the old ones wa
 | Schema references | `scripts/check-schema-refs.mjs` | 0 clean / 1 phantom table or column |
 | Visual, mobile, links, theme | `scripts/check_visual.mjs` | 0 clean / 1 finding |
 | Application front door → relay → CRM | `scripts/check_apply_chain.mjs` | 0 sound / 1 broken / 3 could not run |
+| Cart → Stripe session → the amount charged | `scripts/check_checkout_chain.mjs` | 0 sound / 1 broken / 3 could not run |
+| Paid order → a purchase record that names it | `Website/scripts/test-purchase-records.mjs` | 9 offline tests, on every build |
 
 ## 🎯 This Session: Do These In Order
-1. **Get the operator's own card through the checkout once.** Still
-   **operator-blocked — the agent cannot do it.** Everything around it is
-   proven, and the link itself was read out of the live account this
-   session: `plink_1T4KHzChZyGhfmDOmrYtnoEV` is **active**, its price is
-   `price_1T4KHvChZyGhfmDOhcHCBpat` at **$20.00/month**, and it redirects
-   to `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
-   The Stripe account still shows **zero customers and zero subscriptions**;
-   the only paid session is a $0 verification session. Twenty sessions exist,
-   and the ones that reached the $20 link are all expired and unpaid.
-   **Re-confirmed 2026-11-06**: still zero customers, still zero
-   subscriptions, still no paid session — twenty sessions, all expired and
-   unpaid. When the card runs, prove it in one
-   command: `node scripts/check_payment_chain.mjs <the-address>`.
-2. **Get a working Telegram token from BotFather.** There is **no valid
+1. **The site's own checkout door now has a command, and the receipt it
+   writes can say what was bought.** `scripts/check_checkout_chain.mjs`
+   proves the door end to end against production: it refuses an empty cart,
+   incomplete shipping and a line that names nothing in the catalogue; it
+   ignores the price the caller chose; the number the buyer is shown is the
+   number the account charges; the lines, the tax and the shipping add up to
+   it; the discount is the one the server's own table says; a code the
+   server does not honour earns nothing; every line says which catalogue row
+   it is; the buyer is sent back to the live site. **20 checks.** The proof
+   takes no money and writes no rows, and every session it makes is expired
+   the moment it is read.
+2. **A paid merchandise order now names what was bought, and every line of
+   it is recorded.** The webhook's idempotency key was the checkout session,
+   so only the first line of an order was ever recorded; and a line built by
+   the site's own checkout carries a price id minted at the moment of the
+   sale, so the record said "purchased something" with no name and no
+   catalogue row behind it. Each line now carries its catalogue row, each
+   line has its own key, and the tax says it is the tax so it is never
+   counted as a purchase. The decision lives in one pure module —
+   `src/lib/server/purchase-records.ts` — with nine offline tests that run
+   on every build.
+3. **No card has gone through the site's own door.** The door is proved by
+   asking Stripe what it would charge, not by a payment. The recording path
+   therefore has never run against a real paid order, and the operator's
+   card is still the only way to close that: buy one thing through
+   `/api/checkout/create-session`, then read `inbound_imperium_events` for a
+   `purchase_recorded` row that names the catalogue row and its price.
+   **Re-confirmed 2026-11-07**: the Stripe account still shows **zero
+   customers, zero subscriptions and no paid session**.
+4. **Get the operator's own card through the membership checkout once.**
+   Still **operator-blocked — the agent cannot do it.** The link is
+   `plink_1T4KHzChZyGhfmDOmrYtnoEV`, **active**, its price is
+   `price_1T4KHvChZyGhfmDOhcHCBpat` at **$20.00/month**, and it redirects to
+   `https://secretimperium.com/principles/?activated=1&session_id={CHECKOUT_SESSION_ID}`.
+   When the card runs, prove it in one command:
+   `node scripts/check_payment_chain.mjs <the-address>`.
+5. **Get a working Telegram token from BotFather.** There is **no valid
    token anywhere** — the local `.env.local`, the bot's `.env` and the one
    that was committed to `AGENTS.md` all answer `401 Unauthorized`, and so
-   does the `BOT_TOKEN` that was on Vercel. Until BotFather issues a real
-   one the bot cannot be run and none of the Telegram work can be seen live.
-   `node scripts/check_telegram_bridge.mjs` names it as the first failure —
-   and now names the site's own copy as a separate failure, because the
-   site carries a second copy of the same dead token.
-   **Set the same new token in two places** — `telegram-bot/.env` and the
-   Vercel variable `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and
-   the bridge script will now say whether the two copies are the same bot.
-   Note that Vercel Production and Preview each hold **their own** copy of
-   the dead token, so a rotation that touches only one leaves the other
-   dead. **Re-confirmed 2026-11-06**: the bot's token and the site's own
-   copy both still answer `401 Unauthorized`, so the bot's half of the
-   bridge is dead and the site's half is dead with it. **Three of the
-   bridge's sixteen checks fail for this one reason.**
-3. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
+   does the `BOT_TOKEN` that was on Vercel. **Set the same new token in two
+   places** — `telegram-bot/.env` and the Vercel variable
+   `TELEGRAM_BOT_TOKEN` (Production **and** Preview) — and the bridge script
+   will say whether the two copies are the same bot. Vercel Production and
+   Preview each hold **their own** copy of the dead token, so a rotation
+   that touches only one leaves the other dead.
+6. **`TELEGRAM_BOT_USERNAME` is no longer required.** The site now asks
    Telegram who the token belongs to (`getMe`), caches the answer and builds
-   the `t.me` deep link from that, so the link cannot point at a bot the
-   token does not belong to. The variable is still read as a fallback, and
-   `/api/telegram/status` answers with `effectiveUsername` and
+   the `t.me` deep link from that. The variable is still read as a fallback,
+   and `/api/telegram/status` answers with `effectiveUsername` and
    `usernameSource`. **Do not set a placeholder** — a placeholder produces a
    deep link that opens a dead bot. The username only exists once the token
-   works, so this priority still waits on priority 2.
-4. **~~Prove the operator's own admin session still reaches the guarded
-   routes.~~ DONE — 2026-10-31.** The session bearer works: a magic link
-   minted for the operator's admin account (no mail sent) produced a token
-   that every guarded route accepted with **200** — the Analytics refresh,
-   the product sync, the payment-link check and the newsletter console all
-   still reach their server — while the same routes refuse a request with no
-   bearer. Nothing is needed here; the operator can sign in at `/admin` as
-   usual.
-5. **The council items are recorded, not fixed.** They are written up in
+   works, so this priority still waits on priority 5.
+7. **Reopening `/shop` is still the operator's decision.** The merch routes
+   (`/shop`, `/cart`, `/checkout`) redirect to `/archive/`, so the
+   buyer-facing flow is paused. The catalogue is ready for it — every row
+   names a live link that charges the catalogue price — and the site's own
+   checkout door is now proved as well. The two commands to run before that
+   decision is taken are
+   `node scripts/check_catalogue_sellability.mjs` and
+   `node scripts/check_checkout_chain.mjs`.
+8. **The council items are recorded, not fixed.** They are written up in
    omni-memory under `client.imperium / council-items-2026-10-25-fleet-security-and-schema`
    (the five RLS-disabled tables, the anon-executable SECURITY DEFINER
    functions, the `subscriptions`/`referrals` policy contradiction) and
    `products.slug` (the migration decision). Both need a council decision,
    not an autonomous fix. **Do not change shared fleet tables.**
-6. **~~Keep Preview in step with Production.~~ VERIFIED — 2026-10-31.** The
-   two environments carry the same 25 variable names, read through the
-   Vercel API. Any new Production env var must still be added to Preview in
-   the same session, or previews break silently again. Note:
-   **sensitive Vercel env vars are write-only** — neither `vercel env pull`
-   nor `?decrypt=true` returns a value. To mirror one without reading it,
-   extend the target list of the existing Production record to include
-   `preview` instead of creating a new record. The Vercel REST API
-   (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
-   without a prompt, which the CLI will not. **Read the API, not the CLI:**
-   `vercel env ls` prints `POSTGRES_PASSWORD` as Production-only although
-   its record's target list is `["production","preview"]`.
-7. **The rebuilt checkout is proved live — the operator's decision is
-   whether to reopen the shop.** The merch routes (`/shop`, `/cart`,
-   `/checkout`) still redirect to `/archive/`, so the buyer-facing flow is
-   paused, but `POST /api/checkout/create-session` is live and reachable.
-   On 2026-10-31 it answered a promo checkout with a Stripe session
-   totalling **7979 cents** — the catalogue hoodie at 5999 (7999 less the
-   2000 promo), tax 480 and express shipping 1500 — while the request
-   itself claimed `price: 0.01`. An unknown line was refused with 400, a
-   bogus promo earned no discount (10139), and the deleted `/api/checkout`
-   answers 404. **What is left is a business decision, not a defect:** the
-   Archive rebrand holds the storefront closed, and reopening `/shop` is the
-   operator's call. The catalogue is not empty: three Tyrone services sit in
-   `products` with prices and descriptions, and their image path
-   `/people/tyrone.webp` **now exists**.
-8. **~~Watch the first send of the weekly brief.~~ RESOLVED — 2026-11-01.**
-   The letter went out on 2026-10-22 (10 of 11). What was missing was not
-   the send but the evidence, and that is now in place: the dispatch attempt
-   log, the admin panel and `node scripts/check_newsletter_chain.mjs`.
-   **The remaining half of this item is the operator's, not the agent's:**
-   the letter is *weekly* and there is still only **one** published issue,
-   sent eleven days ago. Publishing is the approval step the cron waits
-   for, so until a second issue is published the cron has nothing to send
-   and correctly says so. Publish one and the next run takes it.
-9. **~~Watch the first cron run against the new code.~~ DONE — 2026-11-01.**
-   The dispatch log filled from the first run of the new build. The cron
-   fires daily at **11:00 UTC (04:00 MST)**; the check reports the age of
-   the last attempt and fails if the last attempt failed. It reports
-   *"the cron ran within the last 36 hours"* and a `skipped` attempt
-   explaining that every published issue has already gone.
-10. **~~Tyrone's coaching pages are still unbuilt.~~ DONE — 2026-11-01.**
-    `/tyronengouamo`, `/tyronengouamo/referral/` and `/tyronengouamo/booked/`
-    are live, in the site's editorial language, with the three offers at
-    their real prices and each button pointing at that offer's own Stripe
-    link. See "What Last Session Shipped" for the details.
-11. **The first coaching sale is the operator's card, or it is nothing.**
-    The pages are live and the checkout is live, but no payment has been
-    made through them. `node scripts/check_payment_chain.mjs --recent`
-    will name a coaching purchase the moment one exists. What cannot be
-    faked is the card: the operator's own checkout, once, proves the whole
-    path the same way it proves the membership.
-12. **~~The referral page states a commission the site has never paid.~~
-    DONE — 2026-11-02.** The commission is implemented rather than watered
-    down, so the two pages now agree and the 30% is real. A member has a
-    code, a link that resolves, a referral that is recorded, a commission
-    that is earned at 30% of the membership, a ledger the operator can pay
-    from, and a payout marker that stops the portal asking for money that
-    has already been sent. **The chain is proved against the live
-    database, 10 checks out of 10.** What is left is the operator's: pay
-    the first real referral when one exists, and decide the payout window
-    (the copy says "once the membership payment has cleared", which is a
-    promise about timing that no code enforces).
-13. **Tyrone has no photograph, and the pages now say so.** The hero card
-    is a branded monogram, and its alt text says so in as many words. If
-    a real portrait arrives, replace the asset and the alt text together —
-    a monogram captioned as a photograph would be a lie on the page.
-14. **~~The referral proof lives in `/tmp` and must move into the repo.~~
-    DONE — 2026-11-03.** `scripts/check_referral_chain.mjs` proves the whole
-    chain against the live database: **15 of 15 checks pass.** It reads the
-    commission rate and the membership price out of
-    `src/lib/server/referrals.ts` rather than restating them, so it cannot
-    become a second answer to what the rate is. It cleans up after itself
-    however it ends — signal handlers and an exit hook, referral rows
-    before profile rows before the auth user — and it sweeps the probe
-    accounts an earlier run left behind before it starts. The database is
-    verified clean at the end of every run.
-15. **~~The referral link is a personal URL, and nothing tells the search
-    engines it is one.~~ DONE — 2026-11-03.** Every branch of `/ref/<code>`
-    answers `X-Robots-Tag: noindex, nofollow`, the redirect carries an
-    empty body, and `/ref` is disallowed in `robots.txt`. The check proves
-    all three.
-16. **The first real referral has not happened, so the ledger has never
-    been used by a person.** Every row in `referrals` is one this
-    session's own proof created and deleted. The operator's next action
-    after shipping is to open their own link, send it to somebody, and
-    watch the ledger fill — the mechanic is proven, but it has never run
-    outside a test.
-17. **The coaching offers were fixed once and nothing kept them fixed.**
-    DONE — 2026-11-03. `scripts/check_coaching_offers.mjs` proves the
-    catalogue row, the Stripe link, the price, the price **on the live
-    page** and the page the buyer lands on after paying all agree, for
-    each of the three coaching offers and for the membership. **33 of 33
-    checks pass.** The next thing it will catch is a price edited in one
-    place and not the other.
-18. **~~The coaching rows still carry a flag that says they need a real
-    Stripe link.~~ DONE — 2026-11-03.** `products.metadata.needs_real_stripe_link`
-    was still `true` on all three Tyrone rows, though it had been false
-    since 2026-11-01, when `scripts/stripe_tyrone_offers.mjs` gave each
-    offer its own product, price and payment link. A marker that does not
-    mean what it says is worse than no marker. The flag is now `false` on
-    all three rows, and **the script that writes those rows now clears it**,
-    so it cannot go stale again. The rest of each row's metadata is kept.
-19. **~~The merchandising rows point at retired Stripe links.~~ DONE —
-    2026-11-04.** The state was worse than the brief said: **three** rows
-    named a retired link (the checkout refuses to take money) and **three
-    named a live link that charged the wrong price** — $44 for a $29.99
-    tee, $88 for a $79.99 hoodie, $80 for a $59.99 sweatpants. All six
-    said `in_stock=true`. The storefront is closed, so nothing could reach
-    them, which is exactly why nothing kept them honest.
-    `scripts/stripe_merch_links.mjs` brought the account to the catalogue
-    (a price at the catalogue amount, a link bound to the catalogue row,
-    the superseded links retired) and
-    `scripts/check_catalogue_sellability.mjs` now asks the question of
-    every row in `products`. **62 of 62 checks pass.**
-20. **~~A check that judges the newest thing has to say so in the query.~~
-    DONE — 2026-11-03.** The newsletter check read the *oldest* dispatch
-    attempt and called it the last one, so it reported a healthy cron as
-    dead. It is fixed, and the other chain scripts were read for the same
-    defect: `check_payment_chain.mjs` already ordered descending, and the
-    two new scripts do not read a "latest" row at all.
-21. **~~The offer check named the home page as the page the membership is
-    sold from.~~ DONE — 2026-11-04.** The home page is now the Success
-    Empire surface and carries no offer, so the check read a page that had
-    moved and reported a defect that was not there. The pages are
-    candidates now, not owners: every surface carrying an offer's link has
-    to carry its price, and the offer has to be on at least one of them.
-    **47 of 47 checks pass.**
-22. **The front door changed and the briefs did not.** Another agent rebuilt
-    the home page as an application funnel and deployed it (03:53 PT,
-    2026-11-04). The membership offer is on `/archive/`, `/newsletter/`,
-    `/principles/`, `/tyronengouamo/` and `/tyronengouamo/referral/`.
-    **Read the live site, not this brief, before describing the site.** The
-    local branch was also behind `origin/main`, so the tree that was being
-    worked on was not the tree that serves production — the merge is in.
-23. **Reopening `/shop` is still the operator's decision** (priority 7),
-    but the catalogue is now ready for it: every row names a live link
-    that charges the catalogue price and lands the buyer on a page that
-    exists. `node scripts/check_catalogue_sellability.mjs` is the command
-    to run before that decision is taken.
-24. **~~The commission rate had eleven homes and the membership price had
-    ten.~~ DONE — 2026-11-05.** `src/lib/membership.ts` owns the rate, the
-    price and every label the site writes; the server module imports the
-    numbers rather than keeping its own; every surface derives its words.
-    `scripts/check_referral_terms.mjs` proves it — **15 of 15 checks
-    pass**, and the scan finds eleven restatements in the tree this session
-    started from and none in the tree it ended with.
-25. **The rates and prices that still have more than one home are the
-    ones the owner does not cover.** The coaching offers' own prices live
-    in `src/lib/tyrone.ts` and in the `products` rows, and the catalogue
-    check already compares the two — but the *copy* on the coaching page
-    is a third copy, and it is checked only by the offer check reading
-    the live page. That is enough for the three offers, and it is why
-    nothing else needs a module of its own. **If a new offer is added,
-    put its price in `src/lib/tyrone.ts` and give it a catalogue row, or
-    it will have three homes and no check.**
-26. **The two operator-blocked items have not moved.** Priorities 1 and 2
-    are re-confirmed against the live account this session: the Stripe
-    account still shows **zero customers and zero subscriptions**, and both
-    copies of the Telegram token still answer **401 Unauthorized**. Until
-    a human supplies the card and the token, the money path and the bot
-    are unproven in the only way that counts.
-27. **A valid application has never been sent through the live door.**
-    The relay is hardened and the boundary suite passes, and the door
-    answers a readiness read from production, but **no *valid*
-    application has gone through it** — every live probe this session was
-    a refusal, deliberately, because a proof that dirties the CRM is a
-    proof nobody runs twice. The operator can close this the same way the
-    membership is closed: send one real application once, and watch the
-    lead, the CRM contact and the two notifications land. The receipt
-    contract is exact — `lead_id`, `crm_contact_id`, `analytics_id`, a
-    customer message and an owner message — so a partial success is
-    visible rather than silent.
-28. **The mirror is safe now, but the two trees are still two trees.**
-    The sync refuses to destroy an edit and the nightly workflow repairs
-    the mirror before it pushes. **What would close the class entirely is
-    deleting one of them** — but `web/` is what the tooling and the
-    documentation point at, and removing it is a decision about how this
-    repository is worked, not a bug fix.
-29. **A second published issue is still the letter's next step.**
-    Unchanged from 2026-11-01: the cron is healthy and correctly reports
-    that there is nothing to send, because only one issue has been
-    published and it went out on 2026-10-22. Publishing is the approval
-    step the cron waits for.
-30. **The nightly agent is still switched off.** `ANTHROPIC_API_KEY` is not
-    set in this repository's Actions secrets, so the auto-agent workflow
-    has failed at the agent step every night since at least 2026-11-04.
-    The workflow now names the missing secret in the failure message; the
+9. **~~Prove the operator's own admin session still reaches the guarded
+   routes.~~ DONE — 2026-10-31.** The session bearer works: a magic link
+   minted for the operator's admin account (no mail sent) produced a token
+   that every guarded route accepted with **200** — the Analytics refresh,
+   the product sync, the payment-link check and the newsletter console all
+   still reach their server — while the same routes refuse a request with no
+   bearer.
+10. **~~Keep Preview in step with Production.~~ VERIFIED — 2026-10-31.** The
+    two environments carry the same 25 variable names, read through the
+    Vercel API. Any new Production env var must still be added to Preview in
+    the same session, or previews break silently again. Note:
+    **sensitive Vercel env vars are write-only** — neither `vercel env pull`
+    nor `?decrypt=true` returns a value. To mirror one without reading it,
+    extend the target list of the existing Production record to include
+    `preview` instead of creating a new record. The Vercel REST API
+    (`POST /v10/projects/{id}/env` with `"type": "sensitive"`) does this
+    without a prompt, which the CLI will not. **Read the API, not the CLI.**
+11. **A valid application has never been sent through the live door.** The
+    relay is hardened and the boundary suite passes, and the door answers a
+    readiness read from production, but **no *valid* application has gone
+    through it** — every live probe has been a refusal, deliberately,
+    because a proof that dirties the CRM is a proof nobody runs twice. The
+    operator can close this the same way the membership is closed: send one
+    real application once, and watch the lead, the CRM contact and the two
+    notifications land. The receipt contract is exact — `lead_id`,
+    `crm_contact_id`, `analytics_id`, a customer message and an owner
+    message — so a partial success is visible rather than silent.
+12. **A second published issue is still the letter's next step.** The cron
+    is healthy and correctly reports that there is nothing to send, because
+    only one issue has been published and it went out on 2026-10-22.
+    Publishing is the approval step the cron waits for.
+13. **The first real referral has not happened, so the ledger has never been
+    used by a person.** Every row in `referrals` is one the session's own
+    proof created and deleted. The operator's next action is to open their
+    own link, send it to somebody, and watch the ledger fill.
+14. **The nightly agent is still switched off.** `ANTHROPIC_API_KEY` is not
+    set in this repository's Actions secrets, so the auto-agent workflow has
+    failed at the agent step every night since at least 2026-11-04. The
+    workflow now names the missing secret in the failure message; the
     secret itself is the operator's to add (Settings → Secrets and
-    variables → Actions). Until it is there, the nightly automation
-    contributes nothing and every brief update has to be made by hand.
+    variables → Actions).
+15. **The two trees are still two trees.** The sync refuses to destroy an
+    edit and the nightly workflow repairs the mirror before it pushes. **What
+    would close the class entirely is deleting one of them** — but `web/` is
+    what the tooling and the documentation point at, and removing it is a
+    decision about how this repository is worked, not a bug fix.
+16. **The membership price and the commission rate have one owner; the
+    coaching offers' prices do not need one.** The offers' own prices live
+    in `src/lib/tyrone.ts` and in the `products` rows, and the catalogue
+    check already compares the two — but the *copy* on the coaching page is
+    a third copy, and it is checked only by the offer check reading the live
+    page. **If a new offer is added, put its price in `src/lib/tyrone.ts`
+    and give it a catalogue row, or it will have three homes and no check.**
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -626,6 +488,37 @@ The newest front door had no proof, and the mirror that protects the old ones wa
   not run on exactly the commits that broke the rule. **A check that fires
   only when the discipline is already being followed is a decoration.**
 
+- **A money path without a command is a money path that drifts between the
+  sessions.** Every chain on this site was proved because someone gave it a
+  script; the site's own checkout door was checked by hand once, in October,
+  and nothing since kept it true. A check that runs only when a human
+  remembers it is a check that has already lapsed.
+- **The proof has to ask the account, not the module.** The door quotes a
+  total and Stripe charges one. A proof that compared the door against the
+  app's own arithmetic would pass even when both were wrong; a proof that
+  asks Stripe what it would charge cannot. **Ask the account, and ask the
+  buyer.**
+- **A receipt that cannot say what it was for is a receipt nobody can act
+  on.** The order was real and the record was empty: no name, no catalogue
+  row, and for a multi-line order one line out of two. **A sale the
+  operator cannot reconcile is a sale that did not happen as far as the
+  books are concerned.**
+- **A key that is too coarse loses data, not just time.** The idempotency
+  key was the checkout session, so the second line of an order was mistaken
+  for a replay of the first and dropped. **A dedupe key has to name the
+  thing it dedupes.**
+- **A guard that works by luck is not a guard.** The tax line was never
+  recorded as a purchase only because it happened to be added last, after
+  the session-keyed dedupe had already stopped the loop. Nothing said the
+  tax was not a purchase; it was only never asked. **Say what a line is.**
+- **An open write door is a door somebody will find.** The checkout door
+  mints live Stripe sessions for anybody who asks, and it was the only
+  public write door on the site with no limiter on it. The other doors were
+  closed for exactly this reason in October.
+- **The catalogue is the truth and the receipt is a copy of it.** A line
+  that cannot be matched back to the catalogue row it came from cannot be
+  reconciled with one. **Carry the catalogue's own id on the line.**
+
 ## 🚨 Council items — do not fix these autonomously
 These are findings in **shared fleet tables**, not in this app. Changing any
 of them is a migration and needs a council decision. They are written up in
@@ -659,12 +552,17 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 63
-- Lines written: 9590
+- Sessions: 64
+- Lines written: 10320
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-07 | revenue | The site's own checkout door had no command, and the receipt of a paid merchandise order could not say what was bought. Every other chain on the site had a script; `POST /api/checkout/create-session` had none — it was proved by hand once, on 2026-10-31, and nothing kept it true. `scripts/check_checkout_chain.mjs` asks the questions a buyer meets in order: it refuses an empty cart, incomplete shipping and a line that names nothing in the catalogue; it ignores the price the caller chose (the cart is a claim, the catalogue is the price); the number the buyer is shown is the number the account charges; the lines, the tax and the shipping add up to it; the discount is the one the server's own table says and a code the server does not honour earns nothing; every line says which catalogue row it is; the buyer is sent back to the live site and not to localhost. **20 checks.** It reads the totals out of the app's own module rather than keeping a second answer, and it asks Stripe what it would charge rather than asking the app what it would say. It takes no money and writes no rows; it does create Stripe sessions, and every one is expired the moment it is read, with the cleanup registered against the signals and against `exit`. The check was not vacuous: it failed on production in exactly the three places the fix had not reached | ~400 |
+| 2026-11-07 | backend | A paid merchandise order could not say what had been bought. The webhook's idempotency key was the checkout session, so only the **first** line of an order was ever recorded — a buyer who took a hoodie and a beanie left one record behind and the other was lost. And a line built by the site's own checkout carries a price id minted at the moment of the sale, so the catalogue lookup found nothing and the record said "purchased something", with no name and no catalogue row behind it. Each line now carries its catalogue row and its own key, the tax line says it is the tax so it is never counted as a purchase, and the decision lives in one pure module — `src/lib/server/purchase-records.ts` — with nine offline tests that run on every build beside the relay suite | ~260 |
+| 2026-11-07 | security | The checkout door was the only public write door on the site with no limiter on it, and it mints live Stripe sessions for anybody who asks. It is counted now, the way the capture forms and the referral route are, with a window wide enough for a buyer who rebuilds their cart and for the proof to ask its questions in one run | ~25 |
+| 2026-11-07 | ops | The three newest checks had no npm script — `check_apply_chain`, `check_catalogue_sellability` and `check_referral_terms` existed and could only be run by remembering their file names. All three, and the new checkout check, now have one | ~10 |
+| 2026-11-07 | repo | The mirror had drifted again in the same way as last time: the previous session wrote the brief into `web/AGENT_MEMORY.md`, the mirror, and left the production root a day behind. The only difference was the timestamp line. The brief is written into `Website/AGENT_MEMORY.md` and the trees are in step | ~20 |
 | 2026-11-06 | repo | The nightly agent had been dead for three nights. The auto-agent workflow has been failing since at least 2026-11-04 because `ANTHROPIC_API_KEY` is not set in this repository's Actions secrets: `claude --print` answered "Not logged in · Please run /login" and the job died in about a minute and a half, every night, leaving a red tick in a tab nobody opened. The workflow now checks for the key before it installs anything and names the missing secret and where to add it. The secret itself is the operator's — it cannot be set from here, so the nightly automation contributes nothing until it is | ~30 |
 | 2026-11-06 | ops | The newest front door had no proof. The Success Empire application at `/apply/` is where a visitor now starts, and it was the only chain on the site without a command — a relay that quietly stops reaching the CRM does not look broken, it looks like a business that ignores applications. `scripts/check_apply_chain.mjs` asks the questions a visitor meets in order: the page exists and carries the form, the front door leads to it, the relay answers from production, and it still refuses a forged origin, a request with no origin, the wrong content type, an unreadable body, missing fields and an oversized body. It also proves the browser and the server agree on the fields, that the caller cannot change the destination, the tenant or the offer, and that the boundary suite still passes. **19 of 19 checks pass.** It writes nothing: every probe is refused before the relay, so no lead is created — a proof that dirties someone's CRM is a proof nobody runs twice. The scan is not vacuous: renaming one field in the relay breaks the contract check and the boundary suite at once | ~230 |
 | 2026-11-06 | build | The relay's nine boundary tests existed and nothing ran them — no npm script, no CI job. A proof nobody runs is a proof that stops existing the next time the module changes. `npm run build` now runs them (`npm run audit:relay`) beside the cron authentication audit, so a deploy cannot ship without them | ~20 |
@@ -1206,6 +1104,25 @@ with the `products.slug` migration decision in the same entry. **Recorded
   carry `[skip ci]`, so the check never ran on the commits that broke the
   rule. **Put the check where the push happens**, not where a marker can
   switch it off.
+
+- **a-purchase-record-that-cannot-name-what-was-bought-is-not-a-receipt**
+  (fleet, applies to every order, invoice and basket) — a paid order was
+  recorded as "purchased something", with no name and no catalogue row
+  behind it, because the line carried a price id that was minted at the
+  moment of the sale and could not be matched back to the catalogue. The
+  sale was real; the receipt of it was empty. **Carry the catalogue's own
+  id on the line**, so the record can name what was bought without a
+  lookup that can fail.
+- **a-dedupe-key-has-to-name-the-thing-it-dedupes** (fleet, applies to
+  every idempotency key) — the key was the checkout session, so the second
+  line of an order was mistaken for a replay of the first and dropped
+  silently. A dedupe key that is coarser than the thing it guards loses
+  data, not just time. Name the line, not the session.
+- **ask-the-account-not-the-module** (fleet, applies to every price) — a
+  proof that compares the app against the app's own arithmetic passes even
+  when both are wrong. A proof that asks Stripe what it would charge, and
+  asks the buyer what they were shown, cannot. **Ask the account, and ask
+  the buyer.**
 
 ## ⚡ Rules
 - Read this file first, every session
