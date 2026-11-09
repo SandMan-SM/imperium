@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RESOURCE_SITE as site, RESOURCE_PAGES, resourceApplication, resourceGraph, type ResourcePage } from "@/lib/portfolio-resources";
+import { resourceOffer } from "@/lib/resource-offers";
 import styles from "./resources.module.css";
 
 function ContactActions({page}: {page?: ResourcePage}) {
@@ -8,8 +9,8 @@ function ContactActions({page}: {page?: ResourcePage}) {
 }
 function CardList({items}: {items: typeof site.proof}) {return <div className={styles.cards}>{items.map((c,i)=><a key={c.title} href={c.href} className={styles.card}><span className={styles.number}>{String(i+1).padStart(2,"0")}</span><h3>{c.title}</h3><p>{c.body}</p><span className={styles.cardLink}>Explore the project <span aria-hidden="true">↗</span></span></a>)}</div>;}
 export default function ResourceView({page}: {page?: ResourcePage}) {
- const price=page?.kind === "partnership" ? "$50,000" : page?.kind === "ai-partner" ? "$100,000" : "$1,500";
- const offer=page?.kind === "partnership" ? "Agentic Websites" : page?.kind === "ai-partner" ? "AI Employees" : "Start your 3 month trial";
+ const price=resourceOffer(page?.kind).price;
+ const offer=resourceOffer(page?.kind).offer;
  const application=page ? resourceApplication(page) : resourceApplication(RESOURCE_PAGES[0]);
  const graph=JSON.stringify(resourceGraph(page)).replace(/</g,"\u003c");
  const article=<article className={styles.resource} data-native={site.slug} id="resource-top">

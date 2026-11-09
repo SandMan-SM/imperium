@@ -80,6 +80,17 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
   reproduce the copy that is already there, including the shorter share-card
   names, which the owner carries for exactly that reason. Only llms.txt
   changes, and it now states the prices the offers actually carry.
+- **The resource pages' offer prices had two homes as well.** The apply
+  section stated "$50,000" and "$100,000" as literals, and the solution
+  prose on the partnership page stated the same two amounts and the same
+  two offer names in a sentence. `src/lib/resource-offers.ts` is the owner
+  now, and the prose carries a **token** — `{{price:partnership}}` — that is
+  filled in when the content is loaded, because that sentence quotes both
+  the offer the page sells and the one beside it and cannot be written
+  without knowing both prices. **A content file that quotes a number is a
+  content file with a second home.** A token naming nothing throws rather
+  than rendering a blank. All four resource pages render identically to
+  live.
 - **The proof is green against production.** `check_coaching_offers.mjs`
   passes **57 of 57**: every offer has a catalogue row, the row carries the
   owner's price and name, the link is active and bound to that row, the
@@ -110,6 +121,7 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
 | Cart → Stripe session → the amount charged | `scripts/check_checkout_chain.mjs` | 0 sound / 1 broken / 3 could not run |
 | Paid order → a purchase record that names it | `Website/scripts/test-purchase-records.mjs` | 9 offline tests, on every build |
 | Coaching offer → its price, its catalogue row, its link → nothing else states it | `Website/scripts/test-coaching-offers.mjs` | 6 offline tests, on every build |
+| Resource offer → its price → nothing else states it | `Website/scripts/test-resource-offers.mjs` | 6 offline tests, on every build |
 
 ## 🎯 This Session: Do These In Order
 1. **The site's own checkout door now has a command, and the receipt it
@@ -234,14 +246,25 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
     tests run on every build. **A new offer goes into
     `src/lib/coaching-offers.ts` with its amount, its catalogue row and its
     link, and nowhere else.**
-17. **The resource pages' offer prices have two homes.** The apply section
-    on `/resources/*` states "$50,000" and "$100,000" as literals in
-    `src/app/resources/ResourceView.tsx`, and the solution prose in
-    `src/lib/portfolio-resources.json` states the same two amounts and the
-    same two offer names in a sentence. Edit one and the site contradicts
-    itself about a price a prospect reads. **The membership price, the
-    commission rate and the coaching prices each have one owner; these two
-    do not.**
+17. **~~The resource pages' offer prices have two homes.~~ DONE —
+    2026-11-09.** The apply section stated "$50,000" and "$100,000" as
+    literals in `src/app/resources/ResourceView.tsx`, and the solution prose
+    in `src/lib/portfolio-resources.json` stated the same two amounts and
+    the same two offer names in a sentence. `src/lib/resource-offers.ts` is
+    the owner now. The prose carries a token — `{{price:partnership}}` —
+    which is filled in when the content is loaded, because the sentence on
+    the partnership page quotes both the offer that page sells and the one
+    beside it, and cannot be written without knowing both prices. Six
+    offline tests run on every build.
+18. **The contact phone number is written out three times on the resource
+    pages, and the owner already exists.** `src/lib/success-empire.ts` holds
+    `phone: "+18014581756"` and `displayPhone: "801-458-1756"`, and every
+    other page on the site reads them from there. `src/app/resources/
+    ResourceView.tsx` ignores the owner and writes the number out twice —
+    the `tel:` and `sms:` links and the contact line under the hero — and
+    in a third spelling, "(801) 458-1756". **A number with an owner and
+    copies beside it still has no owner.** The fix is to read the number
+    from where it lives, and to let the site say it one way.
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -554,6 +577,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-09 | revenue | The resource pages' offer prices had two homes. The apply section stated "$50,000" and "$100,000" as literals in `src/app/resources/ResourceView.tsx`, and the solution prose in `src/lib/portfolio-resources.json` stated the same two amounts and the same two offer names in a sentence a prospect reads. Edit one and the site contradicts itself about the price of a service it is selling. `src/lib/resource-offers.ts` is the owner now: the amount is written once and the prose carries a token — `{{price:partnership}}` — that is filled in when the content is loaded, because the sentence on the partnership page quotes both the offer that page sells and the one beside it, and cannot be written without knowing both prices. A token naming an offer that does not exist throws rather than rendering a blank. Six offline tests run on every build, and the scan was proved by putting "$50,000" back into the view by hand and watching it name the file. All four resource pages render identically to live | ~200 |
 | 2026-11-09 | revenue | The coaching offers' price was written down in five places — the offer itself, the copy on the referral page, the line in llms.txt, the script that created the Stripe objects, and the catalogue row the site sold from. They all agreed, and every one was free to drift. `src/lib/coaching-offers.ts` is the owner now: the amount is written once in cents and every word the site writes about an offer is derived from it — the price on the page, the name of the catalogue row, the product Stripe shows, the line in llms.txt, the share-card copy. `src/lib/tyrone.ts` keeps the words around the coaching and none of the numbers. The built text of both coaching pages was compared against the live pages and is identical, line for line, so the deploy changes nothing a reader sees | ~320 |
 | 2026-11-09 | ops | The coaching check walked the **catalogue**, so an offer added to the site without a catalogue row was invisible to it: the check passed and the offer sat on the page with nothing behind it. It walks the owner's list now, asks the catalogue whether it has a row for every offer and whether any row is left behind by an offer that is gone, and compares the row's price and name against the owner instead of against itself. 57 of 57 checks pass against production | ~200 |
 | 2026-11-09 | ops | `scripts/stripe_tyrone_offers.mjs` minted a fresh product, price and payment link on every run, so a healthy account was rewritten and the link the site points at was left behind — retired, and still the one on the page. It reads the owner now and is idempotent: a link that is live, charges the owner's amount, is bound to its catalogue row and is the link the owner names is left exactly as it is. It also writes the owner's own `checkoutUrl` back when a link has to be minted, so the page never points at a retired checkout | ~180 |
@@ -1146,6 +1170,14 @@ with the `products.slug` migration decision in the same entry. **Recorded
   the obvious derivation would have silently rewritten the share card. **Derive
   it, then diff the rendered text against what is live** — byte for byte, if
   the change was supposed to be a refactor.
+- **prose-that-quotes-a-number-cannot-be-a-content-file** (fleet, applies to
+  every page whose copy states a price) — the sentence on the partnership
+  page names two offers: the one that page sells and the one beside it.
+  A content file cannot hold that sentence without holding two prices, and
+  holding two prices is holding them in two homes. **Let the content carry a
+  token and fill it in when it is loaded** — `{{price:partnership}}` — and
+  make a token that names nothing throw rather than render a blank. The
+  copy stays a sentence; the number stays in one place.
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -1183,6 +1215,14 @@ with the `products.slug` migration decision in the same entry. **Recorded
   fails the build on one. A new offer goes into that file with its amount,
   its catalogue row and its link, and nowhere else (2026-11-09); it used to
   be five homes and no owner.
+- **The resource pages' offer prices live in
+  `src/lib/resource-offers.ts` and nowhere else.** Each offer's amount and
+  name are written once, the apply section reads them from there, and the
+  prose in `src/lib/portfolio-resources.json` carries a token
+  (`{{price:partnership}}`) that is filled in when the content is loaded.
+  **No other file may write a resource offer price** —
+  `Website/scripts/test-resource-offers.mjs` fails the build on one
+  (2026-11-09); it used to be two homes and no owner.
 - **The referral mechanic is one module, not four routes.** `claimReferral`,
   `ensureReferralCode`, `awardReferralCommission` and `referralSummary`
   live in `src/lib/server/referrals.ts`. A second copy of the code

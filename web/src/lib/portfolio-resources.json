@@ -113,7 +113,7 @@
       "problemTitle": "The next action must fit the reader.",
       "problem": "Reading a principle, exploring the newsletter, and visiting a partner are different intentions. A joint system should carry the right context into the appropriate destination without merging those intentions or enrolling someone in unrelated messages.",
       "solutionTitle": "Keep the experience connected and the roles explicit.",
-      "solution": "Lead Franchise contributes website design, navigation, SEO/GEO structure and source attribution. AIS Empire contributes defined AI roles and operational controls. The partnership’s Agentic Websites offer is $50,000; the separate AI Employees offer is $100,000. These provider prices do not apply to reading Imperium’s free library.",
+      "solution": "Lead Franchise contributes website design, navigation, SEO/GEO structure and source attribution. AIS Empire contributes defined AI roles and operational controls. The partnership’s {{offer:partnership}} offer is {{price:partnership}}; the separate {{offer:ai-partner}} offer is {{price:ai-partner}}. These provider prices do not apply to reading Imperium’s free library.",
       "workflow": [
         {
           "title": "Explain the library",

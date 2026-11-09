@@ -8,7 +8,8 @@
     "audit:relay": "node --test scripts/test-success-empire-relay.mjs",
     "audit:purchases": "node --test scripts/test-purchase-records.mjs",
     "audit:coaching": "node --test scripts/test-coaching-offers.mjs",
-    "build": "npm run audit:cron-auth && npm run audit:relay && npm run audit:purchases && npm run audit:coaching && next build",
+    "audit:resources": "node --test scripts/test-resource-offers.mjs",
+    "build": "npm run audit:cron-auth && npm run audit:relay && npm run audit:purchases && npm run audit:coaching && npm run audit:resources && next build",
     "start": "next start",
     "lint": "eslint"
   },

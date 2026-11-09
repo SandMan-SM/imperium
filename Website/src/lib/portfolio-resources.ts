@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
-import content from "./portfolio-resources.json";
+import rawContent from "./portfolio-resources.json";
+import { fillTokens } from "./resource-offers";
+/**
+ * The content, with every offer token filled in from its owner.
+ *
+ * The prose names prices it cannot know on its own — the sentence on the
+ * partnership page quotes both the offer that page sells and the one
+ * beside it — so the tokens are filled in when the content is loaded, not
+ * typed into the file.
+ */
+const content = fillTokens(rawContent);
 export const RESOURCE_SITE = content;
 export const RESOURCE_PAGES = content.pages;
 export type ResourcePage = typeof RESOURCE_PAGES[number];
