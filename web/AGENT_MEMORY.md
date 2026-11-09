@@ -104,6 +104,13 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
   The catalogue sells 62 of 62. The checkout door is sound at 20 of 20. The
   membership and the commission agree at 15 of 15. The visual audit ran
   over 39 routes at 375px and found nothing to fix.
+- **It is deployed.** Both changes went out on 2026-11-09 through the
+  git push to `main` (deployment `imperium-bq2dg79mg`), and production was
+  re-proved afterwards: the coaching offers 57 of 57, the catalogue 62 of
+  62, the checkout door 20 of 20, the application door 19 of 19, the
+  membership and the commission in agreement, and the visual audit clean
+  across 39 routes. **A change that is not re-proved after the deploy has
+  only been proved in the tree.**
 
 ## 📈 What Is Now Proven, and By What
 | Chain | Script | Exit |
@@ -577,6 +584,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-09 | ops | Both changes were deployed through the git push to `main` (deployment `imperium-bq2dg79mg`) under federation lease 1200, and production was re-proved afterwards rather than in the tree: coaching offers 57/57, catalogue 62/62, checkout door 20/20, application door 19/19, the membership and the commission in agreement, and the visual audit clean across 39 routes at 375px | ~20 |
 | 2026-11-09 | revenue | The resource pages' offer prices had two homes. The apply section stated "$50,000" and "$100,000" as literals in `src/app/resources/ResourceView.tsx`, and the solution prose in `src/lib/portfolio-resources.json` stated the same two amounts and the same two offer names in a sentence a prospect reads. Edit one and the site contradicts itself about the price of a service it is selling. `src/lib/resource-offers.ts` is the owner now: the amount is written once and the prose carries a token — `{{price:partnership}}` — that is filled in when the content is loaded, because the sentence on the partnership page quotes both the offer that page sells and the one beside it, and cannot be written without knowing both prices. A token naming an offer that does not exist throws rather than rendering a blank. Six offline tests run on every build, and the scan was proved by putting "$50,000" back into the view by hand and watching it name the file. All four resource pages render identically to live | ~200 |
 | 2026-11-09 | revenue | The coaching offers' price was written down in five places — the offer itself, the copy on the referral page, the line in llms.txt, the script that created the Stripe objects, and the catalogue row the site sold from. They all agreed, and every one was free to drift. `src/lib/coaching-offers.ts` is the owner now: the amount is written once in cents and every word the site writes about an offer is derived from it — the price on the page, the name of the catalogue row, the product Stripe shows, the line in llms.txt, the share-card copy. `src/lib/tyrone.ts` keeps the words around the coaching and none of the numbers. The built text of both coaching pages was compared against the live pages and is identical, line for line, so the deploy changes nothing a reader sees | ~320 |
 | 2026-11-09 | ops | The coaching check walked the **catalogue**, so an offer added to the site without a catalogue row was invisible to it: the check passed and the offer sat on the page with nothing behind it. It walks the owner's list now, asks the catalogue whether it has a row for every offer and whether any row is left behind by an offer that is gone, and compares the row's price and name against the owner instead of against itself. 57 of 57 checks pass against production | ~200 |
