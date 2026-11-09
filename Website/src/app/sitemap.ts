@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import {PUBLIC_NEWSLETTER_ARTICLES} from "@/lib/newsletter-public";
 import { archiveEntries } from "@/lib/archive";
 
 const SITE_URL = "https://secretimperium.com";
@@ -12,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/tyronengouamo/`, changeFrequency: "monthly", priority: .75 },
     { url: `${SITE_URL}/tyronengouamo/referral/`, changeFrequency: "monthly", priority: .55 },
     ...["resources", "resources/lead-franchise", "resources/ais-empire", "resources/lead-franchise-ais-empire"].map((path) => ({ url: `${SITE_URL}/${path}/`, changeFrequency: "monthly" as const, priority: .55 })),
+    ...PUBLIC_NEWSLETTER_ARTICLES.map(article => ({url: `${SITE_URL}/newsletter/${article.slug}/`, lastModified: article.publishedAt, changeFrequency: "monthly" as const, priority: .7})),
     ...archiveEntries.map((entry) => ({ url: `${SITE_URL}/archive/${entry.slug}/`, changeFrequency: "monthly" as const, priority: .7 })),
     { url: `${SITE_URL}/mission-statement/`, changeFrequency: "monthly", priority: .5 },
     { url: `${SITE_URL}/privacy/`, changeFrequency: "yearly", priority: .2 },

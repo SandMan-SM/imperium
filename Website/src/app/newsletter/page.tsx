@@ -1,20 +1,13 @@
 import Image from "next/image";
+import {PUBLIC_NEWSLETTER_ARTICLES} from "@/lib/newsletter-public";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Mail } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { PartnerDirectory, PartneredWith } from "@/components/Partners";
 import { MembershipCta } from "@/components/MembershipCta";
 import "./newsletter.css";
 
-/**
- * Read-only source audit, 2026-10-17:
- * federation.surfaces: secretimperium.com -> tenant_slug=imperium.
- * omni_businesses: slug=imperium, website=secretimperium.com,
- * id=18a15b57-11e2-4bed-bfd6-5694b344658a.
- * newsletter_posts has zero rows for that business. The legacy newsletters
- * table has no tenant ownership column; never use it as an all-brand feed here.
- * Keep this honest empty state until a tenant-scoped public publication
- * contract is verified. No auth, subscription capture, or database writes.
- */
+/** Tenant-local public publications only. Legacy unscoped newsletters remain
+ * excluded; partner and membership experiences retain their existing behavior. */
 export default function NewsletterPage() {
   return (
     <div className="in-newsletter">
@@ -45,13 +38,11 @@ export default function NewsletterPage() {
             <div><p className="in-kicker">THE NEWSLETTER</p><h2 id="letters-heading">Published letters.</h2></div>
             <p>Perspectives to return to.<br />Ideas to put into practice.</p>
           </div>
-          <div className="in-empty-state">
-            <div className="in-empty-icon" aria-hidden="true"><Mail size={26} strokeWidth={1.2} /></div>
-            <div className="in-empty-copy">
-              <h3>No public letters are available yet.</h3>
-              <p>There is still plenty to read in The Archive: short essays, original quotes, and practical ideas you can put to use today.</p>
-              <Link href="/archive/" className="in-paper-link"><BookOpen size={18} aria-hidden="true" /> Browse The Archive <ArrowUpRight size={17} aria-hidden="true" /></Link>
-            </div>
+          <div className="in-public-articles">
+            {PUBLIC_NEWSLETTER_ARTICLES.map(article => <article className="in-public-card" key={article.slug}>
+              <Link href={`/newsletter/${article.slug}/`} className="in-public-image" tabIndex={-1} aria-hidden="true"><Image src={article.image} alt="" width={article.imageWidth} height={article.imageHeight} sizes="(max-width:800px) calc(100vw - 40px), 420px"/></Link>
+              <div><p className="in-kicker">{article.category} · <time dateTime={article.publishedAt}>November 9, 2026</time></p><h3><Link href={`/newsletter/${article.slug}/`}>{article.title}</Link></h3><p>{article.description}</p><Link href={`/newsletter/${article.slug}/`} className="in-paper-link">Read the article <ArrowUpRight size={17} aria-hidden="true"/></Link></div>
+            </article>)}
           </div>
         </div>
       </section>
