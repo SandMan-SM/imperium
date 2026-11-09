@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 07, 2026 11:34 PM
+> Synthetic Intelligence Memory | Updated: November 09, 2026 11:41 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,83 +31,67 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
-The one money path with no command, and a receipt that could not say what it was for.
-- **The site's own checkout door had never been proved by a command.** Every
-  other chain here has a script — the payment links, the coaching offers, the
-  membership, the referral, the letter, the application door — and the door
-  that turns a cart into a Stripe session, `POST /api/checkout/create-session`,
-  had none. It was checked by hand once, on 2026-10-31, and nothing since
-  kept it true. **A money path without a command is a money path that drifts
-  between the sessions.**
-- **`scripts/check_checkout_chain.mjs` asks the questions a buyer meets in
-  order.** Does the door refuse a cart with nothing in it, shipping that is
-  not complete, and a line that names nothing in the catalogue? Does it
-  ignore the price the caller chose — the cart is a claim, the catalogue is
-  the price? Is the number the buyer is shown the number the account
-  charges? Do the lines, the tax and the shipping add up to it? Is the
-  discount the one the server's own table says, and does a code the server
-  does not honour earn nothing? Does every line say which catalogue row it
-  is? Is the buyer sent back to the live site? **20 checks.**
-- **The proof reads the totals out of the app's own module**, rather than
-  keeping a second answer to what a cart costs. It asks Stripe what the
-  account would actually charge and compares that with what the door
-  quoted, so the comparison cannot be right by construction.
-- **The proof takes no money and writes no rows, but it does create Stripe
-  sessions** — the door answers a real cart with a real session. Every one is
-  expired the moment it is read, an expired session cannot be paid, and the
-  cleanup is registered against the signals and against `exit`, so a killed
-  run still closes what it made. **A proof that leaves a mess is a proof
-  nobody runs twice.**
-- **The check was not vacuous.** It failed on production, in exactly the
-  three places the fix had not reached yet: the bought line named no
-  catalogue row, and the tax line said nothing about what it was. The other
-  seventeen passed against the live site before the change was deployed.
-- **A paid merchandise order could not say what had been bought.** The
-  webhook's idempotency key was the checkout session, so only the **first**
-  line of an order was ever recorded — a buyer who took a hoodie and a
-  beanie left one record behind and the other was lost. And a line built by
-  the site's own checkout carries a price id minted at the moment of the
-  sale, so the catalogue lookup found nothing: the record said "purchased
-  something", with no name and no catalogue row behind it. **The sale was
-  real; the receipt of it was empty.**
-- **Each line now says which catalogue row it is, and each line gets its own
-  key.** The catalogue id is stamped on the line, the tax says it is the
-  tax, and the records are made by one pure module — `src/lib/server/
-  purchase-records.ts` — that decides which lines are purchases and which
-  catalogue row each one belongs to. **A purchase that cannot be named is a
-  purchase the operator cannot read.**
-- **The tax could have been recorded as a purchase.** It is a line the site
-  adds, and the old code read every line of the session as something the
-  buyer had bought. It only escaped by accident — the tax line is added
-  last, and the session-keyed dedupe had already stopped the loop by then.
-  **A guard that works by luck is not a guard.**
-- **The door was open.** It mints live Stripe sessions for anybody who asks,
-  and it was the only public write door on the site with no limiter on it. It
-  is counted now, the way the capture forms and the referral route are, with
-  a window wide enough for a buyer who rebuilds their cart and for the proof
-  to ask its questions in one run.
-- **The new decision is tested offline and runs on every build.** Nine
-  boundary tests for the purchase records — the tax is not a purchase, every
-  line of a multi-line order is recorded, a line bought through a payment
-  link is matched by the price the account knows, a line that names nothing
-  is still recorded and says so — wired into `npm run build` beside the
-  relay suite and the cron audit. **A boundary test that nothing runs is a
-  comment.**
-- **The three newest checks had no npm script.** `check_apply_chain`,
-  `check_catalogue_sellability` and `check_referral_terms` existed and could
-  only be run by remembering their file names. All three, and the new
-  checkout check, now have one.
-- **The mirror had drifted again, in the same way as last time.** The
-  previous session wrote the brief into `web/AGENT_MEMORY.md` — the mirror —
-  and the production root was left a day behind. The only difference was
-  the timestamp line. The brief is written into `Website/AGENT_MEMORY.md`
-  and the trees are in step.
+The coaching offers had five homes for one price, and nothing kept them agreeing.
+- **The coaching offers' price was written down in five places.** The offer
+  itself, the copy on the referral page, the line in llms.txt, the script
+  that created the Stripe objects behind it, and the catalogue row the site
+  sold from. They all agreed, and every one of them was free to drift the
+  moment somebody edited one. **A number with five homes is a number with no
+  owner.**
+- **The offers now have one owner: `src/lib/coaching-offers.ts`.** The
+  amount is written once, in cents, and every word the site writes about it
+  is derived: the price on the page, the name of the catalogue row, the
+  product Stripe shows, the line in llms.txt. The catalogue and the Stripe
+  account are copies of this file, and the check proves they still agree
+  with it. The membership price has the same shape in
+  `src/lib/membership.ts`; the coaching prices now match it.
+- **The check walked the wrong list.** `scripts/check_coaching_offers.mjs`
+  read the **catalogue** and asked whether the catalogue agreed with the
+  account. An offer added to the site without a catalogue row was therefore
+  invisible to it: the check passed, and the offer sat on the page with
+  nothing behind it. **An offer with no catalogue row is an offer nobody is
+  checking.** It walks the owner's list now, and asks the catalogue
+  whether it has a row for every offer — and the other way round, so an
+  offer that has been taken off the site does not leave a live checkout
+  behind.
+- **The Stripe script churned the account on every run.** It minted a fresh
+  product, price and payment link each time, so a healthy account was
+  rewritten and the site's own link was left behind — retired, but still the
+  one on the page. It reads the owner now, and it is **idempotent**: a link
+  that is live, charges the owner's amount, is bound to its catalogue row and
+  is the link the owner names is left exactly as it is. Running it on a
+  healthy account changes nothing.
+- **The new decision is tested offline and runs on every build.** Six
+  boundary tests — the owner derives its own price label, every offer has a
+  catalogue row and a checkout link, a name that carries the price carries
+  the derived one, **no file outside the owner states a coaching price, and
+  no file outside the owner names a coaching checkout link** — wired into
+  `npm run build` beside the relay suite, the cron audit and the purchase
+  records. **A boundary test that nothing runs is a comment.**
+- **The scan is not vacuous.** It was proved by putting `"$150, one session."`
+  back into the referral page by hand: the suite failed and named the file
+  and the line. The price rule is scoped to files that talk about coaching —
+  "$99" is also a perfectly good threshold for a checkout probe, and a rule
+  that fired on every number that happened to equal a coaching price would
+  be a rule that fires on nothing.
+- **The deploy is a no-op on the page.** The built text of
+  `/tyronengouamo/` and `/tyronengouamo/referral/` was compared against the
+  live pages and is **identical, line for line** — the derived labels
+  reproduce the copy that is already there, including the shorter share-card
+  names, which the owner carries for exactly that reason. Only llms.txt
+  changes, and it now states the prices the offers actually carry.
+- **The proof is green against production.** `check_coaching_offers.mjs`
+  passes **57 of 57**: every offer has a catalogue row, the row carries the
+  owner's price and name, the link is active and bound to that row, the
+  amount charged is the price the site says, the price is billed the way
+  the offer says, every page carrying a link carries its price, and the
+  buyer lands on a page that exists.
 - **The two operator-blocked items have not moved.** The Stripe account still
   shows **zero customers, zero subscriptions and no paid session**, and both
   copies of the Telegram token still answer **401 Unauthorized**.
 - **Everything else is still green.** The application door answers 19 of 19.
-  The catalogue sells 62 of 62. The coaching offers are sound at 47 of 47.
-  The membership and the commission agree at 15 of 15. The visual audit ran
+  The catalogue sells 62 of 62. The checkout door is sound at 20 of 20. The
+  membership and the commission agree at 15 of 15. The visual audit ran
   over 39 routes at 375px and found nothing to fix.
 
 ## 📈 What Is Now Proven, and By What
@@ -125,6 +109,7 @@ The one money path with no command, and a receipt that could not say what it was
 | Application front door → relay → CRM | `scripts/check_apply_chain.mjs` | 0 sound / 1 broken / 3 could not run |
 | Cart → Stripe session → the amount charged | `scripts/check_checkout_chain.mjs` | 0 sound / 1 broken / 3 could not run |
 | Paid order → a purchase record that names it | `Website/scripts/test-purchase-records.mjs` | 9 offline tests, on every build |
+| Coaching offer → its price, its catalogue row, its link → nothing else states it | `Website/scripts/test-coaching-offers.mjs` | 6 offline tests, on every build |
 
 ## 🎯 This Session: Do These In Order
 1. **The site's own checkout door now has a command, and the receipt it
@@ -239,13 +224,24 @@ The one money path with no command, and a receipt that could not say what it was
     would close the class entirely is deleting one of them** — but `web/` is
     what the tooling and the documentation point at, and removing it is a
     decision about how this repository is worked, not a bug fix.
-16. **The membership price and the commission rate have one owner; the
-    coaching offers' prices do not need one.** The offers' own prices live
-    in `src/lib/tyrone.ts` and in the `products` rows, and the catalogue
-    check already compares the two — but the *copy* on the coaching page is
-    a third copy, and it is checked only by the offer check reading the live
-    page. **If a new offer is added, put its price in `src/lib/tyrone.ts`
-    and give it a catalogue row, or it will have three homes and no check.**
+16. **~~The coaching offers' prices have one owner.~~ DONE — 2026-11-09.**
+    The offers live in `src/lib/coaching-offers.ts`, the amount is written
+    once in cents, and every word the site writes about an offer is derived
+    from it: the price on the page, the name of the catalogue row, the
+    product Stripe shows, the line in llms.txt, the share-card copy. The
+    check walks the owner's list rather than the catalogue's, so an offer
+    with no catalogue row is now named instead of ignored. Six offline
+    tests run on every build. **A new offer goes into
+    `src/lib/coaching-offers.ts` with its amount, its catalogue row and its
+    link, and nowhere else.**
+17. **The resource pages' offer prices have two homes.** The apply section
+    on `/resources/*` states "$50,000" and "$100,000" as literals in
+    `src/app/resources/ResourceView.tsx`, and the solution prose in
+    `src/lib/portfolio-resources.json` states the same two amounts and the
+    same two offer names in a sentence. Edit one and the site contradicts
+    itself about a price a prospect reads. **The membership price, the
+    commission rate and the coaching prices each have one owner; these two
+    do not.**
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -558,6 +554,10 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-09 | revenue | The coaching offers' price was written down in five places — the offer itself, the copy on the referral page, the line in llms.txt, the script that created the Stripe objects, and the catalogue row the site sold from. They all agreed, and every one was free to drift. `src/lib/coaching-offers.ts` is the owner now: the amount is written once in cents and every word the site writes about an offer is derived from it — the price on the page, the name of the catalogue row, the product Stripe shows, the line in llms.txt, the share-card copy. `src/lib/tyrone.ts` keeps the words around the coaching and none of the numbers. The built text of both coaching pages was compared against the live pages and is identical, line for line, so the deploy changes nothing a reader sees | ~320 |
+| 2026-11-09 | ops | The coaching check walked the **catalogue**, so an offer added to the site without a catalogue row was invisible to it: the check passed and the offer sat on the page with nothing behind it. It walks the owner's list now, asks the catalogue whether it has a row for every offer and whether any row is left behind by an offer that is gone, and compares the row's price and name against the owner instead of against itself. 57 of 57 checks pass against production | ~200 |
+| 2026-11-09 | ops | `scripts/stripe_tyrone_offers.mjs` minted a fresh product, price and payment link on every run, so a healthy account was rewritten and the link the site points at was left behind — retired, and still the one on the page. It reads the owner now and is idempotent: a link that is live, charges the owner's amount, is bound to its catalogue row and is the link the owner names is left exactly as it is. It also writes the owner's own `checkoutUrl` back when a link has to be minted, so the page never points at a retired checkout | ~180 |
+| 2026-11-09 | build | The coaching prices had no boundary test, so a restatement of one would have reached production and been found at the checkout. Six offline tests run on every build beside the relay suite, the cron audit and the purchase records: the owner derives its own price label, every offer has a catalogue row and a checkout link, a name that carries the price carries the derived one, no file outside the owner states a coaching price, and no file outside the owner names a coaching checkout link. The scan is scoped to files that talk about coaching, and it is not vacuous — it was proved by putting "$150, one session." back into the referral page by hand and watching it name the file | ~200 |
 | 2026-11-07 | revenue | The site's own checkout door had no command, and the receipt of a paid merchandise order could not say what was bought. Every other chain on the site had a script; `POST /api/checkout/create-session` had none — it was proved by hand once, on 2026-10-31, and nothing kept it true. `scripts/check_checkout_chain.mjs` asks the questions a buyer meets in order: it refuses an empty cart, incomplete shipping and a line that names nothing in the catalogue; it ignores the price the caller chose (the cart is a claim, the catalogue is the price); the number the buyer is shown is the number the account charges; the lines, the tax and the shipping add up to it; the discount is the one the server's own table says and a code the server does not honour earns nothing; every line says which catalogue row it is; the buyer is sent back to the live site and not to localhost. **20 checks.** It reads the totals out of the app's own module rather than keeping a second answer, and it asks Stripe what it would charge rather than asking the app what it would say. It takes no money and writes no rows; it does create Stripe sessions, and every one is expired the moment it is read, with the cleanup registered against the signals and against `exit`. The check was not vacuous: it failed on production in exactly the three places the fix had not reached | ~400 |
 | 2026-11-07 | backend | A paid merchandise order could not say what had been bought. The webhook's idempotency key was the checkout session, so only the **first** line of an order was ever recorded — a buyer who took a hoodie and a beanie left one record behind and the other was lost. And a line built by the site's own checkout carries a price id minted at the moment of the sale, so the catalogue lookup found nothing and the record said "purchased something", with no name and no catalogue row behind it. Each line now carries its catalogue row and its own key, the tax line says it is the tax so it is never counted as a purchase, and the decision lives in one pure module — `src/lib/server/purchase-records.ts` — with nine offline tests that run on every build beside the relay suite | ~260 |
 | 2026-11-07 | security | The checkout door was the only public write door on the site with no limiter on it, and it mints live Stripe sessions for anybody who asks. It is counted now, the way the capture forms and the referral route are, with a window wide enough for a buyer who rebuilds their cart and for the proof to ask its questions in one run | ~25 |
@@ -1123,6 +1123,29 @@ with the `products.slug` migration decision in the same entry. **Recorded
   when both are wrong. A proof that asks Stripe what it would charge, and
   asks the buyer what they were shown, cannot. **Ask the account, and ask
   the buyer.**
+- **walk-the-owner-not-the-copy** (fleet, applies to every list that
+  something else may be added to) — the coaching check read the catalogue
+  and asked whether the catalogue agreed with the Stripe account. An offer
+  added to the site without a catalogue row was therefore invisible to it:
+  the check passed, and the offer sat on the page with nothing behind it.
+  **An item with no row is an item nobody is checking.** Walk the owner's
+  list, and ask the copies whether they have a row for each item — then ask
+  the other way round, so an item taken off the site does not leave a live
+  checkout behind.
+- **a-script-that-mints-on-every-run-is-a-churn-script** (fleet, applies to
+  every provisioning script) — the Stripe script created a fresh product,
+  price and payment link on every run, so a healthy account was rewritten
+  and the link the site actually points at was left behind — retired, and
+  still the one on the page. **A repair script that always repairs is a
+  script that breaks things.** Make it idempotent: if the link is live,
+  charges the owner's amount and is bound to the right row, leave it alone.
+- **a-derivation-that-changes-the-copy-is-a-change** (fleet, applies to
+  every "derive it from the owner" refactor) — deriving the copy from one
+  source is only safe if the derivation reproduces the copy exactly. The
+  coaching owner carries a shorter share-card name for exactly this reason:
+  the obvious derivation would have silently rewritten the share card. **Derive
+  it, then diff the rendered text against what is live** — byte for byte, if
+  the change was supposed to be a refactor.
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -1148,6 +1171,18 @@ with the `products.slug` migration decision in the same entry. **Recorded
   membership or the commission** — `scripts/check_referral_terms.mjs`
   fails the build on one. Changing the rate is now a one-line change
   (2026-11-05); it was eleven sentences across six files.
+- **The coaching offers' prices live in `src/lib/coaching-offers.ts` and
+  nowhere else.** Each offer's amount is written once, in cents, and every
+  label the site writes about it — the price on the page, the offer name,
+  the catalogue row's name, the share-card copy, the line in llms.txt — is
+  derived in that module. `src/lib/tyrone.ts` holds the words around the
+  coaching and none of the numbers, and `src/lib/coaching-offers.ts` imports
+  nothing, so the pages, the components and the scripts beside the app can
+  all read it. **No other file may write a coaching amount or name a
+  coaching checkout link** — `Website/scripts/test-coaching-offers.mjs`
+  fails the build on one. A new offer goes into that file with its amount,
+  its catalogue row and its link, and nowhere else (2026-11-09); it used to
+  be five homes and no owner.
 - **The referral mechanic is one module, not four routes.** `claimReferral`,
   `ensureReferralCode`, `awardReferralCommission` and `referralSummary`
   live in `src/lib/server/referrals.ts`. A second copy of the code

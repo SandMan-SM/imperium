@@ -9,19 +9,32 @@
  * That was fixed. **Nothing keeps it fixed.** A price edited in one place
  * and not the other puts it back, and the buyer finds out at the checkout.
  *
+ * The offers live in `Website/src/lib/coaching-offers.ts`, which is the one
+ * place their prices are written down. This script walks **that** list, not
+ * the catalogue's: the catalogue used to be the list the check walked, which
+ * meant an offer added to the site without a catalogue row was invisible to
+ * it — the check passed, and the offer sat on the page with nothing behind
+ * it. The owner is the truth; the catalogue row and the Stripe account are
+ * copies of it, and this is the check that says they still are.
+ *
  * So this script asks the question in the only order that matters:
  *
- *   1. does the catalogue row exist, in stock, with a Stripe price?
- *   2. is the payment link active?
- *   3. does the link point at the recorded price — and at that row?
- *   4. is the amount charged the price in the catalogue?
- *   5. is the price on the live page the price charged?
- *   6. does the page the buyer lands on after paying exist?
+ *   1. does every offer have a catalogue row, and does that row carry the
+ *      price and the name the owner states?
+ *   2. is the row in stock, with a Stripe price?
+ *   3. is the payment link active?
+ *   4. does the link point at the recorded price — and at that row?
+ *   5. is the amount charged the price the site says?
+ *   6. is the price on the live page the price charged?
+ *   7. does the page the buyer lands on after paying exist?
  *
  *   node scripts/check_coaching_offers.mjs
  *
  * The target defaults to the live site. `PROOF_BASE` points it at a local
  * dev server instead.
+ *
+ * Node 22.6 or newer: the owner is a TypeScript module and is imported
+ * directly, so Node has to be able to strip the types.
  *
  * Nothing is printed except states, names, amounts and figures. Secrets are
  * never echoed. Credentials are read from the environment first, then from
@@ -34,6 +47,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { COACHING_OFFERS } from '../Website/src/lib/coaching-offers.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..');
@@ -151,13 +166,38 @@ const coaching = rows.filter((row) => row.brand === COACHING_TIER);
 const membership = rows.filter((row) => row.metadata?.kind === 'membership');
 
 record('Catalogue: the products table can be read', true, `${rows.length} row(s)`);
+
+// The offers are read from the owner, not from the catalogue. The catalogue
+// used to be the list the check walked, which meant an offer added to the
+// site without a catalogue row was invisible here: the check passed, and the
+// offer sat on the page with nothing behind it. **An offer with no
+// catalogue row is an offer nobody is checking.**
+const ownerOffers = COACHING_OFFERS;
+
 record(
-    'Catalogue: the three coaching offers are in the catalogue',
-    coaching.length === 3,
-    coaching.length === 3
-        ? coaching.map((row) => row.name).join(', ')
-        : `${coaching.length} found`,
+    'Catalogue: every coaching offer has a catalogue row',
+    ownerOffers.every((offer) => rows.some((row) => row.id === offer.catalogueId)),
+    ownerOffers
+        .map(
+            (offer) =>
+                `${offer.name}: ${
+                    rows.some((row) => row.id === offer.catalogueId) ? 'found' : 'MISSING'
+                }`,
+        )
+        .join(', '),
 );
+
+const staleRows = coaching.filter(
+    (row) => !ownerOffers.some((offer) => offer.catalogueId === row.id),
+);
+record(
+    'Catalogue: no coaching row is left behind by an offer that is gone',
+    staleRows.length === 0,
+    staleRows.length === 0
+        ? 'every coaching row is an offer'
+        : staleRows.map((row) => row.name).join(', '),
+);
+
 record(
     'Catalogue: the membership is in the catalogue',
     membership.length === 1,
@@ -204,8 +244,28 @@ if (!STRIPE_KEY) {
  * live payment link.
  */
 async function checkOffer(row, pageLabel, options = {}) {
-    const { requireInStock = false, requireBinding = false } = options;
+    const { requireInStock = false, requireBinding = false, owner = null } = options;
     const url = row.stripe_url || row.payment_link_url;
+
+    // The owner is the truth about what an offer costs. The catalogue row is
+    // a copy of it, and the account is a copy of that, and the page is a copy
+    // of all three. Every step below compares against the owner, so a row
+    // that has drifted is caught rather than agreed with.
+    const price = owner ? owner.amountCents / 100 : Number(row.price);
+
+    if (owner) {
+        record(
+            `${pageLabel}: the catalogue row carries the price the site says`,
+            Number(row.price) === price,
+            `catalogue=$${row.price} owner=$${price}`,
+        );
+
+        record(
+            `${pageLabel}: the catalogue row is named after the offer`,
+            row.name === owner.catalogueName,
+            `catalogue="${row.name}" owner="${owner.catalogueName}"`,
+        );
+    }
 
     record(
         `${pageLabel}: the catalogue row is sellable`,
@@ -250,15 +310,23 @@ async function checkOffer(row, pageLabel, options = {}) {
         );
     }
 
-    const price = await stripeGet(`/prices/${row.stripe_price_id}`);
-    const amount = price.body?.unit_amount != null ? price.body.unit_amount / 100 : null;
-    const recurring = price.body?.recurring?.interval || null;
+    const stripePrice = await stripeGet(`/prices/${row.stripe_price_id}`);
+    const amount = stripePrice.body?.unit_amount != null ? stripePrice.body.unit_amount / 100 : null;
+    const recurring = stripePrice.body?.recurring?.interval || null;
 
     record(
-        `${pageLabel}: the amount charged is the price in the catalogue`,
-        amount === Number(row.price),
-        `charged=$${amount ?? 'unknown'} catalogue=$${row.price}`,
+        `${pageLabel}: the amount charged is the price the site says`,
+        amount === price,
+        `charged=$${amount ?? 'unknown'} site=$${price}`,
     );
+
+    if (owner) {
+        record(
+            `${pageLabel}: the price is billed the way the offer says`,
+            recurring === owner.recurring,
+            `billed=${recurring || 'once'} offer=${owner.recurring || 'once'}`,
+        );
+    }
 
     // The pages that carry this offer's link are the pages the buyer reads
     // before paying. Each of them has to carry the price as well: a link
@@ -279,10 +347,10 @@ async function checkOffer(row, pageLabel, options = {}) {
     for (const surface of carrying) {
         record(
             `${pageLabel}: the price on ${surface.path} is the price charged`,
-            pageShowsAmount(surface.text, row.price),
-            pageShowsAmount(surface.text, row.price)
-                ? `$${row.price}`
-                : `${surface.path} does not show $${row.price}`,
+            pageShowsAmount(surface.text, price),
+            pageShowsAmount(surface.text, price)
+                ? `$${price}`
+                : `${surface.path} does not show $${price}`,
         );
     }
 
@@ -301,8 +369,16 @@ async function checkOffer(row, pageLabel, options = {}) {
     );
 }
 
-for (const row of coaching) {
-    await checkOffer(row, `Offer: ${row.name}`, {
+for (const offer of ownerOffers) {
+    const row = rows.find((entry) => entry.id === offer.catalogueId);
+    if (!row) {
+        // Already named by the catalogue check above. Nothing can be checked
+        // against a row that is not there.
+        continue;
+    }
+
+    await checkOffer(row, `Offer: ${offer.name}`, {
+        owner: offer,
         requireInStock: true,
         requireBinding: true,
     });

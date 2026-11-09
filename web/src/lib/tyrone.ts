@@ -1,14 +1,11 @@
 /**
- * Tyrone Ngouamo's coaching offers — the single source of truth.
+ * The words around Tyrone Ngouamo's coaching — who he is, how the work runs,
+ * who it is for, and the referral offer.
  *
- * The three offers live in the `products` catalogue with their own Stripe
- * product, price and payment link. This module mirrors those rows so the
- * page can be rendered statically and so the price on the page is the price
- * the buyer is charged. Nothing here may drift from the catalogue: the
- * Stripe link is the checkout, so a stale copy here is a wrong price.
- *
- * `scripts/stripe_tyrone_offers.mjs` creates the Stripe objects and writes
- * their ids back to the catalogue rows.
+ * The offers themselves — their prices, their links, their catalogue rows —
+ * live in `src/lib/coaching-offers.ts`, which is the one place their numbers
+ * are written down. The membership price has the same owner in
+ * `src/lib/membership.ts`.
  */
 
 import { STRIPE_CHECKOUT_URL } from "@/lib/brand";
@@ -27,78 +24,6 @@ export const COACH = {
         "Tyrone Ngouamo — a monogram card in the Imperium house style, his name set in serif italic.",
     remote: "Remote worldwide",
 } as const;
-
-export interface CoachingOffer {
-    /** Matches the `id` of the catalogue row. */
-    id: string;
-    name: string;
-    /** Display price. The Stripe price is the same amount. */
-    price: string;
-    /** What the buyer pays, per interval. */
-    priceNote: string;
-    /** One line, plain. */
-    summary: string;
-    /** What is inside. */
-    includes: string[];
-    /** The Stripe payment link. This is the checkout. */
-    checkoutUrl: string;
-    /** The catalogue row, for the reference line. */
-    catalogueId: string;
-}
-
-export const OFFERS: CoachingOffer[] = [
-    {
-        id: "personal-training",
-        name: "Personal Training — 1 Hour with Tyrone",
-        price: "$150",
-        priceNote: "one session",
-        summary:
-            "Sixty minutes working on your training — programming, form, and the accountability to keep showing up.",
-        includes: [
-            "A 60-minute session, in person in Utah or live by video",
-            "Programming built around your goal, schedule and equipment",
-            "Form coaching, with corrections you can use the same week",
-            "Written session notes, so nothing lives only in memory",
-            "A follow-up check-in after the session",
-        ],
-        checkoutUrl: "https://buy.stripe.com/dRm14mfOseDOgX9cTt5AQ0E",
-        catalogueId: "a6a2bf38-4462-44b4-ba6a-0b5d32243e05",
-    },
-    {
-        id: "custom-meal-plan",
-        name: "Custom Meal Plan — Full Build-Out",
-        price: "$297",
-        priceNote: "one payment",
-        summary:
-            "A plan you can actually cook on a normal week — every meal, the shopping list, and what to swap when life changes.",
-        includes: [
-            "An intake call to understand your goal, schedule and budget",
-            "Macro targets set for your body and your day",
-            "A meal-by-meal week, laid out plainly",
-            "A grocery list you can take to the store",
-            "A swap matrix — what to replace a meal with when you cannot stick to it",
-            "A follow-up to adjust the plan once you have lived with it",
-        ],
-        checkoutUrl: "https://buy.stripe.com/cNi7sKau8fHSdKXcTt5AQ0F",
-        catalogueId: "6159b3d4-71b3-466f-82e1-23447689d8a2",
-    },
-    {
-        id: "meal-plan-payment-plan",
-        name: "Meal Plan Payment Plan — $99 a month",
-        price: "$99",
-        priceNote: "a month, cancel any time",
-        summary:
-            "The same build-out, spread over three monthly payments. Nothing is owed after the third month.",
-        includes: [
-            "Everything in the full build-out, delivered on the same timeline",
-            "One payment a month instead of one large one",
-            "Cancel at any point — there is no contract after month three",
-            "Billed by Stripe, with a receipt for every month",
-        ],
-        checkoutUrl: "https://buy.stripe.com/14AfZg8m0dzK36jdXx5AQ0G",
-        catalogueId: "69ff6f01-06d8-44d1-8537-0e0cf9a2d7cf",
-    },
-];
 
 export const STEPS = [
     {

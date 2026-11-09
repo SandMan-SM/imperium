@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, MapPin, Video } from "lucide-react";
 
 import { MembershipCta } from "@/components/MembershipCta";
-import { COACH, FAQ, FOR_WHO, OFFERS, STEPS } from "@/lib/tyrone";
+import { COACHING_OFFERS, PERSONAL_TRAINING } from "@/lib/coaching-offers";
+import { COACH, FAQ, FOR_WHO, STEPS } from "@/lib/tyrone";
 
 const SITE_URL = "https://secretimperium.com";
 const PAGE_URL = `${SITE_URL}/tyronengouamo/`;
@@ -61,11 +62,11 @@ const offerJsonLd = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
     name: "Coaching offers",
-    itemListElement: OFFERS.map((offer) => ({
+    itemListElement: COACHING_OFFERS.map((offer) => ({
         "@type": "Offer",
         name: offer.name,
         description: offer.summary,
-        price: offer.price.replace(/[^0-9.]/g, ""),
+        price: offer.priceNumber,
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
         url: offer.checkoutUrl,
@@ -104,11 +105,11 @@ export default function TyroneNgouamoPage() {
                         <div className="coaching-hero-actions">
                             <a
                                 className="editorial-button"
-                                href={OFFERS[0].checkoutUrl}
+                                href={PERSONAL_TRAINING.checkoutUrl}
                                 data-track="tyrone_book_session"
                                 data-track-area="coaching_hero"
                             >
-                                Book a session — {OFFERS[0].price}
+                                Book a session — {PERSONAL_TRAINING.price}
                                 <ArrowRight size={18} aria-hidden="true" />
                             </a>
                             <Link className="editorial-hero-link" href="#offers">
@@ -152,7 +153,7 @@ export default function TyroneNgouamoPage() {
                     </div>
 
                     <div className="coaching-offers">
-                        {OFFERS.map((offer) => (
+                        {COACHING_OFFERS.map((offer) => (
                             <article key={offer.id} className="coaching-offer" id={offer.id}>
                                 <div className="coaching-offer-head">
                                     <p className="coaching-offer-price">

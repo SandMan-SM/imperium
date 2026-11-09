@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 
-import { COACH, OFFERS } from "@/lib/tyrone";
+import { COACHING_OFFERS } from "@/lib/coaching-offers";
+import { COACH } from "@/lib/tyrone";
 
 const SITE_URL = "https://secretimperium.com";
 const PAGE_URL = `${SITE_URL}/tyronengouamo/booked/`;
@@ -66,7 +67,7 @@ export default function BookedPage() {
           <div className="mt-12 border-t border-[#d2d1c7] pt-8">
             <p className="editorial-kicker">IN THE MEANING</p>
             <ul className="mt-4 grid gap-3">
-              {OFFERS.map((offer) => (
+              {COACHING_OFFERS.map((offer) => (
                 <li key={offer.id} className="flex items-start gap-3 text-[14px] leading-[1.7] text-[#4f5449]">
                   <Check size={15} className="mt-1 shrink-0 text-[#92784e]" aria-hidden="true" />
                   <span>

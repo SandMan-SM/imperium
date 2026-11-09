@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { COACH, REFERRAL, REFERRAL_STEPS, OFFERS } from "@/lib/tyrone";
+import { CUSTOM_MEAL_PLAN, PERSONAL_TRAINING } from "@/lib/coaching-offers";
+import { COACH, REFERRAL, REFERRAL_STEPS } from "@/lib/tyrone";
 import { ReferralLinks } from "./ReferralLinks";
 
 const SITE_URL = "https://secretimperium.com";
@@ -46,14 +47,14 @@ const SHARE_LINKS = [
         url: `${SITE_URL}/tyronengouamo/`,
     },
     {
-        label: "Personal Training — 1 hour",
-        detail: "$150, one session.",
-        url: OFFERS[0].checkoutUrl,
+        label: PERSONAL_TRAINING.shareLabel,
+        detail: `${PERSONAL_TRAINING.price}, ${PERSONAL_TRAINING.priceNote}.`,
+        url: PERSONAL_TRAINING.checkoutUrl,
     },
     {
-        label: "Custom Meal Plan — full build-out",
-        detail: "$297, one payment.",
-        url: OFFERS[1].checkoutUrl,
+        label: CUSTOM_MEAL_PLAN.shareLabel,
+        detail: `${CUSTOM_MEAL_PLAN.price}, ${CUSTOM_MEAL_PLAN.priceNote}.`,
+        url: CUSTOM_MEAL_PLAN.checkoutUrl,
     },
     {
         label: "Imperium Elite membership",

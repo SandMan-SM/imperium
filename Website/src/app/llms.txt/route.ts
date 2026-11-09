@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
 
+import { COACHING_OFFERS } from "@/lib/coaching-offers";
+
 export const dynamic = "force-static";
+
+/**
+ * The coaching offers, stated from the one place their prices are written
+ * down. This file is read by machines, so a price typed out here is a price
+ * that can go stale without anybody noticing.
+ */
+const coachingOffers = COACHING_OFFERS.map(
+  (offer) => `${offer.label} (${offer.price}, ${offer.priceNote})`,
+).join(", ");
 
 export function GET() {
   const body = `# Imperium
@@ -24,7 +35,7 @@ export function GET() {
 
 ## Coaching
 - Tyrone Ngouamo coaches strength training and nutrition through Imperium, in person in Utah or by video.
-- Offers: Personal Training (one hour, $150), Custom Meal Plan ($297), Meal Plan Payment Plan ($99 a month).
+- Offers: ${coachingOffers}.
 - Checkout is by Stripe; each offer has its own payment link.
 
 ## Website and AI partner resources
