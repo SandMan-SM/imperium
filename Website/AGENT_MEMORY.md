@@ -1314,3 +1314,11 @@ with the `products.slug` migration decision in the same entry. **Recorded
   else.** The `federation.surfaces` row for `secretimperium.com` names
   `codebase_path` = this `Website/` tree; treat any other directory as
   the wrong tree.
+
+
+## 2026-11-09 — Tenant-local public General News
+
+- Public newsletter articles now have one tenant-local owner: `src/lib/newsletter-public.ts` exports `PUBLIC_NEWSLETTER_ARTICLES`. The index, static `/newsletter/[slug]/` route and sitemap read that explicit collection. Do not expose the unscoped legacy `newsletters` table to fill the public archive.
+- The first article is `nvidia-jensen-huang-independent-review-november-2026`, labeled General News. It preserves primary-source HTTPS citations, the Chinese denial and the distinction between verified review/admission and disputed intelligence allegations. Its illustration is AI-generated, not an investigation photograph.
+- Existing archive, partner cards, membership gates, forms and authentication stay in place. The Node24 production build, existing30 offline checks, mirror check and compiled article/image/source/sitemap checks passed. Root owns final production browser review. No form submission, email or legacy newsletter database mutation was performed for this article.
+- This release was isolated from immutable live commit `ad57b6302c910074150d3341a901318278655706`. Federation is the authority for the release directory and deploy method; never reuse an older worktree because it has a Vercel project link.
