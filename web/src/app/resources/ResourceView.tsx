@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { RESOURCE_SITE as site, RESOURCE_PAGES, resourceApplication, resourceGraph, type ResourcePage } from "@/lib/portfolio-resources";
 import { resourceOffer } from "@/lib/resource-offers";
+import { SUCCESS_EMPIRE } from "@/lib/success-empire";
 import styles from "./resources.module.css";
 
 function ContactActions({page}: {page?: ResourcePage}) {
  const subject=page ? `${site.name}: ${page.title}` : `${site.name} website and AI resources`;
- return <div className={styles.actions}><a className={styles.primary} href={`sms:+18014581756?body=${encodeURIComponent(`Hi, I’d like more information about ${subject}.`)}`} data-track="resource_sms">Text for more info</a><a className={styles.secondary} href="tel:+18014581756" data-track="resource_call">Call if preferred</a></div>;
+ return <div className={styles.actions}><a className={styles.primary} href={`sms:${SUCCESS_EMPIRE.phone}?body=${encodeURIComponent(`Hi, I’d like more information about ${subject}.`)}`} data-track="resource_sms">Text for more info</a><a className={styles.secondary} href={`tel:${SUCCESS_EMPIRE.phone}`} data-track="resource_call">Call if preferred</a></div>;
 }
 function CardList({items}: {items: typeof site.proof}) {return <div className={styles.cards}>{items.map((c,i)=><a key={c.title} href={c.href} className={styles.card}><span className={styles.number}>{String(i+1).padStart(2,"0")}</span><h3>{c.title}</h3><p>{c.body}</p><span className={styles.cardLink}>Explore the project <span aria-hidden="true">↗</span></span></a>)}</div>;}
 export default function ResourceView({page}: {page?: ResourcePage}) {
@@ -17,7 +18,7 @@ export default function ResourceView({page}: {page?: ResourcePage}) {
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:graph}}/>
   <div className={styles.shell}>
    <nav className={styles.breadcrumbs} aria-label="Breadcrumb"><Link href="/">{site.name}</Link><span aria-hidden="true">/</span><Link href="/resources">Resources</Link>{page && <><span aria-hidden="true">/</span><span>{page.kind === "builder" ? "Website builder" : page.kind === "ai-partner" ? "AI Employees" : page.kind === "utah-growth" ? "Utah discovery" : "LF × AIS"}</span></>}</nav>
-   <header className={styles.hero}><div className={styles.heroCopy}><p className={styles.eyebrow}>{site.label}</p><h1>{page?.share ?? site.hubTitle}</h1><p className={styles.intro}>{page?.intro ?? site.hubIntro}</p><ContactActions page={page}/><p className={styles.contactNote}>Website and AI service inquiries · Lead Franchise &amp; AIS Empire · (801) 458-1756</p></div><figure className={styles.heroArt}>{/* eslint-disable-next-line @next/next/no-img-element -- static local asset; next/image adds no value here */}
+   <header className={styles.hero}><div className={styles.heroCopy}><p className={styles.eyebrow}>{site.label}</p><h1>{page?.share ?? site.hubTitle}</h1><p className={styles.intro}>{page?.intro ?? site.hubIntro}</p><ContactActions page={page}/><p className={styles.contactNote}>Website and AI service inquiries · Lead Franchise &amp; AIS Empire · {SUCCESS_EMPIRE.displayPhone}</p></div><figure className={styles.heroArt}>{/* eslint-disable-next-line @next/next/no-img-element -- static local asset; next/image adds no value here */}
 <img src={site.image} alt={site.alt} style={{objectPosition:site.position}}/><figcaption>{site.slug === "leotaempire" ? "Leota vision · Concept artwork" : site.slug === "losangels" ? "Project archive · Storefront unavailable" : "From the native website project"}</figcaption></figure></header>
    {site.slug === "losangels" && <aside className={styles.status}><strong>Current project status</strong><p>Website will be put back up when payment is complete. These resource pages do not reopen the storefront or offer products for sale.</p></aside>}
    <nav className={styles.resourceNav} aria-label="Website and AI resources"><Link href="/resources" aria-current={!page ? "page" : undefined}>Overview</Link>{RESOURCE_PAGES.map(p=><Link key={p.key} href={p.path} aria-current={page?.key === p.key ? "page" : undefined}>{p.kind === "builder" ? "Lead Franchise" : p.kind === "ai-partner" ? "AIS Empire" : p.kind === "utah-growth" ? "Utah lead generation" : "LF × AIS partnership"}</Link>)}</nav>
