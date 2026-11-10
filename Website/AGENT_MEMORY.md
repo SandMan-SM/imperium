@@ -1322,3 +1322,8 @@ with the `products.slug` migration decision in the same entry. **Recorded
 - The first article is `nvidia-jensen-huang-independent-review-november-2026`, labeled General News. It preserves primary-source HTTPS citations, the Chinese denial and the distinction between verified review/admission and disputed intelligence allegations. Its illustration is AI-generated, not an investigation photograph.
 - Existing archive, partner cards, membership gates, forms and authentication stay in place. The Node24 production build, existing30 offline checks, mirror check and compiled article/image/source/sitemap checks passed. Root owns final production browser review. No form submission, email or legacy newsletter database mutation was performed for this article.
 - This release was isolated from immutable live commit `ad57b6302c910074150d3341a901318278655706`. Federation is the authority for the release directory and deploy method; never reuse an older worktree because it has a Vercel project link.
+
+## 2026-11-09 — Remove retired portfolio partner
+
+- The operator removed A Chat with Liz from active federation participation. Its partner row and tenant-specific public logo/card assets are removed from the production Website tree and mirrored web tree. Public partner/newsletter directories derive their counts from the remaining roster. No historical receipt or Git history was deleted.
+- The tenant-local General News article, archive, resources, membership offers, forms, auth and APIs are unchanged. This patch is isolated from exact deployed commit `0a17bea0329f12caf009a369c9d90af65b7f12a8`; do not deploy an older canonical or retired checkout. Deployment waits for the central removal dependency and the owner’s normal release verification.
