@@ -764,3 +764,9 @@
  .success-empire-actions { gap: 16px 23px; margin-top: 25px; }
  .success-empire-text { font-size: 13px; }
 }
+
+/* AIS Empire attribution: the final row of every site footer. */
+footer[data-ais-footer] { flex-wrap: wrap; }
+.ais-empire-powered { display: flex; justify-content: center; align-items: center; width: 100%; max-width: none; grid-column: 1 / -1; flex: 0 0 100%; order: 9999; text-align: center; padding: 1.5rem 1rem 0; box-sizing: border-box; font-size: 0.8125rem; line-height: 1.6; }
+.ais-empire-powered > a { color: inherit; display: inline-flex; align-items: center; min-height: 44px; text-transform: none; letter-spacing: normal; font-variant: normal; text-decoration: underline; text-underline-offset: 0.2em; }
+.ais-empire-powered > a:hover { text-decoration: underline; text-underline-offset: 0.2em; }

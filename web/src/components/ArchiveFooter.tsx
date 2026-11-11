@@ -3,7 +3,7 @@ import { archiveCategories } from "@/lib/archive";
 
 export function ArchiveFooter() {
     return (
-        <footer className="editorial-footer border-t border-[#d7d7cd] bg-[#f0eee6] text-[#252820]">
+        <footer className="editorial-footer border-t border-[#d7d7cd] bg-[#f0eee6] text-[#252820]" data-ais-footer="">
             <div className="mx-auto max-w-[1360px] px-5 sm:px-8 lg:px-12">
                 <div className="grid gap-10 py-12 sm:py-14 md:grid-cols-[1.5fr_1fr_0.7fr] md:gap-14">
                     <div>
@@ -43,12 +43,12 @@ export function ArchiveFooter() {
                     </nav>
                 </div>
                 <nav aria-label="Website partners" className="flex flex-wrap gap-x-6 gap-y-2 pb-6 text-[13px] text-[#62675b]">
-                    <Link href="/resources/lead-franchise/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Website by Lead Franchise</Link>
-                    <Link href="/resources/ais-empire/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">AI partner AIS Empire</Link>
-                    <Link href="/resources/lead-franchise-ais-empire/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Lead Franchise × AIS Empire</Link>
+
+
+
                     <Link href="/resources/" className="inline-flex min-h-11 items-center hover:underline hover:underline-offset-4">Project resources</Link>
                 </nav>
             </div>
-        </footer>
+        <div className="ais-empire-powered" data-ais-empire-powered=""><a href="https://aisempire.org/" target="_blank" rel="noopener noreferrer">Powered by AIS Empire</a></div></footer>
     );
 }
