@@ -7,6 +7,7 @@ import { SuccessEmpireActions } from "@/components/SuccessEmpireActions";
 import { PartneredWith } from "@/components/Partners";
 import { archiveCategories, archiveEntries } from "@/lib/archive";
 import { getArchiveArtwork } from "@/lib/archive-art";
+import { NewsletterClosing } from "@/components/NewsletterClosing";
 
 export const metadata: Metadata = {
   title: { absolute: "Success Empire — Apply to join · Imperium" },
@@ -35,6 +36,6 @@ export default function Home() {
 
     <section id="collections" className="editorial-collections" aria-labelledby="collections-title"><div className="archive-wrap"><div className="archive-section-top"><div><p className="editorial-kicker">FOLLOW YOUR CURIOSITY</p><h2 id="collections-title">A subject for every season.</h2></div><p className="archive-section-description">Pick what speaks to where you are.</p></div><div className="editorial-topics">{archiveCategories.map((category) => { const entries = archiveEntries.filter((entry) => entry.category === category); const art = getArchiveArtwork(entries[0]); return <Link key={category} href={`/archive/?category=${encodeURIComponent(category)}`} className="editorial-topic"><div className="editorial-topic-image"><Image src={art.src} alt={art.alt} fill sizes="(max-width: 640px) 50vw, 20vw" /></div><div className="editorial-topic-title"><h3>{category}</h3><ArrowUpRight size={17} aria-hidden="true" /></div><p>{topicDescriptions[category]}</p><span>{entries.length} readings</span></Link>; })}</div></div></section>
 
-    <section className="editorial-closing"><Image src="/editorial/principles/compounding-discipline.webp" alt="" fill sizes="100vw" /><div className="editorial-closing-shade" /><div className="archive-wrap editorial-closing-content"><p className="editorial-kicker">JOIN SUCCESS EMPIRE</p><h2>A deliberate move.<br /><em>A new conversation.</em></h2><p>What do you want to build next? Share your direction in a short application, or text us to learn more about Success Empire.</p><SuccessEmpireActions area="home-closing" light /></div></section>
+    <NewsletterClosing/>
   </div>;
 }

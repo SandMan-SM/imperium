@@ -1,7 +1,7 @@
 /** Explicitly public Imperium articles. This tenant-local catalog never reads
  * the legacy unscoped newsletters table or subscriber/member content. */
 export type PublicNewsletterArticle = {
- slug: string; title: string; category: string; tags: string[]; publishedAt: string;
+ slug: string; title: string; category: string; tags: string[]; publishedAt: string; readingMinutes: number;
  description: string; image: string; imageAlt: string; imageCaption: string;
  imageWidth: number; imageHeight: number; intro: string[];
  sections: {heading: string; paragraphs: string[]}[];
@@ -10,12 +10,13 @@ export type PublicNewsletterArticle = {
 export const PUBLIC_NEWSLETTER_ARTICLES: readonly PublicNewsletterArticle[] = [
   {
     "slug": "nvidia-jensen-huang-independent-review-november-2026",
-    "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+    "title": "NVIDIA Review: What Is Confirmed?",
     "category": "General News",
     "tags": [
       "General News"
     ],
     "publishedAt": "2026-11-09",
+    "readingMinutes": 2,
     "description": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
     "image": "/images/news/nvidia-independent-review-illustration.jpg",
     "imageAlt": "Conceptual illustration of an unbranded graphics processor beside a document under examination.",

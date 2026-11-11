@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const description = "Imperium's newsletter: letters on clear thinking, meaningful work, and everyday life. Read public editions and meet the partners in our network.";
+const description = "The questions worth asking and details too often left out. Read Imperium’s source-backed reporting and practical perspectives for your next move.";
 const image = {
   url: "https://secretimperium.com/newsletter/opengraph-image",
   width: 1200,
