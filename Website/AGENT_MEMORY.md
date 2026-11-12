@@ -91,6 +91,13 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
   content file with a second home.** A token naming nothing throws rather
   than rendering a blank. All four resource pages render identically to
   live.
+- **The contact phone number had an owner and three copies beside it.** The
+  resource page wrote the number out again for the `tel:` link, the `sms:`
+  link and the contact line under the hero, the last of them in a third
+  spelling. The page reads `src/lib/success-empire.ts` now, and **five
+  offline tests run on every build** — no file outside the owner states the
+  contact number in any of the five ways it can be written. **A number with
+  an owner and copies beside it still has no owner.**
 - **The proof is green against production.** `check_coaching_offers.mjs`
   passes **57 of 57**: every offer has a catalogue row, the row carries the
   owner's price and name, the link is active and bound to that row, the
@@ -129,6 +136,7 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
 | Paid order → a purchase record that names it | `Website/scripts/test-purchase-records.mjs` | 9 offline tests, on every build |
 | Coaching offer → its price, its catalogue row, its link → nothing else states it | `Website/scripts/test-coaching-offers.mjs` | 6 offline tests, on every build |
 | Resource offer → its price → nothing else states it | `Website/scripts/test-resource-offers.mjs` | 6 offline tests, on every build |
+| Contact number → its owner → nothing else states it | `Website/scripts/test-success-empire-owner.mjs` | 5 offline tests, on every build |
 
 ## 🎯 This Session: Do These In Order
 1. **The site's own checkout door now has a command, and the receipt it
@@ -263,15 +271,23 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
     the partnership page quotes both the offer that page sells and the one
     beside it, and cannot be written without knowing both prices. Six
     offline tests run on every build.
-18. **The contact phone number is written out three times on the resource
-    pages, and the owner already exists.** `src/lib/success-empire.ts` holds
-    `phone: "+18014581756"` and `displayPhone: "801-458-1756"`, and every
-    other page on the site reads them from there. `src/app/resources/
-    ResourceView.tsx` ignores the owner and writes the number out twice —
-    the `tel:` and `sms:` links and the contact line under the hero — and
-    in a third spelling, "(801) 458-1756". **A number with an owner and
-    copies beside it still has no owner.** The fix is to read the number
-    from where it lives, and to let the site say it one way.
+18. **~~The contact phone number is written out three times on the resource
+    pages, and the owner already exists.~~ DONE — 2026-11-11.** The copies
+    are gone: `src/app/resources/ResourceView.tsx` reads
+    `SUCCESS_EMPIRE.phone` and `SUCCESS_EMPIRE.displayPhone` for the
+    `tel:` and `sms:` links and the contact line under the hero, and the
+    third spelling, "(801) 458-1756", is no longer on the page. The owner
+    is `src/lib/success-empire.ts`. **Five offline tests run on every
+    build** (`scripts/test-success-empire-owner.mjs`): the owner holds a
+    dialable number and a readable one, the two spellings the owner holds
+    are the same number, the page reads the owner, and **no file outside
+    the owner states the contact number in any of the five ways it can be
+    written** — "+18014581756", "18014581756", "801-458-1756", "(801)
+    458-1756", "801.458.1756", "801 458 1756" and "8014581756" all resolve
+    to the one number. The scan is **not vacuous**: it was proved by
+    putting "(801) 458-1756" back into the resource page by hand, and the
+    suite failed and named the file. **The contact number goes into
+    `src/lib/success-empire.ts`, and nowhere else.**
 
 ## 🔬 Why
 - **A number with eleven homes is a number with no owner.** The referral
@@ -584,6 +600,7 @@ with the `products.slug` migration decision in the same entry. **Recorded
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-11 | build | **The contact phone number had an owner and three copies beside it, and nothing kept them agreeing.** `src/lib/success-empire.ts` holds `phone: "+18014581756"` and `displayPhone: "801-458-1756"`, and the resource page wrote the number out again for the `tel:` link, the `sms:` link and the contact line under the hero — the last of them in a third spelling, "(801) 458-1756". The copies are gone; the page reads the owner. Five offline tests now run on every build beside the coaching, resource, relay, cron and purchase suites (`scripts/test-success-empire-owner.mjs`): the owner holds a dialable number and a readable one, the two spellings it holds are the same number, the page reads the owner, and no file outside the owner states the contact number in any of the five ways it can be written — "+18014581756", "18014581756", "801-458-1756", "(801) 458-1756", "801.458.1756", "801 458 1756" and "8014581756" all resolve to the one number. The scan is not vacuous: it was proved by putting "(801) 458-1756" back into the resource page by hand and watching the suite fail and name the file | ~150 |
 | 2026-11-09 | ops | Both changes were deployed through the git push to `main` (deployment `imperium-bq2dg79mg`) under federation lease 1200, and production was re-proved afterwards rather than in the tree: coaching offers 57/57, catalogue 62/62, checkout door 20/20, application door 19/19, the membership and the commission in agreement, and the visual audit clean across 39 routes at 375px | ~20 |
 | 2026-11-09 | revenue | The resource pages' offer prices had two homes. The apply section stated "$50,000" and "$100,000" as literals in `src/app/resources/ResourceView.tsx`, and the solution prose in `src/lib/portfolio-resources.json` stated the same two amounts and the same two offer names in a sentence a prospect reads. Edit one and the site contradicts itself about the price of a service it is selling. `src/lib/resource-offers.ts` is the owner now: the amount is written once and the prose carries a token — `{{price:partnership}}` — that is filled in when the content is loaded, because the sentence on the partnership page quotes both the offer that page sells and the one beside it, and cannot be written without knowing both prices. A token naming an offer that does not exist throws rather than rendering a blank. Six offline tests run on every build, and the scan was proved by putting "$50,000" back into the view by hand and watching it name the file. All four resource pages render identically to live | ~200 |
 | 2026-11-09 | revenue | The coaching offers' price was written down in five places — the offer itself, the copy on the referral page, the line in llms.txt, the script that created the Stripe objects, and the catalogue row the site sold from. They all agreed, and every one was free to drift. `src/lib/coaching-offers.ts` is the owner now: the amount is written once in cents and every word the site writes about an offer is derived from it — the price on the page, the name of the catalogue row, the product Stripe shows, the line in llms.txt, the share-card copy. `src/lib/tyrone.ts` keeps the words around the coaching and none of the numbers. The built text of both coaching pages was compared against the live pages and is identical, line for line, so the deploy changes nothing a reader sees | ~320 |
