@@ -371,11 +371,12 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
     address again.** The phone is a working channel, but a privacy policy
     ought to offer a written one too. The domains that can receive mail are
     **imperium.com** (Microsoft 365 — the domain the operator's support mail
-    already uses) and **imperiumelite.com** (Google Workspace);
-    **imperium.ai is parked and secretimperium.com publishes no MX at
-    all**. Which mailbox inside one of those domains the operator actually
-    watches is the operator's to say — it is a mailbox, not a line of code,
-    and a guessed one is a promise the site cannot keep.
+    already uses, and the domain this site used to send the weekly letter
+    from, `newsletter@imperium.com`) and **imperiumelite.com** (Google
+    Workspace); **imperium.ai is parked and secretimperium.com publishes no
+    MX at all**. Which mailbox inside one of those domains the operator
+    actually watches is the operator's to say — it is a mailbox, not a line
+    of code, and a guessed one is a promise the site cannot keep.
 
 ## 🔬 Why
 - **A contact promise the site cannot keep is worse than no contact
