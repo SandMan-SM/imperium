@@ -77,6 +77,16 @@ trying to reach the business.
   membership and the commission agree at 15 of 15. The coaching offers are
   sound at 57 of 57. The schema check finds no phantom table or column.
   The visual audit ran over 40 routes at 375px and found nothing to fix.
+- **It is deployed and re-proved.** The change went out through the git
+  push to `main` (commit `0938aa1`, federation lease 1352), and production
+  was proved afterwards rather than in the tree: `/privacy/` and `/terms/`
+  carry the dialable channel and no longer carry the parked address, **none
+  of the twelve public chunks of `/admin` carries the operator's address
+  any more**, the application door answers 19 of 19, the catalogue 62 of 62,
+  the checkout door 20 of 20, the coaching offers 57 of 57, the membership
+  and the commission agree, and the visual audit is clean across 40 routes
+  at 375px. **A change that is not re-proved after the deploy has only been
+  proved in the tree.**
 
 ## ✅ What The Session Before That Shipped
 The coaching offers had five homes for one price, and nothing kept them agreeing.
