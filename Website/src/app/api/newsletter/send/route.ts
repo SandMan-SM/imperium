@@ -9,6 +9,7 @@ import {
   type NewsletterRow,
 } from '@/lib/server/newsletter-dispatch';
 import { isAdminRequest } from '@/lib/server/admin-auth';
+import { OPERATOR } from '@/lib/server/operator';
 
 /**
  * Send an authored Intelligence Brief.
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'newsletterId is required' }, { status: 400 });
     }
 
-    if (testMode && !testEmail) {
+    if (testMode && !testEmail && !OPERATOR.email) {
       return NextResponse.json({ error: 'testEmail is required for test mode' }, { status: 400 });
     }
 
@@ -61,7 +62,10 @@ export async function POST(req: Request) {
     if (testMode) {
       const subject = newsletter ? `[TEST] ${newsletter.title}` : '[TEST] Imperium Newsletter';
       const content = newsletter?.content ?? '';
-      const result = await sendToAddress(testEmail, subject, content);
+      // The recipient is the server's business: the browser used to carry the
+      // operator's own address, which published it in the page's JavaScript.
+      const recipient = testEmail || OPERATOR.email;
+      const result = await sendToAddress(recipient, subject, content);
       if (!result.ok) {
         return NextResponse.json({ error: result.error || 'Failed to send test' }, { status: 500 });
       }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTACT } from "@/lib/contact";
 
 export const metadata: Metadata = {
     title: "Privacy Policy — Imperium Elite",
@@ -207,9 +208,12 @@ export default function PrivacyPolicyPage() {
                             If you have any questions about this Privacy Policy, please contact us:
                         </p>
                         <div className="bg-black/20 border border-white/10 p-4 rounded-lg">
-                            <p className="text-white/60">Imperium Strategic Intelligence</p>
+                            <p className="text-white/60">{CONTACT.organisation}</p>
                             <p className="text-white/40 text-sm">For privacy inquiries and data requests</p>
-                            <p className="text-white/40 text-sm mt-2">Email: privacy@imperium.ai</p>
+                            <p className="text-white/40 text-sm mt-2">
+                                Call{" "}
+                                <a href={CONTACT.tel} className="underline hover:text-white/70 transition-colors">{CONTACT.displayPhone}</a>
+                            </p>
                         </div>
                     </section>
                 </div>

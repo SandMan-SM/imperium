@@ -10,7 +10,8 @@
     "audit:coaching": "node --test scripts/test-coaching-offers.mjs",
     "audit:resources": "node --test scripts/test-resource-offers.mjs",
     "audit:owner": "node --test scripts/test-success-empire-owner.mjs",
-    "build": "npm run audit:cron-auth && npm run audit:relay && npm run audit:purchases && npm run audit:coaching && npm run audit:resources && npm run audit:owner && next build",
+    "audit:contact": "node --test scripts/test-legal-contact.mjs",
+    "build": "npm run audit:cron-auth && npm run audit:relay && npm run audit:purchases && npm run audit:coaching && npm run audit:resources && npm run audit:owner && npm run audit:contact && next build",
     "start": "next start",
     "lint": "eslint"
   },

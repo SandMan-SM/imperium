@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 12, 2026 11:06 PM
+> Synthetic Intelligence Memory | Updated: November 12, 2026 10:20 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,6 +31,54 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
+Two of the site's promises could not be kept, and both were about a person
+trying to reach the business.
+- **The privacy policy published a mailbox that cannot receive mail.** It
+  named `privacy@imperium.ai`. **imperium.ai is a domain parked for sale**:
+  it publishes a null MX (`0 .`), its nameservers are Afternic's, and it
+  answers on a parking page. Mail sent to that address is refused by the
+  domain itself, so the one channel the privacy policy offered was a dead
+  one — on the page whose whole job is to say how a person's data is
+  reached. The terms policy was worse in the other direction: it promised
+  "contact us at" and then named **no channel at all**.
+- **The legal pages now read one owner for the contact channel.**
+  `src/lib/contact.ts` holds the organisation, the number and the link, and
+  reads the number itself from `src/lib/success-empire.ts`, so the number
+  still has exactly one home. Both pages render it as a dialable link.
+  **Eight offline tests run on every build** (`scripts/test-legal-contact.mjs`):
+  the owner holds a channel a reader can use, the two spellings it holds are
+  the same number, both legal pages read the owner, **no public page writes
+  a contact address by hand**, the parked domain never comes back, and the
+  scans are not vacuous.
+- **The operator's personal address was in the public JavaScript.** The
+  admin console held it as the recipient of a newsletter test send, and the
+  admin page is a client component — so the address was written into the
+  page's bundle and was downloadable by anybody who asked the site for
+  `/admin`'s chunks. It was proved on production: the chunk
+  `/_next/static/immutable/chunks/34i_hcyyu6lun.js` carried it. The address
+  is the server's business now — `src/lib/server/operator.ts` — and the
+  browser no longer carries it. **The address is not in the built client
+  bundle.**
+- **A reply to the letter had nowhere to go.** The site sends from
+  `newsletter@secretimperium.com`, and **secretimperium.com publishes no MX
+  record at all**, so a subscriber who replied to the weekly brief bounced.
+  Every mail the site sends now carries a `replyTo` — the operator's own
+  mailbox — so a reply lands instead of vanishing. A lead who answered the
+  welcome email used to vanish too.
+- **The scan was proved by planting.** A written address put back into the
+  terms page and the operator's address put back into a component made the
+  suite fail and name both files; the planted copies were removed and the
+  suite went green.
+- **Nothing else moved.** The Stripe account still shows **zero customers,
+  zero subscriptions and no paid session**, and both copies of the Telegram
+  token still answer **401 Unauthorized**.
+- **Everything else is still green.** The application door answers 19 of 19.
+  The catalogue sells 62 of 62. The checkout door is sound at 20 of 20. The
+  membership and the commission agree at 15 of 15. The coaching offers are
+  sound at 57 of 57. The schema check finds no phantom table or column.
+  The visual audit ran over 40 routes at 375px and found nothing to fix.
+
+## ✅ What The Session Before That Shipped
 The coaching offers had five homes for one price, and nothing kept them agreeing.
 - **The coaching offers' price was written down in five places.** The offer
   itself, the copy on the referral page, the line in llms.txt, the script
@@ -137,6 +185,8 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
 | Coaching offer → its price, its catalogue row, its link → nothing else states it | `Website/scripts/test-coaching-offers.mjs` | 6 offline tests, on every build |
 | Resource offer → its price → nothing else states it | `Website/scripts/test-resource-offers.mjs` | 6 offline tests, on every build |
 | Contact number → its owner → nothing else states it | `Website/scripts/test-success-empire-owner.mjs` | 5 offline tests, on every build |
+| Contact channel → the legal pages → nothing else states it | `Website/scripts/test-legal-contact.mjs` | 8 offline tests, on every build |
+| A reply to the site's mail → a mailbox that receives it | `Website/scripts/test-legal-contact.mjs` | 1 offline test, on every build |
 
 ## 🎯 This Session: Do These In Order
 1. **The site's own checkout door now has a command, and the receipt it
@@ -288,8 +338,53 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
     putting "(801) 458-1756" back into the resource page by hand, and the
     suite failed and named the file. **The contact number goes into
     `src/lib/success-empire.ts`, and nowhere else.**
+19. **~~The legal pages promised a channel the site could not keep.~~ DONE —
+    2026-11-12.** The privacy policy named `privacy@imperium.ai`, a domain
+    parked for sale that publishes a null MX, and the terms policy named no
+    channel at all. `src/lib/contact.ts` owns the contact channel now, both
+    legal pages read it, and the number still comes from
+    `src/lib/success-empire.ts`. **Eight offline tests run on every build.**
+20. **~~The operator's personal address was in the public bundle.~~ DONE —
+    2026-11-12.** It was the recipient of the admin console's newsletter
+    test send, and the admin page is a client component, so the address was
+    downloadable from `/admin`'s JavaScript. It lives in
+    `src/lib/server/operator.ts` now, the server chooses where a test send
+    and a reply go, and the address is not in the built client bundle.
+21. **A reply to the weekly brief still has no mailbox of its own.** The
+    site sends from `newsletter@secretimperium.com` and
+    **secretimperium.com publishes no MX record**, so the letter's own
+    `replyTo` is the operator's mailbox and a reply lands. This is proved
+    by the offline suite, not by a send. **If the operator ever names a
+    different mailbox, it goes into `src/lib/server/operator.ts` and
+    nowhere else.**
+22. **Name a mailbox the operator watches, and the legal pages can carry an
+    address again.** The phone is a working channel, but a privacy policy
+    ought to offer a written one too. The domains that can receive mail are
+    **imperium.com** (Microsoft 365 — the domain the operator's support mail
+    already uses) and **imperiumelite.com** (Google Workspace);
+    **imperium.ai is parked and secretimperium.com publishes no MX at
+    all**. Which mailbox inside one of those domains the operator actually
+    watches is the operator's to say — it is a mailbox, not a line of code,
+    and a guessed one is a promise the site cannot keep.
 
 ## 🔬 Why
+- **A contact promise the site cannot keep is worse than no contact
+  promise.** The privacy policy named an address on a parked domain, and a
+  parked domain refuses mail by publishing a null MX — it is not a slow
+  reply or a lost email, it is a refusal by the domain itself. And the
+  terms policy asked a reader to get in touch and then gave them nothing to
+  touch. **Ask whether a published channel works, not whether it looks
+  right.**
+- **A fact in a client bundle is a published fact.** The operator's
+  personal address was in the admin page's JavaScript because the page
+  needed to know where a test send goes — and a client component's source
+  is a download. **A private detail belongs on the server, and the server
+  is the only place that needs it.**
+- **A letter nobody can answer is a letter nobody reads.** The site sends
+  from a domain that publishes no MX, so the reply the site invited was
+  bounced by the domain the site sends from. **The address a mail is sent
+  from is not the address it can be replied to, and the two have to be
+  chosen separately.**
 - **A number with eleven homes is a number with no owner.** The referral
   programme promised 30% of a $20 membership, and the promise was made in
   eleven places and the arithmetic was done in one. Every copy agreed, and
@@ -594,12 +689,15 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 65
-- Lines written: 10320
+- Sessions: 66
+- Lines written: 10760
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-12 | revenue | **The privacy policy published a mailbox that cannot receive mail, and the terms policy published none at all.** The privacy policy named `privacy@imperium.ai`; imperium.ai is a domain parked for sale — it publishes a null MX (`0 .`), its nameservers are Afternic's, and it answers on a parking page — so the one channel the privacy policy offered was refused by the domain itself. The terms policy promised "contact us at" and named nothing. `src/lib/contact.ts` owns the contact channel now, both legal pages read it, and the number itself still comes from `src/lib/success-empire.ts`, so it keeps one home. Eight offline tests run on every build beside the owner, coaching, resource, purchase, relay and cron suites (`scripts/test-legal-contact.mjs`), and the scan was proved by planting a written address in the terms page and the operator's address in a component — the suite failed and named both files | ~260 |
+| 2026-11-12 | security | **The operator's personal address was in the public JavaScript.** The admin console held it as the recipient of a newsletter test send, and the admin page is a client component, so the address was written into the page's bundle — proved on production, where `/_next/static/immutable/chunks/34i_hcyyu6lun.js` carried it. `src/lib/server/operator.ts` owns it now; the server chooses where a test send goes, the browser does not, and the built client bundle no longer contains it | ~80 |
+| 2026-11-12 | revenue | **A reply to the weekly brief had nowhere to go.** The site sends from `newsletter@secretimperium.com`, and secretimperium.com publishes no MX record at all, so a subscriber who answered the letter — or a lead who answered the welcome email — bounced. Every mail the site sends now carries a `replyTo`, so the reply lands with the operator instead of vanishing | ~30 |
 | 2026-11-11 | build | **The contact phone number had an owner and three copies beside it, and nothing kept them agreeing.** `src/lib/success-empire.ts` holds `phone: "+18014581756"` and `displayPhone: "801-458-1756"`, and the resource page wrote the number out again for the `tel:` link, the `sms:` link and the contact line under the hero — the last of them in a third spelling, "(801) 458-1756". The copies are gone; the page reads the owner. Five offline tests now run on every build beside the coaching, resource, relay, cron and purchase suites (`scripts/test-success-empire-owner.mjs`): the owner holds a dialable number and a readable one, the two spellings it holds are the same number, the page reads the owner, and no file outside the owner states the contact number in any of the five ways it can be written — "+18014581756", "18014581756", "801-458-1756", "(801) 458-1756", "801.458.1756", "801 458 1756" and "8014581756" all resolve to the one number. The scan is not vacuous: it was proved by putting "(801) 458-1756" back into the resource page by hand and watching the suite fail and name the file | ~150 |
 | 2026-11-09 | ops | Both changes were deployed through the git push to `main` (deployment `imperium-bq2dg79mg`) under federation lease 1200, and production was re-proved afterwards rather than in the tree: coaching offers 57/57, catalogue 62/62, checkout door 20/20, application door 19/19, the membership and the commission in agreement, and the visual audit clean across 39 routes at 375px | ~20 |
 | 2026-11-09 | revenue | The resource pages' offer prices had two homes. The apply section stated "$50,000" and "$100,000" as literals in `src/app/resources/ResourceView.tsx`, and the solution prose in `src/lib/portfolio-resources.json` stated the same two amounts and the same two offer names in a sentence a prospect reads. Edit one and the site contradicts itself about the price of a service it is selling. `src/lib/resource-offers.ts` is the owner now: the amount is written once and the prose carries a token — `{{price:partnership}}` — that is filled in when the content is loaded, because the sentence on the partnership page quotes both the offer that page sells and the one beside it, and cannot be written without knowing both prices. A token naming an offer that does not exist throws rather than rendering a blank. Six offline tests run on every build, and the scan was proved by putting "$50,000" back into the view by hand and watching it name the file. All four resource pages render identically to live | ~200 |
@@ -1240,6 +1338,24 @@ with the `products.slug` migration decision in the same entry. **Recorded
   fails the build on one. A new offer goes into that file with its amount,
   its catalogue row and its link, and nowhere else (2026-11-09); it used to
   be five homes and no owner.
+- **The site's public contact channel lives in `src/lib/contact.ts` and
+  nowhere else.** The legal pages read it, and it reads the number itself
+  from `src/lib/success-empire.ts`, so the number keeps exactly one home.
+  **No public page may write a contact address by hand** —
+  `Website/scripts/test-legal-contact.mjs` fails the build on one (2026-11-12).
+  The rule that used to be broken is simple: **a channel the site publishes
+  has to be one the site owns and can prove.** `imperium.ai` is parked for
+  sale and publishes a null MX, so mail to it is refused by the domain
+  itself; it must never be named again (2026-11-12).
+- **The operator's private address lives in `src/lib/server/operator.ts` and
+  nowhere else.** It is server-side only: the admin console used to carry it
+  in the browser, which published it in `/admin`'s JavaScript bundle. The
+  server chooses where a newsletter test send goes, and the server sets the
+  `replyTo` on every mail the site sends — the site sends from
+  `newsletter@secretimperium.com`, a domain that publishes no MX, so
+  without a reply address of its own a reply to the weekly brief has
+  nowhere to go. **Never import `src/lib/server/operator.ts` from a
+  component or a client module** (2026-11-12).
 - **The resource pages' offer prices live in
   `src/lib/resource-offers.ts` and nowhere else.** Each offer's amount and
   name are written once, the apply section reads them from there, and the

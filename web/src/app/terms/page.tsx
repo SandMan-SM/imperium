@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MEMBERSHIP_PRICE_MONTHLY } from "@/lib/membership";
+import { CONTACT } from "@/lib/contact";
 
 export const metadata: Metadata = {
     title: "Terms of Service — Imperium Elite",
@@ -105,8 +106,12 @@ export default function TermsOfServicePage() {
                             If you have any questions about these Terms, please contact us at:
                         </p>
                         <div className="bg-black/20 border border-white/10 p-4 rounded-lg">
-                            <p className="text-white/60">Imperium Strategic Intelligence</p>
+                            <p className="text-white/60">{CONTACT.organisation}</p>
                             <p className="text-white/40 text-sm">For all legal inquiries and concerns</p>
+                            <p className="text-white/40 text-sm mt-2">
+                                Call{" "}
+                                <a href={CONTACT.tel} className="underline hover:text-white/70 transition-colors">{CONTACT.displayPhone}</a>
+                            </p>
                         </div>
                     </section>
                 </div>

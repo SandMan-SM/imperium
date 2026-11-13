@@ -1438,8 +1438,6 @@ function NewsletterStudio() {
     const handleSendTest = async () => {
         if (!selectedNewsletter || !title.trim()) return;
 
-        const testEmail = 'sitanim8@gmail.com';
-
         setSendingTest(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -1449,16 +1447,18 @@ function NewsletterStudio() {
                     'Content-Type': 'application/json',
                     ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
                 },
+                // The recipient is the server's own business: the browser used
+                // to carry the operator's personal address, which published it
+                // in this page's JavaScript bundle.
                 body: JSON.stringify({
                     newsletterId: selectedNewsletter.id,
-                    testMode: true,
-                    testEmail
+                    testMode: true
                 })
             });
             const result = (await response.json()) as NewsletterSendResponse;
 
             if (result.success) {
-                showToast('success', `Test sent to ${testEmail}`);
+                showToast('success', 'Test sent');
             } else {
                 showToast('error', result.error || 'Failed to send test');
             }

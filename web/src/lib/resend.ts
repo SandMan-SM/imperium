@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { OPERATOR } from '@/lib/server/operator';
 
 interface EmailData {
     to: string | string[];
@@ -6,6 +7,8 @@ interface EmailData {
     html: string;
     text?: string;
     from?: string;
+    /** Where a reply goes. Defaults to the operator's own mailbox. */
+    replyTo?: string;
     /** Extra headers, e.g. the RFC 8058 List-Unsubscribe pair. */
     headers?: Record<string, string>;
 }
@@ -71,6 +74,10 @@ class ResendService {
                 subject: data.subject,
                 html: data.html,
                 text: data.text,
+                // The site sends from a domain that publishes no MX, so a
+                // reply to the letter a subscriber received has nowhere to
+                // go unless the mail carries a reply address of its own.
+                replyTo: data.replyTo || OPERATOR.email,
                 ...(data.headers ? { headers: data.headers } : {}),
             });
 
