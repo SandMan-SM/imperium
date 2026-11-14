@@ -1,13 +1,27 @@
+import legacyEssay from './legacy-brand-article.json';
+
 /** Explicitly public Imperium articles. This tenant-local catalog never reads
  * the legacy unscoped newsletters table or subscriber/member content. */
 export type PublicNewsletterArticle = {
  slug: string; title: string; category: string; tags: string[]; publishedAt: string; readingMinutes: number;
  description: string; image: string; imageAlt: string; imageCaption: string;
  imageWidth: number; imageHeight: number; intro: string[];
- sections: {heading: string; paragraphs: string[]}[];
- sources: {title: string; url: string}[];
+ sections: {heading: string; paragraphs: string[]; items?: string[]}[];
+ sources: {title: string; url: string; note?: string}[];
+ collection?: 'services' | 'featured' | 'trending';
+ faq?: {question: string; answer: string}[];
 };
 export const PUBLIC_NEWSLETTER_ARTICLES: readonly PublicNewsletterArticle[] = [
+  {
+    slug: legacyEssay.slug, title: legacyEssay.title, category: 'Legacy Branding',
+    collection: 'services', tags: ['Legacy Branding', 'Generational Knowledge', 'Family Legacy'],
+    publishedAt: legacyEssay.date, readingMinutes: 6, description: legacyEssay.description,
+    image: '/images/editorial/legacy-family-tree-v1.webp', imageWidth: 1664, imageHeight: 936,
+    imageAlt: 'A monumental three-dimensional family tree with a branching canopy, weathered trunk and exposed roots, representing generations connected through preserved knowledge.',
+    imageCaption: 'AI-created 3D editorial illustration; a symbol of generational knowledge, not a documented family genealogy.',
+    intro: legacyEssay.intro, sections: legacyEssay.sections, faq: legacyEssay.faq,
+    sources: legacyEssay.sources.map(source => ({title: source.label, url: source.url, note: source.note})),
+  },
   {
     "slug": "nvidia-jensen-huang-independent-review-november-2026",
     "title": "NVIDIA Review: What Is Confirmed?",

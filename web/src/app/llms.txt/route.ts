@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { COACHING_OFFERS } from "@/lib/coaching-offers";
+import { PUBLIC_NEWSLETTER_ARTICLES } from "@/lib/newsletter-public";
 
 export const dynamic = "force-static";
 
@@ -32,6 +33,9 @@ export function GET() {
 - Coaching with Tyrone Ngouamo: https://secretimperium.com/tyronengouamo/
 - Refer a friend: https://secretimperium.com/tyronengouamo/referral/
 - Sitemap: https://secretimperium.com/sitemap.xml
+
+## Public newsletter articles
+${PUBLIC_NEWSLETTER_ARTICLES.map(article => `- ${article.title}: https://secretimperium.com/newsletter/${article.slug}/`).join('\n')}
 
 ## Coaching
 - Tyrone Ngouamo coaches strength training and nutrition through Imperium, in person in Utah or by video.
