@@ -89,3 +89,9 @@
 .in-legacy-questions details{border-bottom:1px solid #c0a76f55}
 .in-legacy-questions summary{cursor:pointer;min-height:44px;padding:14px 0;font-size:15px;line-height:1.6}
 .in-legacy-questions details p{font-size:15px;line-height:1.8;margin:0 0 18px}
+.in-legacy-article .in-story-utilities{display:block}
+.in-legacy-article .in-story-tags{width:100%;max-width:none;margin-top:6px}
+.in-legacy-article .in-story-tags summary{justify-content:flex-start;width:fit-content;background:none;border:0;padding:0}
+.in-legacy-article .in-story-tags ul{display:flex;flex-wrap:wrap;gap:4px 20px;list-style:none;margin:0;padding:0}
+.in-legacy-article .in-story-tags li{min-width:0}
+.in-legacy-article .in-story-tags a{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:none;font-size:13px;line-height:1.6;text-decoration:underline;text-underline-offset:4px}
