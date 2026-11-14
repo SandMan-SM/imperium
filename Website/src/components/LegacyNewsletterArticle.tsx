@@ -1,6 +1,5 @@
 import type {Metadata} from 'next';
 import {Fragment} from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import {BRAND} from '@/lib/brand';
 import legacyEssay from '@/lib/legacy-brand-article.json';
@@ -8,7 +7,9 @@ import {PUBLIC_NEWSLETTER_ARTICLES, type PublicNewsletterArticle} from '@/lib/ne
 import {PublicArticleText} from '@/components/PublicArticleText';
 import {ShareArticle} from '@/components/ShareArticle';
 import {NewsletterClosing} from '@/components/NewsletterClosing';
-import LegacyTree from '@/components/LegacyTree';
+import FamilyLegacyHero from '@/components/FamilyLegacyHero';
+import LegacyRetelling from '@/components/LegacyRetelling';
+import {LegacyPrinciples, LegacyReflection} from '@/components/LegacyEngagement';
 
 export function legacyNewsletterMetadata(article: PublicNewsletterArticle): Metadata {
   const url = `${BRAND.siteUrl}/newsletter/${article.slug}/`;
@@ -35,7 +36,7 @@ export function LegacyNewsletterArticle({article}: {article: PublicNewsletterArt
     author: {'@type': 'Person', ...legacyEssay.author},
     publisher: {'@type': 'Organization', name: BRAND.name, url: BRAND.siteUrl},
     citation: article.sources.map(source => ({'@type': 'CreativeWork', name: source.title, url: source.url})),
-    inLanguage: 'en-US', isAccessibleForFree: true,
+    inLanguage: 'en-US', isAccessibleForFree: true, timeRequired: 'PT5M',
   };
   const faq = article.faq || [];
 
@@ -48,14 +49,19 @@ export function LegacyNewsletterArticle({article}: {article: PublicNewsletterArt
         <p className="in-legacy-source">Source: <a href="https://aisempire.org/newsletter/what-is-a-legacy-brand">AIS Empire</a><span>Personal perspective</span></p>
         <div className="in-story-utilities"><span className="in-kicker">Services · Legacy Branding</span><details className="in-story-tags"><summary>Tags</summary><div><Link href="/newsletter/?tag=services">Services</Link>{article.tags.map(tag => <Link href={`/newsletter/?q=${encodeURIComponent(tag)}`} key={tag}>{tag}</Link>)}</div></details></div>
       </header>
-      <figure className="in-story-figure in-wrap"><Image src={article.image} alt={article.imageAlt} width={article.imageWidth} height={article.imageHeight} priority sizes="(max-width:800px) calc(100vw - 40px), 1000px"/><figcaption>{article.imageCaption}</figcaption></figure>
+      <div className="in-story-figure in-wrap"><FamilyLegacyHero src={article.image} alt={article.imageAlt}/></div>
       <div className="in-story-paper"><div className="in-story-body">
         <p className="in-story-deck">{article.intro[0]}</p>
         {article.intro.slice(1).map(text => <p key={text}><PublicArticleText text={text}/></p>)}
-        {article.sections.map((section, index) => <Fragment key={section.heading}>
-          <section><h2>{section.heading}</h2>{section.paragraphs.map(text => <p key={text}><PublicArticleText text={text}/></p>)}{section.items?.length ? <ul className="in-legacy-ideas">{section.items.map(text => <li key={text}><PublicArticleText text={text}/></li>)}</ul> : null}</section>
-          {index === 0 ? <LegacyTree/> : null}
-          {index === Math.ceil(article.sections.length / 2) - 1 ? <ShareArticle title={article.title}/> : null}
+        {legacyEssay.sections.map((section, index) => <Fragment key={section.id}>
+          <section id={section.id}><h2>{section.heading}</h2>{section.paragraphs.map((text, paragraphIndex) => <Fragment key={text}>
+            <p><PublicArticleText text={text}/></p>
+            {section.id === legacyEssay.interactions.retelling.afterSectionId && paragraphIndex === 1 ? <LegacyRetelling data={legacyEssay.interactions.retelling}/> : null}
+          </Fragment>)}
+          {section.id === legacyEssay.interactions.principles.afterSectionId ? <LegacyPrinciples data={legacyEssay.interactions.principles}/> : null}
+          {section.id === legacyEssay.interactions.reflection.afterSectionId ? <LegacyReflection data={legacyEssay.interactions.reflection}/> : null}
+          </section>
+          {index === Math.ceil(legacyEssay.sections.length / 2) - 1 ? <ShareArticle title={article.title}/> : null}
         </Fragment>)}
         {faq.length ? <section className="in-legacy-questions" aria-labelledby="legacy-questions-heading"><h2 id="legacy-questions-heading">Questions, answered</h2>{faq.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</section> : null}
         <p className="in-story-attribution">Written by <a className="in-legacy-author-light" href={legacyEssay.author.url}>{legacyEssay.author.name}</a>. An original perspective published with AIS Empire source credit. The five ideas are an interpretive lens, not a universal account of religious doctrine.</p>
