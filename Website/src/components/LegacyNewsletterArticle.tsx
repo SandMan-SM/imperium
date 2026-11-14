@@ -8,7 +8,8 @@ import {PublicArticleText} from '@/components/PublicArticleText';
 import {ShareArticle} from '@/components/ShareArticle';
 import {NewsletterClosing} from '@/components/NewsletterClosing';
 import FamilyLegacyHero from '@/components/FamilyLegacyHero';
-import {LegacyPrinciples} from '@/components/LegacyEngagement';
+
+const hashtag = (tag: string) => '#' + tag.trim().split(/\s+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('').replace(/[^\p{L}\p{N}_]/gu, '');
 
 export function legacyNewsletterMetadata(article: PublicNewsletterArticle): Metadata {
   const url = `${BRAND.siteUrl}/newsletter/${article.slug}/`;
@@ -35,19 +36,19 @@ export function LegacyNewsletterArticle({article}: {article: PublicNewsletterArt
     author: {'@type': 'Person', ...legacyEssay.author},
     publisher: {'@type': 'Organization', name: BRAND.name, url: BRAND.siteUrl},
     citation: article.sources.map(source => ({'@type': 'CreativeWork', name: source.title, url: source.url})),
-    inLanguage: 'en-US', isAccessibleForFree: true, timeRequired: 'PT5M',
+    inLanguage: 'en-US', isAccessibleForFree: true, timeRequired: `PT${article.readingMinutes}M`,
   };
   const faq = article.faq || [];
 
   return <div className="in-newsletter in-legacy-article">
     <article className="in-public-story">
       <header className="in-story-header in-wrap">
-        <nav className="in-story-breadcrumb" aria-label="Breadcrumb"><Link href="/newsletter/">Imperium Newsletter</Link><span>/ Services</span></nav>
+        <nav className="in-story-breadcrumb" aria-label="Breadcrumb"><Link href="/newsletter/">Imperium Newsletter</Link><span>/ {article.category}</span></nav>
         <h1>{article.title}</h1>
         <p className="in-story-deck">{article.description}</p>
         <p className="in-story-date"><time dateTime={article.publishedAt}>{new Date(`${article.publishedAt}T12:00:00Z`).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC'})}</time><span> · {article.readingMinutes} min read · By <a className="in-legacy-author-dark" href={legacyEssay.author.url}>{legacyEssay.author.name}</a></span></p>
         <p className="in-legacy-source">Source: <a href="https://aisempire.org/newsletter/what-is-a-legacy-brand">AIS Empire</a><span>Personal perspective</span></p>
-        <div className="in-story-utilities"><span className="in-kicker">Services · Legacy Branding</span><details className="in-story-tags"><summary>Tags</summary><ul><li><Link href="/newsletter/?tag=services">Services</Link></li>{article.tags.map(tag => <li key={tag}><Link href={`/newsletter/?q=${encodeURIComponent(tag)}`}>{tag}</Link></li>)}</ul></details></div>
+        <div className="in-story-utilities"><span className="in-kicker">{article.category}</span><details className="in-story-tags"><summary>Tags</summary><ul><li><Link href="/newsletter/?tag=services">{hashtag('Services')}</Link></li>{article.tags.map(tag => <li key={tag}><Link href={`/newsletter/?q=${encodeURIComponent(tag)}`}>{hashtag(tag)}</Link></li>)}</ul></details></div>
       </header>
       <div className="in-story-figure in-wrap"><FamilyLegacyHero src={article.image} alt={article.imageAlt}/></div>
       <div className="in-story-paper"><div className="in-story-body">
@@ -55,12 +56,11 @@ export function LegacyNewsletterArticle({article}: {article: PublicNewsletterArt
         {article.intro.slice(1).map(text => <p key={text}><PublicArticleText text={text}/></p>)}
         {legacyEssay.sections.map((section, index) => <Fragment key={section.id}>
           <section id={section.id}><h2>{section.heading}</h2>{section.paragraphs.map(text => <p key={text}><PublicArticleText text={text}/></p>)}
-          {section.id === legacyEssay.interactions.principles.afterSectionId ? <LegacyPrinciples data={legacyEssay.interactions.principles}/> : null}
           </section>
           {index === Math.ceil(legacyEssay.sections.length / 2) - 1 ? <ShareArticle title={article.title}/> : null}
         </Fragment>)}
         {faq.length ? <section className="in-legacy-questions" aria-labelledby="legacy-questions-heading"><h2 id="legacy-questions-heading">Questions, answered</h2>{faq.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}</section> : null}
-        <p className="in-story-attribution">Written by <a className="in-legacy-author-light" href={legacyEssay.author.url}>{legacyEssay.author.name}</a>. An original perspective published with AIS Empire source credit. The Five Truths are the author&apos;s philosophical framework, not a universal account of religious doctrine.</p>
+        <p className="in-story-attribution">Written by <a className="in-legacy-author-light" href={legacyEssay.author.url}>{legacyEssay.author.name}</a>. An original perspective published with AIS Empire source credit.</p>
       </div></div>
     </article>
     <NewsletterClosing/>

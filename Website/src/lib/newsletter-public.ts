@@ -15,7 +15,7 @@ export const PUBLIC_NEWSLETTER_ARTICLES: readonly PublicNewsletterArticle[] = [
   {
     slug: legacyEssay.slug, title: legacyEssay.title, category: 'Legacy Branding',
     collection: 'services', tags: ['Legacy Branding', 'Generational Knowledge', 'Family Legacy'],
-    publishedAt: legacyEssay.date, readingMinutes: 5, description: legacyEssay.description,
+    publishedAt: legacyEssay.date, readingMinutes: parseInt(legacyEssay.readTime, 10), description: legacyEssay.description,
     image: '/images/editorial/legacy-family-tree-v2.webp', imageWidth: 1664, imageHeight: 936,
     imageAlt: 'Conceptual three-dimensional family legacy tree with seven blank glass profile cards integrated into its branches and roots; no real family records or identities are shown.',
     imageCaption: 'AI-created 3D editorial illustration with blank illustrative profiles, not a documented family genealogy.',
