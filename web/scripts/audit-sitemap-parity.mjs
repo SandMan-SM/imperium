@@ -211,7 +211,6 @@ const llmsPaths = new Set(
   [...llmsSrc.matchAll(new RegExp(`${SITE_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\/[^\\s)\`"']*)?`, "g"))]
     .map((m) => norm(m[1] || "/")),
 );
-
 // ── resolution ─────────────────────────────────────────────────────────────
 
 /** Find the route that serves a URL path (static or dynamic pattern). */
@@ -224,6 +223,10 @@ function resolve(path) {
     for (let i = 0; i < segs.length; i += 1) {
       const rs = rsegs[i];
       if (rs.startsWith("[") && rs.endsWith("]")) continue;
+      // A template interpolation in the advertised URL (e.g.
+      // `/newsletter/${article.slug}/`) is a dynamic slot, not a literal
+      // segment — it matches a dynamic route segment, not a static one.
+      if (segs[i].includes("${")) continue;
       if (rs !== segs[i]) {
         ok = false;
         break;
