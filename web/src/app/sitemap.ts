@@ -16,6 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...PUBLIC_NEWSLETTER_ARTICLES.map(article => ({url: `${SITE_URL}/newsletter/${article.slug}/`, lastModified: article.publishedAt, changeFrequency: "monthly" as const, priority: .7})),
     ...archiveEntries.map((entry) => ({ url: `${SITE_URL}/archive/${entry.slug}/`, changeFrequency: "monthly" as const, priority: .7 })),
     { url: `${SITE_URL}/mission-statement/`, changeFrequency: "monthly", priority: .5 },
+    // Market Intelligence — the Hermes daily market scan. The page ships its
+    // own canonical, title and description and renders `index, follow`, so it
+    // asks to be indexed; leaving it out of the sitemap meant it was only
+    // reachable by guessing the URL. audit:sitemap fails the build if an
+    // indexable route is missing from here.
+    { url: `${SITE_URL}/market/`, changeFrequency: "daily", priority: .7 },
     { url: `${SITE_URL}/privacy/`, changeFrequency: "yearly", priority: .2 },
     { url: `${SITE_URL}/terms/`, changeFrequency: "yearly", priority: .2 },
   ];

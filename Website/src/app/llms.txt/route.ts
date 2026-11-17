@@ -29,6 +29,7 @@ export function GET() {
 - The Archive: https://secretimperium.com/archive/
 - Newsletter: https://secretimperium.com/newsletter/
 - Partners: https://secretimperium.com/partners/
+- Market Intelligence: https://secretimperium.com/market/
 - About Imperium: https://secretimperium.com/mission-statement/
 - Coaching with Tyrone Ngouamo: https://secretimperium.com/tyronengouamo/
 - Refer a friend: https://secretimperium.com/tyronengouamo/referral/
