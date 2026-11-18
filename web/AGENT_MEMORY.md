@@ -83,8 +83,15 @@ ignored it.
   table or column. The visual audit ran over 42 routes at 375px and found
   nothing to fix, and **none of the twelve public chunks of `/admin` carries
   the operator's address any more**.
-- **It is not deployed yet.** It goes out through the git push to `main`,
-  and production is proved afterwards rather than in the tree.
+- **It is deployed and re-proved.** The change went out through the git push
+  to `main` (commit `7d1c35a`, federation lease 1419, deployment
+  `imperium-ha0p0xeay`), and the **build gate ran on Vercel** — the deploy
+  could only have succeeded with `audit:env` green. Production was proved
+  afterwards rather than in the tree: the application door answers 19 of 19,
+  the catalogue 62 of 62, the coaching offers 57 of 57, the checkout door
+  20 of 20, and the membership and the commission still agree.
+  **A change that is not re-proved after the deploy has only been proved in
+  the tree.**
 
 ## ✅ What The Session Before That Shipped
 Two of the site's promises could not be kept, and both were about a person
