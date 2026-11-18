@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — IMPERIUM
-> Synthetic Intelligence Memory | Updated: November 17, 2026 11:03 PM
+> Synthetic Intelligence Memory | Updated: November 17, 2026 11:52 PM
 > READ THIS FIRST. Never repeat completed work.
 > **THIS FILE IS THE CANONICAL BRIEF.** `web/AGENT_MEMORY.md` is a mirror.
 > **PRODUCTION BUILDS `Website/`, NOT `web/`.** Vercel project `imperium`
@@ -31,6 +31,62 @@
 | **OVERALL** | **97/100** | █████████░ |
 
 ## ✅ What Last Session Shipped
+A live production env dump was sitting in the production root, invisible to
+git only because of a file that is never committed — and the mirror that
+copies this tree onto its twin was about to carry it somewhere nothing
+ignored it.
+- **`Website/env.production` held the live secrets.** It is the file a
+  `vercel env pull` writes, and it carried 44 variables — the Stripe secret
+  key, the Supabase service-role key, the Resend key and the Telegram token
+  among them. Git did not see it **only** because of this machine's
+  `.git/info/exclude`, a file that lives inside `.git/` and is never
+  committed. On a fresh clone the dump was an ordinary untracked file, and
+  `git add -A` would have committed every secret in it.
+- **The mirror made the same risk twice.** `scripts/sync-trees.sh` copies
+  `Website/` onto `web/`, and it excluded `.git`, `node_modules` and
+  `.next` — but not the env files. `web/env.production` is covered by no
+  committed ignore rule: the root `.gitignore` lists `.env` and `env/`, and
+  `env.production` is neither. One run of the sync would have put the live
+  secrets into a tree where `git add -A` would have taken them.
+- **The gate was reporting a difference that was not a difference.**
+  `scripts/sync-trees.sh --check` failed on the dump. CI checks the tree out
+  of git, where the dump does not exist, so the job stayed green while the
+  local gate cried wolf over a secrets file.
+- **The fix has two halves.** The dump is now ignored by rules that are
+  committed — `env.*` in the root `.gitignore` and in each tree's own
+  `.gitignore` — and the mirror script excludes the env files, so the dump
+  is never copied and never reported as drift. `--check` is green, `web/`
+  holds no secrets, and no env dump is staged anywhere.
+- **Six offline tests run on every build** (`scripts/test-env-ignore.mjs`,
+  wired as `npm run audit:env` beside the relay, cron, purchase, coaching,
+  resource, owner, contact and sitemap suites): every tree that carries
+  ignore rules ignores a local env dump, the repository ignores it, the rules
+  that ignore a dump do not ignore ordinary source, no tracked file in the
+  repository is an env dump, the mirror is never given one, and the scan is
+  not vacuous.
+- **The scan was proved by planting.** The `env.*` rule was taken out of
+  `Website/.gitignore` and the suite failed and named the tree that had lost
+  it.
+- **The first version of the scan was vacuous, and the planting said so.**
+  The test asked git whether a path was ignored — and git consults *every*
+  ignore file in the repository, so removing the rule from one tree still
+  passed because another tree had it. The assertion now reads each tree's
+  own rules, and the planting fails as it should.
+- **Nothing else moved.** The Stripe account still shows **zero customers,
+  zero subscriptions and no paid session**, and both copies of the Telegram
+  token still answer **401 Unauthorized**.
+- **Everything else is still green.** The application door answers 19 of 19.
+  The catalogue sells 62 of 62. The checkout door is sound at 20 of 20. The
+  membership and the commission agree at 15 of 15, and the referral ledger
+  earns $6.00 on a $20.00 membership with the database left clean. The
+  coaching offers are sound at 57 of 57. The schema check finds no phantom
+  table or column. The visual audit ran over 42 routes at 375px and found
+  nothing to fix, and **none of the twelve public chunks of `/admin` carries
+  the operator's address any more**.
+- **It is not deployed yet.** It goes out through the git push to `main`,
+  and production is proved afterwards rather than in the tree.
+
+## ✅ What The Session Before That Shipped
 Two of the site's promises could not be kept, and both were about a person
 trying to reach the business.
 - **The privacy policy published a mailbox that cannot receive mail.** It
@@ -88,7 +144,7 @@ trying to reach the business.
   at 375px. **A change that is not re-proved after the deploy has only been
   proved in the tree.**
 
-## ✅ What The Session Before That Shipped
+## ✅ What An Earlier Session Shipped
 The coaching offers had five homes for one price, and nothing kept them agreeing.
 - **The coaching offers' price was written down in five places.** The offer
   itself, the copy on the referral page, the line in llms.txt, the script
@@ -197,6 +253,7 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
 | Contact number → its owner → nothing else states it | `Website/scripts/test-success-empire-owner.mjs` | 5 offline tests, on every build |
 | Contact channel → the legal pages → nothing else states it | `Website/scripts/test-legal-contact.mjs` | 8 offline tests, on every build |
 | A reply to the site's mail → a mailbox that receives it | `Website/scripts/test-legal-contact.mjs` | 1 offline test, on every build |
+| A local env dump → a committed ignore rule → the mirror never carries it | `Website/scripts/test-env-ignore.mjs` | 6 offline tests, on every build |
 
 ## 🎯 This Session: Do These In Order
 1. **The site's own checkout door now has a command, and the receipt it
@@ -377,8 +434,52 @@ The coaching offers had five homes for one price, and nothing kept them agreeing
     MX at all**. Which mailbox inside one of those domains the operator
     actually watches is the operator's to say — it is a mailbox, not a line
     of code, and a guessed one is a promise the site cannot keep.
+23. **~~A live production env dump sat in the production root, and the mirror
+    was about to copy it somewhere nothing ignored it.~~ DONE — 2026-11-17.**
+    `Website/env.production` — the file a `vercel env pull` writes — carried
+    the live Stripe secret, the Supabase service-role key, the Resend key
+    and the Telegram token, and it was ignored only by this machine's
+    `.git/info/exclude`, which is never committed. The mirror excluded
+    `.git`, `node_modules` and `.next` but not the env files, and
+    `web/env.production` is covered by no committed ignore rule, so one run
+    of the sync would have put the secrets into a tree `git add -A` would
+    have taken. The dump is now ignored by committed rules (`env.*` in the
+    root `.gitignore` and in each tree's own) and excluded from the mirror,
+    so it is never copied and never reported as drift. **Six offline tests
+    run on every build** (`scripts/test-env-ignore.mjs`, wired as
+    `npm run audit:env`), and the scan was proved by planting: taking the
+    rule out of one tree fails the suite and names that tree.
+24. **The federation row's `codebase_path` still points at a retired
+    worktree.** `federation.surfaces` for `secretimperium.com` names
+    `/Users/janahasson/Desktop/Clients/_deploy-worktrees/imperium-ais-footer-resource-consolidation-20261111/Website`
+    — the tree codex deployed from on 2026-11-14. The directory still
+    exists, so the row does not read as broken, but it is not the tree
+    being worked on. `deploy_method` is `git-push` and every deploy the
+    changelog names carries a commit that is in this repository's `main`,
+    so a push from this tree ships the SHA the row's path would have
+    shipped — **the row's deploy authority is corroborated; its path is
+    stale.** It cannot be corrected from here: the `federation` schema is
+    not exposed through PostgREST and the only federation functions that
+    exist are `hermes_federation_surface`, `_acquire_lease`, `_renew_lease`,
+    `_release_lease` and `_log_change` — **there is no write path for the
+    row**, and adding one is a change to the shared fleet schema and a
+    council decision, not an autonomous fix. Logged in the changelog with
+    the lease instead.
 
 ## 🔬 Why
+- **A secret that git cannot see is a secret git can still take.** The dump
+  was invisible only because of `.git/info/exclude`, a file that lives
+  inside `.git/` and is never committed — so the protection was a fact
+  about *this machine*, not about the repository. On a fresh clone, or on
+  the next developer, or on the mirror, the same file was an ordinary
+  untracked file waiting for `git add -A`. **An ignore rule that is not
+  committed is a habit, not a rule.**
+- **The mirror is where a secret stops being local.** The production root
+  held the dump where one file kept it out of git. `web/` is a copy of the
+  production root, and the copy is a *different* path with *different*
+  ignore rules — so a file that is safely ignored in one tree can be
+  ordinary and committable in the other. **A file the mirror copies is a
+  file the mirror has to be told not to copy.**
 - **A contact promise the site cannot keep is worse than no contact
   promise.** The privacy policy named an address on a parked domain, and a
   parked domain refuses mail by publishing a null MX — it is not a slow
@@ -700,12 +801,13 @@ with the `products.slug` migration decision in the same entry. **Recorded
    write either table.
 
 ## 📚 Stats
-- Sessions: 66
-- Lines written: 10760
+- Sessions: 67
+- Lines written: 11060
 
 ## 🔄 Edit History (DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-17 | security | **A live production env dump sat in the production root, and the mirror was about to copy it somewhere nothing ignored it.** `Website/env.production` — the file a `vercel env pull` writes — carried 44 variables including the live Stripe secret key, the Supabase service-role key, the Resend key and the Telegram token. Git did not see it only because of this machine's `.git/info/exclude`, a file that lives inside `.git/` and is never committed: on a fresh clone the dump was an ordinary untracked file and `git add -A` would have committed every secret in it. The mirror made the risk twice — `scripts/sync-trees.sh` excluded `.git`, `node_modules` and `.next` but not the env files, and `web/env.production` is covered by no committed ignore rule (the root `.gitignore` lists `.env` and `env/`; `env.production` is neither), so one sync would have put the secrets into a tree `git add -A` would have taken. The gate was also reporting a difference that was not one: `--check` failed on the dump while CI, which checks out the repository, stayed green. The dump is now ignored by committed rules (`env.*` in the root `.gitignore` and in each tree's own) and excluded from the mirror, so it is never copied and never reported as drift. **Six offline tests run on every build** (`scripts/test-env-ignore.mjs`, wired as `npm run audit:env` beside the relay, cron, purchase, coaching, resource, owner, contact and sitemap suites): every tree that carries ignore rules ignores a local env dump, the repository ignores it, the rules that ignore a dump do not ignore ordinary source, no tracked file in the repository is an env dump, the mirror is never given one, and the scan is not vacuous. The scan was proved by planting — and **the first version of the scan was vacuous and the planting said so**: it asked git whether a path was ignored, and git consults every ignore file in the repository, so removing the rule from one tree still passed because another tree had it; the assertion now reads each tree's own rules and the planting fails as it should | ~300 |
 | 2026-11-12 | revenue | **The privacy policy published a mailbox that cannot receive mail, and the terms policy published none at all.** The privacy policy named `privacy@imperium.ai`; imperium.ai is a domain parked for sale — it publishes a null MX (`0 .`), its nameservers are Afternic's, and it answers on a parking page — so the one channel the privacy policy offered was refused by the domain itself. The terms policy promised "contact us at" and named nothing. `src/lib/contact.ts` owns the contact channel now, both legal pages read it, and the number itself still comes from `src/lib/success-empire.ts`, so it keeps one home. Eight offline tests run on every build beside the owner, coaching, resource, purchase, relay and cron suites (`scripts/test-legal-contact.mjs`), and the scan was proved by planting a written address in the terms page and the operator's address in a component — the suite failed and named both files | ~260 |
 | 2026-11-12 | security | **The operator's personal address was in the public JavaScript.** The admin console held it as the recipient of a newsletter test send, and the admin page is a client component, so the address was written into the page's bundle — proved on production, where `/_next/static/immutable/chunks/34i_hcyyu6lun.js` carried it. `src/lib/server/operator.ts` owns it now; the server chooses where a test send goes, the browser does not, and the built client bundle no longer contains it | ~80 |
 | 2026-11-12 | revenue | **A reply to the weekly brief had nowhere to go.** The site sends from `newsletter@secretimperium.com`, and secretimperium.com publishes no MX record at all, so a subscriber who answered the letter — or a lead who answered the welcome email — bounced. Every mail the site sends now carries a `replyTo`, so the reply lands with the operator instead of vanishing | ~30 |
@@ -1319,6 +1421,15 @@ with the `products.slug` migration decision in the same entry. **Recorded
 - Check patterns before writing new code
 - Build before and after every change
 - Never touch .env files
+- **A local env dump is ignored by committed rules and the mirror never
+  carries it.** `env.production` (what a `vercel env pull` writes) and every
+  `.env*` file hold live secrets and are local only. The root `.gitignore`
+  and each tree's own `.gitignore` carry `env.*` and `.env*`, and
+  `scripts/sync-trees.sh` excludes them, so the dump is never copied into
+  `web/` and never reported as drift — **an ignore rule that is not
+  committed is a habit, not a rule, and a file the mirror copies is a file
+  the mirror has to be told not to copy.**
+  `Website/scripts/test-env-ignore.mjs` fails the build on one (2026-11-17).
 - The local `Website/.env.local` still carries the pre-rotation
   `STRIPE_WEBHOOK_SECRET`; the live value lives in Vercel (Production and
   Preview) and was rotated on 2026-10-23 when the Stripe endpoint was

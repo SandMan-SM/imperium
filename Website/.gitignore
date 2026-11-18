@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 .env.local
 .env
+# A local production env dump (what `vercel env pull` writes) carries live
+# secrets. It is local only and must never be committed.
+env.*
 
 # vercel
 .vercel

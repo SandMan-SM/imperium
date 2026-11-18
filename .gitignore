@@ -3,6 +3,12 @@ venv/
 env/
 .venv/
 .env
+.env.*
+# A local production env dump (what `vercel env pull` writes) carries the
+# live Stripe secret, the Supabase service-role key and the Telegram token.
+# It is local only and must never reach the repository.
+env.*
+env.production
 
 # Databases
 *.db

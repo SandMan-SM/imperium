@@ -23,6 +23,16 @@ EXCLUDES=(
   --exclude '.vercel'
   --exclude '.vercel-OLD-root'
   --exclude 'tsconfig.tsbuildinfo'
+  # Secrets live in the tree, not in the source. A local env dump — the
+  # `env.production` file a `vercel env pull` writes — carries the live Stripe
+  # secret, the Supabase service-role key and the Telegram token. Mirroring it
+  # would copy those secrets into `web/`, where the root `.gitignore` does not
+  # cover them and a `git add -A` would commit them. Excluding it also stops
+  # the drift check reporting a difference that is not a difference in source.
+  --exclude 'env.production'
+  --exclude 'env.*'
+  --exclude '.env'
+  --exclude '.env.*'
 )
 
 if [[ "${1:-}" == "--check" ]]; then
